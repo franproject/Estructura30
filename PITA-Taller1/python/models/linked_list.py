@@ -108,7 +108,7 @@ class LinkedList:
             return False
 
         if position == 0:
-            self.head = self.head.next
+            self.head = self.head.next if self.head is not None else None
             self.size -= 1
             return True
 

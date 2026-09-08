@@ -6,17 +6,18 @@ from PySide6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
 )
+from typing import Optional
 
 
 class EmptyState(QFrame):
     """Visualización sobria cuando una lista/tabla carece de datos."""
 
-    def __init__(self, title: str = "No hay registros disponibles", subtitle: str = "Crea un nuevo registro usando las acciones rápidas", action_text: str = None, on_action=None, parent=None):
+    def __init__(self, title: str = "No hay registros disponibles", subtitle: str = "Crea un nuevo registro usando las acciones rápidas", action_text: Optional[str] = None, on_action=None, parent=None):
         super().__init__(parent)
         self.setObjectName("panel")
         self._build_ui(title, subtitle, action_text, on_action)
 
-    def _build_ui(self, title: str, subtitle: str, action_text: str, on_action):
+    def _build_ui(self, title: str, subtitle: str, action_text: Optional[str], on_action):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(40, 50, 40, 50)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)

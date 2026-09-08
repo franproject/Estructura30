@@ -34,6 +34,16 @@ from persistence.file_manager import (
     save_professors,
     save_programs,
     save_students,
+    load_payroll_audit,
+    load_payroll_details,
+    load_payroll_novelties,
+    load_payroll_periods,
+    load_payroll_runs,
+    save_payroll_audit,
+    save_payroll_details,
+    save_payroll_novelties,
+    save_payroll_periods,
+    save_payroll_runs,
 )
 from services.entity_manager import EntityManager
 
@@ -332,6 +342,11 @@ class MainWindow(QMainWindow):
         self.manager.enrollments = LinkedList(load_enrollments())
         records = load_payroll()
         setattr(self.manager, "payroll", records[0] if records else None)
+        cycle = self.manager.payroll_cycle_service
+        cycle.periods = load_payroll_periods()
+        cycle.runs = load_payroll_runs()
+        cycle.novelties = load_payroll_novelties()
+        cycle.audits = load_payroll_audit()
 
     def _save_state(self):
         save_faculties(self.manager.faculties)
@@ -344,6 +359,12 @@ class MainWindow(QMainWindow):
         payroll = getattr(self.manager, "payroll", None)
         if payroll is not None:
             save_payroll([payroll])
+        cycle = self.manager.payroll_cycle_service
+        save_payroll_periods(cycle.periods)
+        save_payroll_runs(cycle.runs)
+        save_payroll_details([detail for run in cycle.runs for detail in run.details])
+        save_payroll_novelties(cycle.novelties)
+        save_payroll_audit(cycle.audits)
         QMessageBox.information(self, "NexoCampus", "Datos guardados correctamente.")
 
     def _reload_state(self):

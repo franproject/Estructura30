@@ -79,7 +79,7 @@ class StatCard(QFrame):
         bottom.addWidget(self.lbl_delta)
         layout.addLayout(bottom)
 
-    def set_value(self, value: str or int):
+    def set_value(self, value: str | int):
         self.lbl_val.setText(str(value))
 
     def mousePressEvent(self, event):

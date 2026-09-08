@@ -1,4 +1,6 @@
 """Encabezado estándar para las páginas internas de NexoCampus."""
+from typing import Optional
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QHBoxLayout,
@@ -12,11 +14,11 @@ from PySide6.QtWidgets import (
 class PageHeader(QWidget):
     """Barra con título, subtítulo con barra verde vertical y botón de acción principal."""
 
-    def __init__(self, title: str, subtitle: str, action_text: str = None, on_action=None, parent=None):
+    def __init__(self, title: str, subtitle: str, action_text: Optional[str] = None, on_action=None, parent=None):
         super().__init__(parent)
         self._build_ui(title, subtitle, action_text, on_action)
 
-    def _build_ui(self, title: str, subtitle: str, action_text: str, on_action):
+    def _build_ui(self, title: str, subtitle: str, action_text: Optional[str], on_action):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(12)

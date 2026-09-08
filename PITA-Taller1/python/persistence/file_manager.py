@@ -5,6 +5,7 @@ This module serializes those objects without replacing the existing architecture
 """
 
 import json
+import warnings
 from pathlib import Path
 
 from models.administrative import Administrative
@@ -13,11 +14,50 @@ from models.enrollment import Enrollment
 from models.faculty import Faculty
 from models.linked_list import LinkedList
 from models.payroll import Payroll
+from models.payroll_audit import PayrollAudit
+from models.payroll_novelty import PayrollNovelty
+from models.payroll_period import PayrollPeriod
+from models.payroll_run import PayrollRun
 from models.professor import Professor
 from models.program import Program
 from models.student import Student
 
 DATA_DIRECTORY = Path(__file__).resolve().parents[2] / "data"
+
+_LABOR_DEFAULTS = {
+    "hire_date": "",
+    "termination_date": "",
+    "linkage_type": "",
+    "employment_status": "UNKNOWN",
+    "salary_type": "FIXED_MONTHLY",
+    "arl_risk_class": "I",
+    "social_security_config_id": "DEFAULT",
+    "worked_days": 0,
+    "hourly_rate": 0.0,
+    "continuous_service_days": 0,
+    "novelties": [],
+    "bonuses": [],
+    "salary_concepts": [],
+    "non_salary_concepts": [],
+}
+
+
+def _labor_kwargs(data, entity_name):
+    """Returns compatible labor data and warns when loading legacy JSON."""
+    missing = [field for field in _LABOR_DEFAULTS if field not in data]
+    if missing:
+        warnings.warn(
+            f"{entity_name} JSON lacks labor fields; explicit defaults applied: {', '.join(missing)}",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+    values = {}
+    for field, default in _LABOR_DEFAULTS.items():
+        value = data.get(field, default)
+        if field in {"novelties", "bonuses", "salary_concepts", "non_salary_concepts"}:
+            value = value if isinstance(value, list) else []
+        values[field] = value
+    return values
 
 
 def _ensure_parent_directory(file_path):
@@ -285,6 +325,20 @@ def _professor_to_dict(professor):
         "vacation_provision": getattr(professor, "vacation_provision", 0.0),
         "net_salary": getattr(professor, "net_salary", 0.0),
         "active": getattr(professor, "active", False),
+        "hire_date": getattr(professor, "hire_date", ""),
+        "termination_date": getattr(professor, "termination_date", ""),
+        "linkage_type": getattr(professor, "linkage_type", ""),
+        "employment_status": getattr(professor, "employment_status", "UNKNOWN"),
+        "salary_type": getattr(professor, "salary_type", "FIXED_MONTHLY"),
+        "arl_risk_class": getattr(professor, "arl_risk_class", "I"),
+        "social_security_config_id": getattr(professor, "social_security_config_id", "DEFAULT"),
+        "worked_days": getattr(professor, "worked_days", 0),
+        "hourly_rate": getattr(professor, "hourly_rate", 0.0),
+        "continuous_service_days": getattr(professor, "continuous_service_days", 0),
+        "novelties": getattr(professor, "novelties", []),
+        "bonuses": getattr(professor, "bonuses", []),
+        "salary_concepts": getattr(professor, "salary_concepts", []),
+        "non_salary_concepts": getattr(professor, "non_salary_concepts", []),
     }
 
 
@@ -319,6 +373,7 @@ def _professor_from_dict(data):
         vacation_provision=data.get("vacation_provision", 0.0),
         net_salary=data.get("net_salary", 0.0),
         active=data.get("active", False),
+        **_labor_kwargs(data, "Professor"),
     )
 
 
@@ -341,6 +396,20 @@ def _administrative_to_dict(administrative):
         "vacation_provision": getattr(administrative, "vacation_provision", 0.0),
         "net_salary": getattr(administrative, "net_salary", 0.0),
         "active": getattr(administrative, "active", False),
+        "hire_date": getattr(administrative, "hire_date", ""),
+        "termination_date": getattr(administrative, "termination_date", ""),
+        "linkage_type": getattr(administrative, "linkage_type", ""),
+        "employment_status": getattr(administrative, "employment_status", "UNKNOWN"),
+        "salary_type": getattr(administrative, "salary_type", "FIXED_MONTHLY"),
+        "arl_risk_class": getattr(administrative, "arl_risk_class", "I"),
+        "social_security_config_id": getattr(administrative, "social_security_config_id", "DEFAULT"),
+        "worked_days": getattr(administrative, "worked_days", 0),
+        "hourly_rate": getattr(administrative, "hourly_rate", 0.0),
+        "continuous_service_days": getattr(administrative, "continuous_service_days", 0),
+        "novelties": getattr(administrative, "novelties", []),
+        "bonuses": getattr(administrative, "bonuses", []),
+        "salary_concepts": getattr(administrative, "salary_concepts", []),
+        "non_salary_concepts": getattr(administrative, "non_salary_concepts", []),
     }
 
 
@@ -363,6 +432,7 @@ def _administrative_from_dict(data):
         vacation_provision=data.get("vacation_provision", 0.0),
         net_salary=data.get("net_salary", 0.0),
         active=data.get("active", False),
+        **_labor_kwargs(data, "Administrative"),
     )
 
 
@@ -564,6 +634,88 @@ def load_enrollments(file_path=DATA_DIRECTORY / "enrollments.json"):
                 continue
             enrollments.append(_enrollment_from_dict(item))
         return enrollments
+    except (TypeError, ValueError, OSError):
+        return []
+
+
+def _save_payroll_collection(values, file_path):
+    return _save_json(file_path, [_to_serializable(item.to_dict() if hasattr(item, "to_dict") else item) for item in _as_list(values)])
+
+
+def _load_payroll_collection(file_path, model_cls):
+    result = []
+    for item in _load_json(file_path):
+        if isinstance(item, dict):
+            result.append(model_cls.from_dict(item))
+    return result
+
+
+def save_payroll_periods(periods, file_path=DATA_DIRECTORY / "payroll_periods.json"):
+    try:
+        return _save_payroll_collection(periods, file_path)
+    except (TypeError, ValueError, OSError):
+        return False
+
+
+def load_payroll_periods(file_path=DATA_DIRECTORY / "payroll_periods.json"):
+    try:
+        return _load_payroll_collection(file_path, PayrollPeriod)
+    except (TypeError, ValueError, OSError):
+        return []
+
+
+def save_payroll_runs(runs, file_path=DATA_DIRECTORY / "payroll_runs.json"):
+    try:
+        return _save_payroll_collection(runs, file_path)
+    except (TypeError, ValueError, OSError):
+        return False
+
+
+def load_payroll_runs(file_path=DATA_DIRECTORY / "payroll_runs.json"):
+    try:
+        return _load_payroll_collection(file_path, PayrollRun)
+    except (TypeError, ValueError, OSError):
+        return []
+
+
+def save_payroll_details(details, file_path=DATA_DIRECTORY / "payroll_details.json"):
+    try:
+        return _save_json(file_path, [_to_serializable(item) for item in _as_list(details)])
+    except (TypeError, ValueError, OSError):
+        return False
+
+
+def load_payroll_details(file_path=DATA_DIRECTORY / "payroll_details.json"):
+    try:
+        return _load_json(file_path)
+    except (TypeError, ValueError, OSError):
+        return []
+
+
+def save_payroll_novelties(novelties, file_path=DATA_DIRECTORY / "payroll_novelties.json"):
+    try:
+        return _save_payroll_collection(novelties, file_path)
+    except (TypeError, ValueError, OSError):
+        return False
+
+
+def load_payroll_novelties(file_path=DATA_DIRECTORY / "payroll_novelties.json"):
+    try:
+        return _load_payroll_collection(file_path, PayrollNovelty)
+    except (TypeError, ValueError, OSError):
+        return []
+
+
+def save_payroll_audit(audits, file_path=DATA_DIRECTORY / "payroll_audit.json"):
+    try:
+        return _save_payroll_collection(audits, file_path)
+    except (TypeError, ValueError, OSError):
+        return False
+
+
+def load_payroll_audit(file_path=DATA_DIRECTORY / "payroll_audit.json"):
+    try:
+        return _load_payroll_collection(file_path, PayrollAudit)
     except (TypeError, ValueError, OSError):
         return []
 

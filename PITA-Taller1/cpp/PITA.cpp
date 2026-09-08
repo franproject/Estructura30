@@ -40,18 +40,15 @@
 #include <cstdlib>
 #include <utility>
 
+#include "payroll_engine.hpp"
+#include "payroll_cycle.hpp"
+
 using namespace std;
 
 // ======================================================================
 // 1. CONSTANTES GLOBALES DEL MODELO DE NOMINA Y NEGOCIO
 // ======================================================================
 const double VALOR_PUNTO_SALARIAL   = 17690.0;  // valor ilustrativo (decreto 1279)
-const double PORC_SALUD             = 0.04;     // aporte salud del empleado
-const double PORC_PENSION           = 0.04;     // aporte pension del empleado
-const double PORC_CESANTIAS         = 0.0833;   // provision cesantias
-const double PORC_INT_CESANTIAS     = 0.12;     // interes sobre cesantias
-const double PORC_PRIMA             = 0.0833;   // provision prima de servicios
-const double PORC_VACACIONES        = 0.0417;   // provision vacaciones
 const double UMBRAL_EBRA            = 3.0;      // promedio minimo (escala 0-5)
 const string ARCHIVO_DATOS          = "pita_datos.txt";
 
@@ -122,6 +119,21 @@ struct Profesor {
     string documento;
     string email;
     bool   activo;
+    string fechaIngreso;
+    string fechaRetiro;
+    string tipoVinculacion;
+    string estadoLaboral = "UNKNOWN";
+    string tipoSalario = "FIXED_MONTHLY";
+    string claseRiesgoARL = "I";
+    string configuracionSeguridadSocial = "DEFAULT";
+    int    diasLaborados = 0;
+    double salarioBase = 0.0;
+    double tarifaHora = 0.0;
+    int    diasServicioContinuo = 0;
+    vector<pita::payroll::PayrollNovelty> novelties;
+    vector<pita::payroll::PayrollNovelty> bonuses;
+    vector<pita::payroll::PayrollNovelty> salaryConcepts;
+    vector<pita::payroll::PayrollNovelty> nonSalaryConcepts;
     DatosNomina nomina;
     Profesor* sig;
 };
@@ -135,6 +147,19 @@ struct Administrativo {
     string tipoContrato; // Planta, Contratista, Provisional...
     double salarioBase;
     bool   activo;
+    string fechaIngreso;
+    string fechaRetiro;
+    string tipoVinculacion;
+    string estadoLaboral = "UNKNOWN";
+    string tipoSalario = "FIXED_MONTHLY";
+    string claseRiesgoARL = "I";
+    string configuracionSeguridadSocial = "DEFAULT";
+    int    diasLaborados = 0;
+    int    diasServicioContinuo = 0;
+    vector<pita::payroll::PayrollNovelty> novelties;
+    vector<pita::payroll::PayrollNovelty> bonuses;
+    vector<pita::payroll::PayrollNovelty> salaryConcepts;
+    vector<pita::payroll::PayrollNovelty> nonSalaryConcepts;
     Administrativo* sig;
 };
 
@@ -167,6 +192,7 @@ Administrativo*   cabezaAdministrativos = nullptr;
 
 // contadores para generar codigos automaticos
 int contF = 0, contP = 0, contC = 0, contE = 0, contD = 0, contA = 0;
+pita::payroll::PayrollCycle cicloNominaFormal;
 
 // ======================================================================
 // 5. PROTOTIPOS
@@ -248,6 +274,10 @@ void desactivarAdministrativo();
 void eliminarAdministrativo();
 
 // -- Nomina docente (motor de calculo) --
+pita::payroll::PayrollEmployee crearEntradaNomina(Profesor* p);
+pita::payroll::PayrollEmployee crearEntradaNomina(Administrativo* a);
+pita::payroll::PayrollResult liquidarProfesor(Profesor* p, int diasLaborados);
+pita::payroll::PayrollResult liquidarAdministrativo(Administrativo* a, int diasLaborados);
 double calcularSalarioMensualBruto(Profesor* p);
 double calcularSaludMensual(Profesor* p);
 double calcularPensionMensual(Profesor* p);
@@ -260,6 +290,7 @@ void   mostrarDesgloseNomina(Profesor* p);
 
 // -- Reportes (recorridos completos de listas anidadas) --
 void reporteNominaProfesorIndividual();
+void generarDesprendibleProfesor();
 void reporteNominaPorPrograma();
 void reporteNominaPorFacultad();
 void reporteNominaUniversidadCompleta();
@@ -303,6 +334,9 @@ void menuEstudiantes();
 void menuProfesores();
 void menuAdministrativos();
 void menuReportesNomina();
+void menuNominaFormal();
+void dashboardFinancieroFormal();
+void generarDesprendibleFormal();
 void menuPrincipal();
 
 // ======================================================================
@@ -1341,6 +1375,76 @@ void eliminarAdministrativo() {
 // 17. MOTOR DE NOMINA DOCENTE (Decreto 1279/2002 - Acuerdo 027/2024)
 // ======================================================================
 
+pita::payroll::PayrollEmployee crearEntradaNomina(Profesor* p) {
+    pita::payroll::PayrollEmployee employee;
+    if (p == nullptr) return employee;
+    employee.employeeId = p->codigo;
+    employee.employeeType = "Professor";
+    employee.employmentType = p->nomina.tipoContrato == CATEDRATICO
+        ? "catedratico" : (p->nomina.tipoContrato == PLANTA ? "planta" : "ocasional");
+    employee.baseMonthlySalary = static_cast<pita::payroll::Money>(p->salarioBase);
+    employee.pointValue = static_cast<pita::payroll::Money>(VALOR_PUNTO_SALARIAL);
+    employee.categoryScore = 0.0;
+    employee.titleScore = p->nomina.puntosTitulo;
+    employee.experienceScore = p->nomina.puntosExperiencia;
+    employee.productivityScore = p->nomina.puntosProductividad;
+    employee.hourlyRate = static_cast<pita::payroll::Money>(p->tarifaHora > 0 ? p->tarifaHora : tarifaHoraCatedra(p->nomina.categoria));
+    employee.hoursWorked = p->nomina.horasCatedraMes;
+    employee.continuousServiceDays = p->diasServicioContinuo;
+    employee.active = p->activo;
+    employee.workedDays = p->diasLaborados;
+    employee.hireDate = p->fechaIngreso;
+    employee.terminationDate = p->fechaRetiro;
+    return employee;
+}
+
+pita::payroll::PayrollEmployee crearEntradaNomina(Administrativo* a) {
+    pita::payroll::PayrollEmployee employee;
+    if (a == nullptr) return employee;
+    employee.employeeId = a->codigo;
+    employee.employeeType = "Administrative";
+    employee.employmentType = a->tipoContrato;
+    employee.baseMonthlySalary = static_cast<pita::payroll::Money>(a->salarioBase);
+    employee.continuousServiceDays = a->diasServicioContinuo;
+    employee.active = a->activo;
+    employee.workedDays = a->diasLaborados;
+    employee.hireDate = a->fechaIngreso;
+    employee.terminationDate = a->fechaRetiro;
+    return employee;
+}
+
+vector<pita::payroll::PayrollNovelty> conceptosNomina(Profesor* p) {
+    vector<pita::payroll::PayrollNovelty> result;
+    if (p == nullptr) return result;
+    result.insert(result.end(), p->novelties.begin(), p->novelties.end());
+    result.insert(result.end(), p->bonuses.begin(), p->bonuses.end());
+    result.insert(result.end(), p->salaryConcepts.begin(), p->salaryConcepts.end());
+    result.insert(result.end(), p->nonSalaryConcepts.begin(), p->nonSalaryConcepts.end());
+    return result;
+}
+
+vector<pita::payroll::PayrollNovelty> conceptosNomina(Administrativo* a) {
+    vector<pita::payroll::PayrollNovelty> result;
+    if (a == nullptr) return result;
+    result.insert(result.end(), a->novelties.begin(), a->novelties.end());
+    result.insert(result.end(), a->bonuses.begin(), a->bonuses.end());
+    result.insert(result.end(), a->salaryConcepts.begin(), a->salaryConcepts.end());
+    result.insert(result.end(), a->nonSalaryConcepts.begin(), a->nonSalaryConcepts.end());
+    return result;
+}
+
+pita::payroll::PayrollResult liquidarProfesor(Profesor* p, int diasLaborados) {
+    pita::payroll::PayrollPeriod period{"LEGACY", diasLaborados};
+    pita::payroll::PayrollRules rules;
+    return pita::payroll::calculatePayroll(crearEntradaNomina(p), period, rules, conceptosNomina(p));
+}
+
+pita::payroll::PayrollResult liquidarAdministrativo(Administrativo* a, int diasLaborados) {
+    pita::payroll::PayrollPeriod period{"LEGACY", diasLaborados};
+    pita::payroll::PayrollRules rules;
+    return pita::payroll::calculatePayroll(crearEntradaNomina(a), period, rules, conceptosNomina(a));
+}
+
 // Tarifa de hora catedra segun categoria (ilustrativa, ajustar a valores reales)
 double tarifaHoraCatedra(CategoriaDocente c) {
     switch (c) {
@@ -1356,37 +1460,32 @@ double tarifaHoraCatedra(CategoriaDocente c) {
 // Catedratico: horas catedra al mes * tarifa hora catedra segun su categoria.
 double calcularSalarioMensualBruto(Profesor* p) {
     if (p == nullptr) return 0.0;
-    if (p->nomina.tipoContrato == CATEDRATICO) {
-        return p->nomina.horasCatedraMes * tarifaHoraCatedra(p->nomina.categoria);
-    }
-    int puntosTotales = p->nomina.puntosTitulo + p->nomina.puntosExperiencia
-                       + p->nomina.puntosProductividad;
-    return puntosTotales * VALOR_PUNTO_SALARIAL;
+    return static_cast<double>(pita::payroll::salaryBase(crearEntradaNomina(p)));
 }
 
 double calcularSaludMensual(Profesor* p) {
-    return calcularSalarioMensualBruto(p) * PORC_SALUD;
+    if (p == nullptr) return 0.0;
+    return static_cast<double>(liquidarProfesor(p, 30).employeeHealth);
 }
 
 double calcularPensionMensual(Profesor* p) {
-    return calcularSalarioMensualBruto(p) * PORC_PENSION;
+    if (p == nullptr) return 0.0;
+    return static_cast<double>(liquidarProfesor(p, 30).employeePension);
 }
 
 double calcularNetoMensual(Profesor* p) {
-    return calcularSalarioMensualBruto(p) - calcularSaludMensual(p) - calcularPensionMensual(p);
+    if (p == nullptr) return 0.0;
+    return static_cast<double>(liquidarProfesor(p, 30).netSalary);
 }
 
 // Provision de prestaciones sociales (cesantias + intereses + prima + vacaciones).
 // No aplica tipicamente a catedraticos por hora (se liquidan de forma distinta).
 double calcularPrestacionesSocialesMensual(Profesor* p) {
     if (p == nullptr) return 0.0;
-    if (p->nomina.tipoContrato == CATEDRATICO) return 0.0;
-    double base = calcularSalarioMensualBruto(p);
-    double cesantias = base * PORC_CESANTIAS;
-    double interesCesantias = cesantias * PORC_INT_CESANTIAS;
-    double prima = base * PORC_PRIMA;
-    double vacaciones = base * PORC_VACACIONES;
-    return cesantias + interesCesantias + prima + vacaciones;
+    const auto result = liquidarProfesor(p, 30);
+    return static_cast<double>(result.serviceBonusProvision + result.severanceProvision +
+        result.severanceInterest + result.christmasBonusProvision + result.vacationProvision +
+        result.vacationBonusProvision);
 }
 
 double calcularSalarioAnualBruto(Profesor* p) {
@@ -1394,12 +1493,14 @@ double calcularSalarioAnualBruto(Profesor* p) {
 }
 
 double calcularSalarioAnualNeto(Profesor* p) {
-    return calcularNetoMensual(p) * 12.0;
+    if (p == nullptr) return 0.0;
+    return static_cast<double>(liquidarProfesor(p, 30).netSalary) * 12.0;
 }
 
 // Costo anual total para la universidad: 12 meses de salario bruto + prestaciones anuales
 double calcularCostoAnualUniversidad(Profesor* p) {
-    return calcularSalarioAnualBruto(p) + (calcularPrestacionesSocialesMensual(p) * 12.0);
+    if (p == nullptr) return 0.0;
+    return static_cast<double>(liquidarProfesor(p, 30).totalEmployerCost) * 12.0;
 }
 
 void mostrarDesgloseNomina(Profesor* p) {
@@ -1439,6 +1540,10 @@ void reporteNominaProfesorIndividual() {
     Profesor* d = buscarProfesorGlobal(cod, nullptr, nullptr);
     if (d == nullptr) { cout << "  >> No existe ese profesor.\n"; return; }
     mostrarDesgloseNomina(d);
+}
+
+void generarDesprendibleProfesor() {
+    generarDesprendibleFormal();
 }
 
 // Recorre facultades -> programas -> profesores, sumando salarios de un programa puntual
@@ -1652,14 +1757,12 @@ void reporteProfesoresPorCategoria() {
 // ======================================================================
 double calcularNetoMensualAdministrativo(Administrativo* a) {
     if (a == nullptr) return 0.0;
-    double salud = a->salarioBase * PORC_SALUD;
-    double pension = a->salarioBase * PORC_PENSION;
-    return a->salarioBase - salud - pension;
+    return static_cast<double>(liquidarAdministrativo(a, 30).netSalary);
 }
 
 double calcularSalarioAnualBrutoAdministrativo(Administrativo* a) {
     if (a == nullptr) return 0.0;
-    return a->salarioBase * 12.0;
+    return static_cast<double>(liquidarAdministrativo(a, 30).baseSalary) * 12.0;
 }
 
 double calcularSalarioAnualNetoAdministrativo(Administrativo* a) {
@@ -1675,10 +1778,11 @@ void reporteNominaAdministrativoIndividual() {
     cout << "\n  Administrativo: " << a->nombre << " [" << a->codigo << "]\n";
     cout << "  Cargo: " << a->cargo << "   Contrato: " << a->tipoContrato << "\n";
     linea();
-    cout << "  Salario mensual BRUTO : $ " << a->salarioBase << "\n";
-    cout << "  (-) Salud (4%)        : $ " << a->salarioBase * PORC_SALUD << "\n";
-    cout << "  (-) Pension (4%)      : $ " << a->salarioBase * PORC_PENSION << "\n";
-    cout << "  Salario mensual NETO  : $ " << calcularNetoMensualAdministrativo(a) << "\n";
+    const auto result = liquidarAdministrativo(a, 30);
+    cout << "  Salario mensual BRUTO : $ " << result.baseSalary << "\n";
+    cout << "  (-) Salud             : $ " << result.employeeHealth << "\n";
+    cout << "  (-) Pension           : $ " << result.employeePension << "\n";
+    cout << "  Salario mensual NETO  : $ " << result.netSalary << "\n";
     linea();
     cout << "  SALARIO ANUAL BRUTO (x12): $ " << calcularSalarioAnualBrutoAdministrativo(a) << "\n";
     cout << "  SALARIO ANUAL NETO (x12) : $ " << calcularSalarioAnualNetoAdministrativo(a) << "\n";
@@ -2030,7 +2134,11 @@ void guardarDatos() {
                          << (int)d->nomina.tipoContrato << "|" << (int)d->nomina.categoria << "|"
                          << d->nomina.puntosTitulo << "|" << d->nomina.puntosExperiencia << "|"
                          << d->nomina.puntosProductividad << "|" << d->nomina.horasCatedraMes << "|"
-                         << d->activo << "\n";
+                         << d->activo << "|" << d->fechaIngreso << "|" << d->fechaRetiro << "|"
+                         << d->tipoVinculacion << "|" << d->estadoLaboral << "|" << d->tipoSalario << "|"
+                         << d->claseRiesgoARL << "|" << d->configuracionSeguridadSocial << "|"
+                         << d->diasLaborados << "|" << d->salarioBase << "|" << d->tarifaHora << "|"
+                         << d->diasServicioContinuo << "\n";
                 d = d->sig;
             }
             p = p->sig;
@@ -2043,7 +2151,11 @@ void guardarDatos() {
     Administrativo* a = cabezaAdministrativos;
     while (a != nullptr) {
         archivo << a->codigo << "|" << a->nombre << "|" << a->documento << "|" << a->cargo << "|"
-                 << a->tipoContrato << "|" << a->salarioBase << "|" << a->activo << "\n";
+             << a->tipoContrato << "|" << a->salarioBase << "|" << a->activo << "|"
+             << a->fechaIngreso << "|" << a->fechaRetiro << "|" << a->tipoVinculacion << "|"
+             << a->estadoLaboral << "|" << a->tipoSalario << "|" << a->claseRiesgoARL << "|"
+             << a->configuracionSeguridadSocial << "|" << a->diasLaborados << "|"
+             << a->diasServicioContinuo << "\n";
         a = a->sig;
     }
     archivo << "#FIN_ADMINISTRATIVOS\n";
@@ -2051,6 +2163,8 @@ void guardarDatos() {
     archivo << "#CONTADORES\n";
     archivo << contF << "|" << contP << "|" << contC << "|" << contE << "|" << contD << "|" << contA << "\n";
     archivo << "#FIN_CONTADORES\n";
+
+    pita::payroll::savePayrollCycleSections(archivo, cicloNominaFormal);
 
     archivo.close();
     cout << "  >> Datos guardados correctamente en '" << ARCHIVO_DATOS << "'.\n";
@@ -2083,7 +2197,7 @@ void cargarDatos() {
             seccion = linea;
             continue;
         }
-        string campos[15];
+        string campos[25];
 
         if (seccion == "#FACULTADES") {
             separarCampos(linea, campos, 3);
@@ -2174,7 +2288,7 @@ void cargarDatos() {
                 }
             }
         } else if (seccion == "#PROFESORES") {
-            separarCampos(linea, campos, 12);
+            separarCampos(linea, campos, 20);
             Programa* p = buscarProgramaGlobal(campos[1], nullptr);
             if (p != nullptr) {
                 Profesor* nuevo = new Profesor();
@@ -2189,6 +2303,17 @@ void cargarDatos() {
                 nuevo->nomina.puntosProductividad = stoi(campos[9]);
                 nuevo->nomina.horasCatedraMes = stoi(campos[10]);
                 nuevo->activo = (campos[11] == "1");
+                if (!campos[12].empty()) nuevo->fechaIngreso = campos[12];
+                if (!campos[13].empty()) nuevo->fechaRetiro = campos[13];
+                if (!campos[14].empty()) nuevo->tipoVinculacion = campos[14];
+                if (!campos[15].empty()) nuevo->estadoLaboral = campos[15];
+                if (!campos[16].empty()) nuevo->tipoSalario = campos[16];
+                if (!campos[17].empty()) nuevo->claseRiesgoARL = campos[17];
+                if (!campos[18].empty()) nuevo->configuracionSeguridadSocial = campos[18];
+                if (!campos[19].empty()) nuevo->diasLaborados = stoi(campos[19]);
+                if (!campos[20].empty()) nuevo->salarioBase = stod(campos[20]);
+                if (!campos[21].empty()) nuevo->tarifaHora = stod(campos[21]);
+                if (!campos[22].empty()) nuevo->diasServicioContinuo = stoi(campos[22]);
                 nuevo->sig = nullptr;
                 if (p->listaProfesores == nullptr) p->listaProfesores = nuevo;
                 else {
@@ -2198,7 +2323,7 @@ void cargarDatos() {
                 }
             }
         } else if (seccion == "#ADMINISTRATIVOS") {
-            separarCampos(linea, campos, 7);
+            separarCampos(linea, campos, 16);
             Administrativo* nuevo = new Administrativo();
             nuevo->codigo = campos[0];
             nuevo->nombre = campos[1];
@@ -2207,6 +2332,15 @@ void cargarDatos() {
             nuevo->tipoContrato = campos[4];
             nuevo->salarioBase = stod(campos[5]);
             nuevo->activo = (campos[6] == "1");
+            if (!campos[7].empty()) nuevo->fechaIngreso = campos[7];
+            if (!campos[8].empty()) nuevo->fechaRetiro = campos[8];
+            if (!campos[9].empty()) nuevo->tipoVinculacion = campos[9];
+            if (!campos[10].empty()) nuevo->estadoLaboral = campos[10];
+            if (!campos[11].empty()) nuevo->tipoSalario = campos[11];
+            if (!campos[12].empty()) nuevo->claseRiesgoARL = campos[12];
+            if (!campos[13].empty()) nuevo->configuracionSeguridadSocial = campos[13];
+            if (!campos[14].empty()) nuevo->diasLaborados = stoi(campos[14]);
+            if (!campos[15].empty()) nuevo->diasServicioContinuo = stoi(campos[15]);
             nuevo->sig = nullptr;
             if (cabezaAdministrativos == nullptr) cabezaAdministrativos = nuevo;
             else {
@@ -2224,6 +2358,9 @@ void cargarDatos() {
             if (!campos[5].empty()) contA = stoi(campos[5]);
         }
     }
+    archivo.clear();
+    archivo.seekg(0);
+    pita::payroll::loadPayrollCycleSections(archivo, cicloNominaFormal);
     archivo.close();
     cout << "  >> Datos cargados correctamente desde '" << ARCHIVO_DATOS << "'.\n";
 }
@@ -2349,6 +2486,452 @@ void liberarTodaLaMemoria() {
 // ======================================================================
 // 22. MENUS
 // ======================================================================
+const pita::payroll::PayrollRunRecord* buscarRunFormal(const string& periodId) {
+    for (const auto& run : cicloNominaFormal.runs()) {
+        if (run.periodId == periodId) return &run;
+    }
+    return nullptr;
+}
+
+const pita::payroll::PayrollPeriodRecord* buscarPeriodoFormal(const string& periodId) {
+    for (const auto& period : cicloNominaFormal.periods()) {
+        if (period.periodId == periodId) return &period;
+    }
+    return nullptr;
+}
+
+const pita::payroll::PayrollResult* buscarDetalleFormal(
+    const pita::payroll::PayrollRunRecord* run, const string& employeeId) {
+    if (run == nullptr) return nullptr;
+    for (const auto& detail : run->details) {
+        if (detail.employeeId == employeeId) return &detail;
+    }
+    return nullptr;
+}
+
+void listarPeriodosFormales() {
+    titulo("NOMINA - PERIODOS");
+    if (cicloNominaFormal.periods().empty()) {
+        cout << "  (No hay periodos registrados)\n";
+        return;
+    }
+    for (const auto& period : cicloNominaFormal.periods()) {
+        cout << "  " << period.periodId << " | " << period.startDate << " a "
+             << period.endDate << " | estado: " << static_cast<int>(period.status) << "\n";
+    }
+}
+
+string nombreEstadoPeriodo(pita::payroll::PeriodStatus status) {
+    switch (status) {
+        case pita::payroll::PeriodStatus::OPEN: return "ABIERTO";
+        case pita::payroll::PeriodStatus::CALCULATED: return "CALCULADO";
+        case pita::payroll::PeriodStatus::APPROVED: return "APROBADO";
+        case pita::payroll::PeriodStatus::CLOSED: return "CERRADO";
+        case pita::payroll::PeriodStatus::CANCELLED: return "CANCELADO";
+    }
+    return "DESCONOCIDO";
+}
+
+string nombreEstadoRun(pita::payroll::RunStatus status) {
+    switch (status) {
+        case pita::payroll::RunStatus::CALCULATED: return "CALCULADO";
+        case pita::payroll::RunStatus::APPROVED: return "APROBADO";
+        case pita::payroll::RunStatus::CLOSED: return "CERRADO";
+        case pita::payroll::RunStatus::CANCELLED: return "CANCELADO";
+    }
+    return "DESCONOCIDO";
+}
+
+vector<pita::payroll::PayrollEmployee> empleadosFormales() {
+    vector<pita::payroll::PayrollEmployee> employees;
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* program = f->listaProgramas;
+        while (program != nullptr) {
+            Profesor* professor = program->listaProfesores;
+            while (professor != nullptr) {
+                if (professor->activo) {
+                    if (professor->configuracionSeguridadSocial.empty() || professor->claseRiesgoARL != "I")
+                        throw invalid_argument("el profesor " + professor->codigo + " no tiene ARL/seguridad social configurada");
+                    pita::payroll::PayrollEmployee employee = crearEntradaNomina(professor);
+                    if (pita::payroll::salaryBase(employee) <= 0)
+                        throw invalid_argument("el profesor " + professor->codigo + " no tiene salario valido");
+                    employees.push_back(employee);
+                }
+                professor = professor->sig;
+            }
+            program = program->sig;
+        }
+        f = f->sig;
+    }
+    Administrativo* administrative = cabezaAdministrativos;
+    while (administrative != nullptr) {
+        if (administrative->activo) {
+            if (administrative->configuracionSeguridadSocial.empty() || administrative->claseRiesgoARL != "I")
+                throw invalid_argument("el administrativo " + administrative->codigo + " no tiene ARL/seguridad social configurada");
+            pita::payroll::PayrollEmployee employee = crearEntradaNomina(administrative);
+            if (pita::payroll::salaryBase(employee) <= 0)
+                throw invalid_argument("el administrativo " + administrative->codigo + " no tiene salario valido");
+            employees.push_back(employee);
+        }
+        administrative = administrative->sig;
+    }
+    return employees;
+}
+
+void crearPeriodoFormal() {
+    titulo("NOMINA - CREAR PERIODO");
+    const string periodId = leerLinea("Identificador del periodo (ej. 2026-09): ");
+    const int year = leerEntero("Anio: ");
+    const int month = leerEntero("Mes (1-12): ");
+    const string startDate = leerLinea("Fecha inicial (YYYY-MM-DD): ");
+    const string endDate = leerLinea("Fecha final (YYYY-MM-DD): ");
+    try {
+        cicloNominaFormal.createPeriod(periodId, year, month, startDate, endDate, "console");
+        cout << "  >> Periodo creado correctamente.\n";
+    } catch (const exception& error) {
+        cout << "  >> No se pudo crear el periodo: " << error.what() << "\n";
+    }
+}
+
+void calcularNominaFormal() {
+    titulo("NOMINA - CALCULAR");
+    const string periodId = leerLinea("Identificador del periodo: ");
+    if (buscarPeriodoFormal(periodId) == nullptr) {
+        cout << "  >> El periodo no existe.\n";
+        return;
+    }
+    try {
+        const auto employees = empleadosFormales();
+        const auto run = cicloNominaFormal.calculateRun(periodId, employees, pita::payroll::PayrollRules{}, "console");
+        cout << "  >> Liquidacion creada: " << run.runId << " (" << run.details.size() << " empleados).\n";
+    } catch (const exception& error) {
+        cout << "  >> No se pudo calcular la nomina: " << error.what() << "\n";
+    }
+}
+
+void consultarNominaFormal() {
+    titulo("NOMINA - CONSULTAR LIQUIDACION");
+    const string periodId = leerLinea("Identificador del periodo: ");
+    const auto* period = buscarPeriodoFormal(periodId);
+    const auto* run = buscarRunFormal(periodId);
+    if (period == nullptr || run == nullptr) {
+        cout << "  >> No existe una liquidacion para ese periodo.\n";
+        return;
+    }
+    cout << "  Periodo: " << periodId << " | Estado: " << nombreEstadoPeriodo(period->status)
+         << " | Liquidacion: " << nombreEstadoRun(run->status) << "\n";
+    cout << left << setw(14) << "EMPLEADO" << setw(14) << "TIPO" << setw(14) << "DEVENGADO"
+         << setw(14) << "DEDUCCIONES" << setw(14) << "IBC" << setw(14) << "NETO" << "\n";
+    linea();
+    for (const auto& detail : run->details) {
+        cout << left << setw(14) << detail.employeeId << setw(14) << detail.employeeType
+             << setw(14) << detail.grossSalary << setw(14) << detail.totalEmployeeDeductions
+             << setw(14) << detail.ibc << setw(14) << detail.netSalary << "\n";
+    }
+}
+
+void consultarProfesorFormal() {
+    titulo("NOMINA - CONSULTAR PROFESOR");
+    const string employeeId = leerLinea("Codigo del profesor: ");
+    Profesor* professor = buscarProfesorGlobal(employeeId, nullptr, nullptr);
+    if (professor == nullptr) {
+        cout << "  >> No existe ese profesor.\n";
+        return;
+    }
+    const string periodId = leerLinea("Identificador del periodo: ");
+    const auto* detail = buscarDetalleFormal(buscarRunFormal(periodId), employeeId);
+    if (detail == nullptr) {
+        cout << "  >> El profesor no tiene liquidacion en ese periodo.\n";
+        return;
+    }
+    cout << "  Profesor: " << professor->nombre << " [" << professor->codigo << "]\n";
+    cout << "  Periodo: " << detail->period << " | Salario base: $ " << detail->baseSalary << "\n";
+    cout << "  Devengado: $ " << detail->grossSalary << " | Deducciones: $ " << detail->totalEmployeeDeductions << "\n";
+    cout << "  IBC: $ " << detail->ibc << " | Neto: $ " << detail->netSalary << "\n";
+    cout << "  Aportes patronales: $ " << detail->totalEmployerContributions
+         << " | Costo empleador: $ " << detail->totalEmployerCost << "\n";
+}
+
+bool empleadoFormalPorId(const string& employeeId, pita::payroll::PayrollEmployee& employee, string& name) {
+    Profesor* professor = buscarProfesorGlobal(employeeId, nullptr, nullptr);
+    if (professor != nullptr) {
+        employee = crearEntradaNomina(professor);
+        name = professor->nombre;
+        return true;
+    }
+    Administrativo* administrative = buscarAdministrativo(employeeId);
+    if (administrative != nullptr) {
+        employee = crearEntradaNomina(administrative);
+        name = administrative->nombre;
+        return true;
+    }
+    return false;
+}
+
+void imprimirDesprendibleFormal(const string& periodId, const string& employeeId) {
+    const auto* run = buscarRunFormal(periodId);
+    const auto* period = buscarPeriodoFormal(periodId);
+    const auto* detail = buscarDetalleFormal(run, employeeId);
+    if (run == nullptr || period == nullptr || detail == nullptr) {
+        cout << "  >> No existe una liquidacion oficial para ese empleado y periodo.\n";
+        return;
+    }
+    pita::payroll::PayrollEmployee employee;
+    string name;
+    if (!empleadoFormalPorId(employeeId, employee, name)) {
+        cout << "  >> El empleado no existe en las listas actuales.\n";
+        return;
+    }
+    const auto payslip = pita::payroll::generatePayslip(
+        employee, pita::payroll::PayrollPeriod{periodId, detail->daysWorked}, *detail,
+        pita::payroll::PayrollConfiguration{}, run->runId);
+    cout << "\n  DESPRENDIBLE " << payslip.payslipId << "\n";
+    cout << "  Empleado: " << name << " [" << employeeId << "]\n";
+    cout << "  Periodo: " << periodId << " | Liquidacion: " << run->runId << "\n";
+    linea();
+    cout << "  Salario base: $ " << detail->baseSalary << "\n";
+    cout << "  Total devengado: $ " << detail->grossSalary << "\n";
+    cout << "  Deducciones: $ " << detail->totalEmployeeDeductions << "\n";
+    cout << "  IBC: $ " << detail->ibc << "\n";
+    cout << "  Neto a pagar: $ " << detail->netSalary << "\n";
+    cout << "  Aportes patronales: $ " << detail->totalEmployerContributions << "\n";
+    cout << "  Costo total empleador: $ " << detail->totalEmployerCost << "\n";
+}
+
+void generarDesprendibleFormal() {
+    titulo("NOMINA - GENERAR DESPRENDIBLE");
+    const string employeeId = leerLinea("Codigo del empleado: ");
+    const string periodId = leerLinea("Identificador del periodo: ");
+    try {
+        imprimirDesprendibleFormal(periodId, employeeId);
+    } catch (const exception& error) {
+        cout << "  >> No se pudo generar el desprendible: " << error.what() << "\n";
+    }
+}
+
+void listarDesprendiblesFormales() {
+    titulo("NOMINA - LISTAR DESPRENDIBLES");
+    const string periodId = leerLinea("Identificador del periodo: ");
+    const auto* run = buscarRunFormal(periodId);
+    if (run == nullptr) {
+        cout << "  >> No hay liquidacion para ese periodo.\n";
+        return;
+    }
+    for (const auto& detail : run->details)
+        cout << "  PS-" << detail.employeeId << "-" << periodId << " | empleado: " << detail.employeeId << "\n";
+}
+
+void resumenFinancieroFormal() {
+    titulo("NOMINA - RESUMEN FINANCIERO");
+    const string periodId = leerLinea("Identificador del periodo: ");
+    const auto* run = buscarRunFormal(periodId);
+    if (run == nullptr) { cout << "  >> No hay liquidacion para ese periodo.\n"; return; }
+    cout << "  Total devengado: $ " << run->grossTotal << "\n";
+    cout << "  Total deducciones: $ " << run->employeeDeductionTotal << "\n";
+    cout << "  Total neto: $ " << run->netTotal << "\n";
+    cout << "  Aportes patronales: $ " << run->employerContributionTotal << "\n";
+    cout << "  Costo total empleador: $ " << run->employerCost << "\n";
+}
+
+void aportesPatronalesFormales() {
+    titulo("NOMINA - APORTES PATRONALES");
+    const string periodId = leerLinea("Identificador del periodo: ");
+    const auto* run = buscarRunFormal(periodId);
+    if (run == nullptr) { cout << "  >> No hay liquidacion para ese periodo.\n"; return; }
+    for (const auto& detail : run->details)
+        cout << "  " << detail.employeeId << " | aportes patronales: $ " << detail.totalEmployerContributions << "\n";
+}
+
+void prestacionesFormales() {
+    titulo("NOMINA - PRESTACIONES");
+    const string periodId = leerLinea("Identificador del periodo: ");
+    const auto* run = buscarRunFormal(periodId);
+    if (run == nullptr) { cout << "  >> No hay liquidacion para ese periodo.\n"; return; }
+    for (const auto& detail : run->details) {
+        const auto total = detail.serviceBonusProvision + detail.severanceProvision + detail.severanceInterest +
+            detail.christmasBonusProvision + detail.vacationProvision + detail.vacationBonusProvision;
+        cout << "  " << detail.employeeId << " | prestaciones: $ " << total << "\n";
+    }
+}
+
+void novedadesFormales() {
+    titulo("NOMINA - NOVEDADES");
+    const string periodId = leerLinea("Identificador del periodo: ");
+    bool found = false;
+    for (const auto& novelty : cicloNominaFormal.novelties()) {
+        if (novelty.periodId == periodId) {
+            found = true;
+            cout << "  " << novelty.noveltyId << " | empleado: " << novelty.employeeId
+                 << " | valor: $ " << novelty.amount << " | estado: " << novelty.status << "\n";
+        }
+    }
+    if (!found) cout << "  (No hay novedades para ese periodo)\n";
+}
+
+void aprobarNominaFormal() {
+    titulo("NOMINA - APROBAR");
+    const string periodId = leerLinea("Identificador del periodo: ");
+    const auto* run = buscarRunFormal(periodId);
+    if (run == nullptr) { cout << "  >> No existe liquidacion para ese periodo.\n"; return; }
+    try {
+        cicloNominaFormal.approveRun(run->runId, "console");
+        cout << "  >> Nomina aprobada.\n";
+    } catch (const exception& error) { cout << "  >> No se pudo aprobar: " << error.what() << "\n"; }
+}
+
+void cerrarNominaFormal() {
+    titulo("NOMINA - CERRAR");
+    const string periodId = leerLinea("Identificador del periodo: ");
+    const auto* run = buscarRunFormal(periodId);
+    if (run == nullptr) { cout << "  >> No existe liquidacion para ese periodo.\n"; return; }
+    try {
+        cicloNominaFormal.closeRun(run->runId, "console");
+        cout << "  >> Nomina cerrada.\n";
+    } catch (const exception& error) { cout << "  >> No se pudo cerrar: " << error.what() << "\n"; }
+}
+
+void historialNominaFormal() {
+    titulo("NOMINA - HISTORIAL");
+    for (const auto& audit : cicloNominaFormal.audits())
+        cout << "  " << audit.timestamp << " | " << audit.action << " | "
+             << audit.entityType << " | " << audit.entityId << "\n";
+    if (cicloNominaFormal.audits().empty()) cout << "  (No hay movimientos registrados)\n";
+}
+
+void dashboardFinancieroFormal() {
+    titulo("NOMINA - DASHBOARD FINANCIERO");
+    const string periodId = leerLinea("Identificador del periodo: ");
+    const auto* run = buscarRunFormal(periodId);
+    if (run == nullptr) {
+        cout << "  >> No existe un PayrollRun oficial para ese periodo.\n";
+        return;
+    }
+
+    map<string, int> professorTypes;
+    map<string, int> faculties;
+    map<string, int> categories;
+    map<string, int> linkages;
+    pita::payroll::Money basic = 0, gross = 0, deductions = 0, ibc = 0;
+    pita::payroll::Money employeeHealth = 0, employeePension = 0, benefits = 0;
+    pita::payroll::Money employerPension = 0, employerHealth = 0, arl = 0;
+    pita::payroll::Money compensationFund = 0, sena = 0, icbf = 0;
+    int professors = 0, administratives = 0;
+
+    for (const auto& detail : run->details) {
+        basic += detail.baseSalary;
+        gross += detail.grossSalary;
+        deductions += detail.totalEmployeeDeductions;
+        ibc += detail.ibc;
+        employeeHealth += detail.employeeHealth;
+        employeePension += detail.employeePension;
+        benefits += detail.serviceBonusProvision + detail.severanceProvision + detail.severanceInterest +
+            detail.christmasBonusProvision + detail.vacationProvision + detail.vacationBonusProvision;
+        employerPension += detail.employerPension;
+        employerHealth += detail.employerHealth;
+        arl += detail.arl;
+        compensationFund += detail.compensationFund;
+        sena += detail.sena;
+        icbf += detail.icbf;
+
+        if (detail.employeeType == "Professor") {
+            professors++;
+            Programa* program = nullptr;
+            Profesor* professor = buscarProfesorGlobal(detail.employeeId, &program, nullptr);
+            if (professor != nullptr) {
+                professorTypes[nombreTipoContrato(professor->nomina.tipoContrato)]++;
+                categories[nombreCategoria(professor->nomina.categoria)]++;
+                linkages[professor->tipoVinculacion.empty() ? nombreTipoContrato(professor->nomina.tipoContrato) : professor->tipoVinculacion]++;
+                Facultad* faculty = cabezaFacultades;
+                while (faculty != nullptr) {
+                    Programa* candidate = faculty->listaProgramas;
+                    while (candidate != nullptr && candidate != program) candidate = candidate->sig;
+                    if (candidate == program) break;
+                    faculty = faculty->sig;
+                }
+                faculties[faculty == nullptr ? "Sin facultad" : faculty->nombre]++;
+            } else {
+                professorTypes["Sin configurar"]++;
+                categories["Sin configurar"]++;
+                linkages["Sin configurar"]++;
+                faculties["Sin facultad"]++;
+            }
+        } else {
+            administratives++;
+            Administrativo* administrative = buscarAdministrativo(detail.employeeId);
+            linkages[administrative == nullptr || administrative->tipoVinculacion.empty()
+                ? "Sin configurar" : administrative->tipoVinculacion]++;
+        }
+    }
+
+    cout << "  Periodo: " << periodId << " | PayrollRun: " << run->runId
+         << " | Estado: " << nombreEstadoRun(run->status) << "\n";
+    linea();
+    cout << "  Total empleados              : " << run->details.size() << "\n";
+    cout << "  Total profesores             : " << professors << "\n";
+    cout << "  Total administrativos        : " << administratives << "\n";
+    cout << "  Salario basico total         : $ " << basic << "\n";
+    cout << "  Total devengado              : $ " << gross << "\n";
+    cout << "  Total deducciones            : $ " << deductions << "\n";
+    cout << "  Total IBC                    : $ " << ibc << "\n";
+    cout << "  Salud trabajador             : $ " << employeeHealth << "\n";
+    cout << "  Pension trabajador           : $ " << employeePension << "\n";
+    cout << "  Total prestaciones           : $ " << benefits << "\n";
+    cout << "  Pension patronal             : $ " << employerPension << "\n";
+    cout << "  Salud patronal               : $ " << employerHealth << "\n";
+    cout << "  ARL                          : $ " << arl << "\n";
+    cout << "  Caja                         : $ " << compensationFund << "\n";
+    cout << "  SENA                         : $ " << sena << "\n";
+    cout << "  ICBF                         : $ " << icbf << "\n";
+    cout << "  Total aportes patronales    : $ " << run->employerContributionTotal << "\n";
+    cout << "  Costo total empleador       : $ " << run->employerCost << "\n";
+    cout << "  Total neto pagado           : $ " << run->netTotal << "\n";
+
+    auto printDistribution = [](const string& titleText, const map<string, int>& values) {
+        cout << "\n  " << titleText << "\n";
+        for (const auto& value : values) cout << "    " << value.first << ": " << value.second << "\n";
+    };
+    printDistribution("Distribucion por tipo de profesor", professorTypes);
+    printDistribution("Distribucion por facultad", faculties);
+    printDistribution("Distribucion por categoria", categories);
+    printDistribution("Distribucion por tipo de vinculacion", linkages);
+    cout << "\n  Costo de prestaciones       : $ " << benefits << "\n";
+    cout << "  Costo de seguridad social  : $ " << run->employerContributionTotal << "\n";
+}
+
+void menuNominaFormal() {
+    int op;
+    do {
+        titulo("NOMINA");
+        cout << "  1. Crear periodo\n  2. Consultar periodos\n  3. Calcular nomina\n"
+             << "  4. Consultar nomina\n  5. Consultar profesor\n  6. Generar desprendible\n"
+             << "  7. Listar desprendibles\n  8. Ver resumen financiero\n  9. Ver aportes patronales\n"
+             << "  10. Ver prestaciones\n  11. Ver novedades\n  12. Aprobar nomina\n"
+             << "  13. Cerrar nomina\n  14. Consultar historial\n  15. Dashboard financiero\n  0. Volver\n";
+        op = leerEntero("  Opcion: ");
+        switch (op) {
+            case 1: crearPeriodoFormal(); break;
+            case 2: listarPeriodosFormales(); break;
+            case 3: calcularNominaFormal(); break;
+            case 4: consultarNominaFormal(); break;
+            case 5: consultarProfesorFormal(); break;
+            case 6: generarDesprendibleFormal(); break;
+            case 7: listarDesprendiblesFormales(); break;
+            case 8: resumenFinancieroFormal(); break;
+            case 9: aportesPatronalesFormales(); break;
+            case 10: prestacionesFormales(); break;
+            case 11: novedadesFormales(); break;
+            case 12: aprobarNominaFormal(); break;
+            case 13: cerrarNominaFormal(); break;
+            case 14: historialNominaFormal(); break;
+            case 15: dashboardFinancieroFormal(); break;
+            case 0: break;
+            default: cout << "  >> Opcion invalida.\n";
+        }
+        if (op != 0) pausar();
+    } while (op != 0);
+}
+
 void menuFacultades() {
     int op;
     do {
@@ -2511,6 +3094,7 @@ void menuReportesNomina() {
         cout << "  12. Ordenar profesores de un programa por salario\n";
         cout << "  13. Buscar estudiante/profesor/administrativo por documento\n";
         cout << "  14. Censo general de la universidad (conteos totales)\n";
+        cout << "  15. Generar desprendible individual de profesor\n";
         cout << "  0.  Volver\n";
         op = leerEntero("  Opcion: ");
         switch (op) {
@@ -2528,6 +3112,7 @@ void menuReportesNomina() {
             case 12: ordenarProfesoresPorSalario(); break;
             case 13: buscarPorDocumento(); break;
             case 14: reporteCensoGeneral(); break;
+            case 15: generarDesprendibleProfesor(); break;
             case 0: break;
             default: cout << "  >> Opcion invalida.\n";
         }
@@ -2544,9 +3129,10 @@ void menuPrincipal() {
         cout << "  4. Gestion de Estudiantes\n";
         cout << "  5. Gestion de Profesores\n";
         cout << "  6. Gestion de Administrativos\n";
-        cout << "  7. Reportes y Nomina\n";
-        cout << "  8. Guardar datos en archivo\n";
-        cout << "  9. Cargar datos desde archivo\n";
+        cout << "  7. NOMINA\n";
+        cout << "  8. Reportes y Nomina (legacy)\n";
+        cout << "  9. Guardar datos en archivo\n";
+        cout << "  10. Cargar datos desde archivo\n";
         cout << "  0. Salir\n";
         op = leerEntero("  Opcion: ");
         switch (op) {
@@ -2556,9 +3142,10 @@ void menuPrincipal() {
             case 4: menuEstudiantes(); break;
             case 5: menuProfesores(); break;
             case 6: menuAdministrativos(); break;
-            case 7: menuReportesNomina(); break;
-            case 8: guardarDatos(); break;
-            case 9: cargarDatos(); break;
+            case 7: menuNominaFormal(); break;
+            case 8: menuReportesNomina(); break;
+            case 9: guardarDatos(); break;
+            case 10: cargarDatos(); break;
             case 0: cout << "\n  Saliendo del menu principal...\n"; break;
             default: cout << "  >> Opcion invalida.\n";
         }

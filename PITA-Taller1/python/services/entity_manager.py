@@ -19,6 +19,7 @@ from models.linked_list import LinkedList
 from models.professor import Professor
 from models.program import Program
 from models.student import Student
+from services.payroll_cycle import PayrollCycleService
 
 
 class EntityManager:
@@ -32,6 +33,7 @@ class EntityManager:
         self.professors = LinkedList()
         self.administrative_staff = LinkedList()
         self.enrollments = LinkedList()
+        self.payroll_cycle_service: PayrollCycleService = PayrollCycleService()
         self.ebra_threshold = 3.0
         self.ebra_rule = "weighted_average < configured_threshold"
 

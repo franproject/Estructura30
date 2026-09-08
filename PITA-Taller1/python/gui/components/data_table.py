@@ -19,7 +19,7 @@ class DataTable(QTableWidget):
     edit_requested = Signal(int)
     delete_requested = Signal(int)
 
-    def __init__(self, headers: tuple or list, parent=None):
+    def __init__(self, headers: tuple | list, parent=None):
         super().__init__(0, len(headers), parent)
         self.setObjectName("dataTable")
         self.setHorizontalHeaderLabels(headers)

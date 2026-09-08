@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from typing import Optional
 
 from ..components.confirm_dialog import ConfirmDialog
 from ..components.data_table import DataTable
@@ -33,7 +34,7 @@ class CrudPage(QWidget):
         fields: tuple,
         columns: tuple,
         row_builder,
-        operation_name: str = None,
+        operation_name: Optional[str] = None,
         parent=None,
     ):
         super().__init__(parent)
@@ -170,8 +171,9 @@ class CrudPage(QWidget):
         self.page_info.setText(f"Mostrando {start}\u2013{end} de {total} registros")
         while self.page_buttons.count():
             item = self.page_buttons.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+            widget = item.widget() if item is not None else None
+            if widget is not None:
+                widget.deleteLater()
         for page in range(1, self.table.page_count + 1):
             button = QPushButton(str(page))
             button.setFixedSize(27, 27)

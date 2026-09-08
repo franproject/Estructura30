@@ -1,6 +1,7 @@
 """Página de consulta e informe de Nómina académica."""
 from PySide6.QtWidgets import (
     QHBoxLayout,
+    QHeaderView,
     QLabel,
     QPushButton,
     QVBoxLayout,
@@ -48,7 +49,43 @@ class PayrollPage(QWidget):
         # Tabla de Nómina
         columns = ("Empleado", "Tipo Contrato", "Salario Base", "Neto a Pagar")
         self.table = DataTable(headers=columns)
+        header_view = self.table.horizontalHeader()
+        header_view.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        header_view.setMinimumSectionSize(150)
         layout.addWidget(self.table)
+        self.pagination = self._build_pagination()
+        layout.addWidget(self.pagination)
+
+    def _build_pagination(self):
+        footer = QWidget()
+        layout = QHBoxLayout(footer)
+        layout.setContentsMargins(4, 4, 4, 0)
+        self.page_info = QLabel()
+        self.page_info.setStyleSheet("color: #94A3B8; font-size: 11px;")
+        layout.addWidget(self.page_info)
+        layout.addStretch()
+        self.page_buttons = QHBoxLayout()
+        self.page_buttons.setSpacing(4)
+        layout.addLayout(self.page_buttons)
+        self.table.page_changed.connect(lambda *_: self._update_pagination())
+        return footer
+
+    def _update_pagination(self):
+        total = self.table.total_rows
+        start = 0 if total == 0 else (self.table.page - 1) * self.table.page_size + 1
+        end = min(self.table.page * self.table.page_size, total)
+        self.page_info.setText(f"Mostrando {start}\u2013{end} de {total} registros")
+        while self.page_buttons.count():
+            item = self.page_buttons.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        for page in range(1, self.table.page_count + 1):
+            button = QPushButton(str(page))
+            button.setFixedSize(27, 27)
+            button.setObjectName("activePageButton" if page == self.table.page else "pageButton")
+            button.clicked.connect(lambda checked=False, target=page: self.table.set_page(target))
+            self.page_buttons.addWidget(button)
+        self.pagination.setVisible(total > self.table.page_size)
 
     def refresh(self):
         calculator_mod = __import__("models.payroll", fromlist=["Payroll"])
@@ -69,4 +106,5 @@ class PayrollPage(QWidget):
             rows_formatted.append((emp_name, emp_type, f"$ {base:,.2f}", f"$ {net:,.2f}"))
 
         self.table.populate(rows_formatted)
+        self._update_pagination()
         self.lbl_total.setText(f"Total a liquidar: $ {total_payroll:,.2f}")

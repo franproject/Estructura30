@@ -331,7 +331,7 @@ class MainWindow(QMainWindow):
         self.manager.administrative_staff = LinkedList(load_administrative_staff())
         self.manager.enrollments = LinkedList(load_enrollments())
         records = load_payroll()
-        self.manager.payroll = records[0] if records else None
+        setattr(self.manager, "payroll", records[0] if records else None)
 
     def _save_state(self):
         save_faculties(self.manager.faculties)
@@ -341,8 +341,9 @@ class MainWindow(QMainWindow):
         save_professors(self.manager.professors)
         save_administrative_staff(self.manager.administrative_staff)
         save_enrollments(self.manager.enrollments)
-        if self.manager.payroll is not None:
-            save_payroll([self.manager.payroll])
+        payroll = getattr(self.manager, "payroll", None)
+        if payroll is not None:
+            save_payroll([payroll])
         QMessageBox.information(self, "NexoCampus", "Datos guardados correctamente.")
 
     def _reload_state(self):

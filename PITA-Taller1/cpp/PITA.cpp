@@ -1,0 +1,2566 @@
+/* ============================================================================
+   UNIVERSIDAD POPULAR DEL CESAR - FACULTAD DE INGENIERIAS Y TECNOLOGICAS
+   INGENIERIA DE SISTEMAS - ESTRUCTURA DE DATOS - LISTAS - TALLER 1
+   ----------------------------------------------------------------------------
+   PITA: Programa Integrado de Transacciones Academicas
+   Version en C++ (implementacion con LISTAS ENLAZADAS puras, sin STL para las
+   estructuras principales, tal como corresponde a la unidad tematica del curso).
+
+   ESTRUCTURA GENERAL (todo con listas enlazadas simples):
+
+        Universidad
+          |
+          +-- Lista de FACULTADES
+                 |
+                 +-- Lista de PROGRAMAS ACADEMICOS (ej: Ing. de Sistemas, Medicina)
+                        |
+                        +-- Lista de CURSOS
+                        +-- Lista de ESTUDIANTES --- Lista de NOTAS (matriculas)
+                        +-- Lista de PROFESORES  --- Datos de NOMINA
+
+          +-- Lista de ADMINISTRATIVOS (personal administrativo, nivel universidad)
+
+   NOTA IMPORTANTE SOBRE LA NOMINA (Decreto 1279 de 2002 / Acuerdo 027 de 2024):
+   El calculo real de nomina docente en universidades publicas colombianas se basa
+   en un sistema de PUNTOS SALARIALES (por titulo, experiencia calificada,
+   productividad academica, categoria, etc.) multiplicados por un "valor punto"
+   que la universidad actualiza anualmente mediante acuerdo del Consejo Superior.
+   Aqui se implementa el MODELO/MOTOR de calculo completo y parametrizable; las
+   constantes (VALOR_PUNTO_SALARIAL, tarifas de hora catedra, etc.) son
+   ILUSTRATIVAS PARA FINES ACADEMICOS y deben reemplazarse por los valores
+   vigentes del acto administrativo real (ver mintrabajo.gov.co/mi-calculadora).
+   ============================================================================ */
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <iomanip>
+#include <limits>
+#include <cstdlib>
+#include <utility>
+
+using namespace std;
+
+// ======================================================================
+// 1. CONSTANTES GLOBALES DEL MODELO DE NOMINA Y NEGOCIO
+// ======================================================================
+const double VALOR_PUNTO_SALARIAL   = 17690.0;  // valor ilustrativo (decreto 1279)
+const double PORC_SALUD             = 0.04;     // aporte salud del empleado
+const double PORC_PENSION           = 0.04;     // aporte pension del empleado
+const double PORC_CESANTIAS         = 0.0833;   // provision cesantias
+const double PORC_INT_CESANTIAS     = 0.12;     // interes sobre cesantias
+const double PORC_PRIMA             = 0.0833;   // provision prima de servicios
+const double PORC_VACACIONES        = 0.0417;   // provision vacaciones
+const double UMBRAL_EBRA            = 3.0;      // promedio minimo (escala 0-5)
+const string ARCHIVO_DATOS          = "pita_datos.txt";
+
+// ======================================================================
+// 2. ENUMERACIONES
+// ======================================================================
+enum CategoriaDocente   { AUXILIAR = 0, ASISTENTE = 1, ASOCIADO = 2, TITULAR = 3 };
+enum TipoContratoDocente{ PLANTA = 0, OCASIONAL = 1, CATEDRATICO = 2 };
+enum TipoPrograma       { INGENIERIA = 0, MEDICINA = 1, ODONTOLOGIA = 2, ENFERMERIA = 3,
+                          PSICOLOGIA = 4, DERECHO = 5, ADMINISTRACION = 6, EDUCACION = 7, OTRA = 8 };
+
+string nombreCategoria(CategoriaDocente c);
+string nombreTipoContrato(TipoContratoDocente t);
+string nombreTipoPrograma(TipoPrograma t);
+CategoriaDocente categoriaDesdeInt(int v);
+TipoContratoDocente contratoDesdeInt(int v);
+TipoPrograma tipoProgramaDesdeInt(int v);
+double tarifaHoraCatedra(CategoriaDocente c);
+
+// ======================================================================
+// 3. ESTRUCTURAS (TAD - listas enlazadas)
+// ======================================================================
+
+// ---- Nota / matricula de un estudiante en un curso -------------------
+struct Nota {
+    string codigoCurso;
+    string nombreCurso;
+    float  valor;       // -1 si aun no se ha calificado
+    bool   cancelado;
+    Nota*  sig;
+};
+
+// ---- Estudiante --------------------------------------------------------
+struct Estudiante {
+    string codigo;
+    string nombre;
+    string documento;
+    string email;
+    string categoria;   // Regular, Transferencia, Intercambio, Reingreso...
+    bool   activo;
+    Nota*  cursosMatriculados; // lista enlazada de notas
+    Estudiante* sig;
+};
+
+// ---- Curso ---------------------------------------------------------------
+struct Curso {
+    string codigo;
+    string nombre;
+    int    creditos;
+    bool   activo;
+    Curso* sig;
+};
+
+// ---- Datos de nomina de un profesor --------------------------------------
+struct DatosNomina {
+    TipoContratoDocente tipoContrato;
+    CategoriaDocente    categoria;
+    int    puntosTitulo;
+    int    puntosExperiencia;
+    int    puntosProductividad;
+    int    horasCatedraMes;   // solo aplica si tipoContrato == CATEDRATICO
+};
+
+// ---- Profesor --------------------------------------------------------------
+struct Profesor {
+    string codigo;
+    string nombre;
+    string documento;
+    string email;
+    bool   activo;
+    DatosNomina nomina;
+    Profesor* sig;
+};
+
+// ---- Administrativo (nivel universidad) -------------------------------------
+struct Administrativo {
+    string codigo;
+    string nombre;
+    string documento;
+    string cargo;
+    string tipoContrato; // Planta, Contratista, Provisional...
+    double salarioBase;
+    bool   activo;
+    Administrativo* sig;
+};
+
+// ---- Programa academico -----------------------------------------------------
+struct Programa {
+    string codigo;
+    string nombre;
+    TipoPrograma tipo;
+    bool   activo;
+    Curso*       listaCursos;
+    Estudiante*  listaEstudiantes;
+    Profesor*    listaProfesores;
+    Programa* sig;
+};
+
+// ---- Facultad --------------------------------------------------------------
+struct Facultad {
+    string codigo;
+    string nombre;
+    bool   activo;
+    Programa* listaProgramas;
+    Facultad* sig;
+};
+
+// ======================================================================
+// 4. CABEZAS DE LISTAS GLOBALES
+// ======================================================================
+Facultad*        cabezaFacultades      = nullptr;
+Administrativo*   cabezaAdministrativos = nullptr;
+
+// contadores para generar codigos automaticos
+int contF = 0, contP = 0, contC = 0, contE = 0, contD = 0, contA = 0;
+
+// ======================================================================
+// 5. PROTOTIPOS
+// ======================================================================
+// -- utilidades de entrada / presentacion --
+int    leerEntero(const string &prompt);
+double leerDouble(const string &prompt);
+string leerLinea(const string &prompt);
+bool   leerSiNo(const string &prompt);
+void   pausar();
+void   titulo(const string &t);
+void   linea();
+void   verificarFinDeEntrada();
+
+// -- generadores de codigo --
+string generarCodigoFacultad();
+string generarCodigoPrograma();
+string generarCodigoCurso();
+string generarCodigoEstudiante();
+string generarCodigoProfesor();
+string generarCodigoAdministrativo();
+
+// -- busquedas --
+Facultad*   buscarFacultad(const string &codigo);
+Programa*   buscarProgramaEnFacultad(Facultad* fac, const string &codigo);
+Programa*   buscarProgramaGlobal(const string &codigo, Facultad** facOut);
+Curso*      buscarCursoEnPrograma(Programa* prog, const string &codigo);
+Estudiante* buscarEstudianteEnPrograma(Programa* prog, const string &codigo);
+Estudiante* buscarEstudianteGlobal(const string &codigo, Programa** progOut, Facultad** facOut);
+Profesor*   buscarProfesorEnPrograma(Programa* prog, const string &codigo);
+Profesor*   buscarProfesorGlobal(const string &codigo, Programa** progOut, Facultad** facOut);
+Administrativo* buscarAdministrativo(const string &codigo);
+Programa*   seleccionarProgramaPorCodigo(); // pide codigo y lo busca globalmente, imprime error si no existe
+
+// -- CRUD Facultad --
+void crearFacultad();
+void listarFacultades();
+void modificarFacultad();
+void desactivarFacultad();
+void eliminarFacultad();
+
+// -- CRUD Programa --
+void crearPrograma();
+void listarProgramas();
+void modificarPrograma();
+void desactivarPrograma();
+void eliminarPrograma();
+
+// -- CRUD Curso --
+void crearCurso();
+void listarCursos();
+void modificarCurso();
+void eliminarCurso();
+
+// -- CRUD Estudiante --
+void crearEstudiante();
+void listarEstudiantes();
+void modificarEstudiante();
+void desactivarEstudiante();
+void eliminarEstudiante();
+void matricularCurso();
+void cancelarMatricula();
+void calificarCurso();
+double calcularPromedio(Estudiante* e);
+void consultarPromedioEstudiante();
+
+// -- CRUD Profesor --
+void crearProfesor();
+void listarProfesores();
+void modificarProfesor();
+void desactivarProfesor();
+void eliminarProfesor();
+
+// -- CRUD Administrativo --
+void crearAdministrativo();
+void listarAdministrativos();
+void modificarAdministrativo();
+void desactivarAdministrativo();
+void eliminarAdministrativo();
+
+// -- Nomina docente (motor de calculo) --
+double calcularSalarioMensualBruto(Profesor* p);
+double calcularSaludMensual(Profesor* p);
+double calcularPensionMensual(Profesor* p);
+double calcularNetoMensual(Profesor* p);
+double calcularPrestacionesSocialesMensual(Profesor* p);
+double calcularSalarioAnualBruto(Profesor* p);
+double calcularSalarioAnualNeto(Profesor* p);
+double calcularCostoAnualUniversidad(Profesor* p);
+void   mostrarDesgloseNomina(Profesor* p);
+
+// -- Reportes (recorridos completos de listas anidadas) --
+void reporteNominaProfesorIndividual();
+void reporteNominaPorPrograma();
+void reporteNominaPorFacultad();
+void reporteNominaUniversidadCompleta();
+void reporteEstudiantesEnEBRA();
+void reporteArbolCompletoUniversidad();
+void reporteProfesoresPorCategoria();
+
+// -- Nomina de administrativos --
+double calcularNetoMensualAdministrativo(Administrativo* a);
+double calcularSalarioAnualBrutoAdministrativo(Administrativo* a);
+double calcularSalarioAnualNetoAdministrativo(Administrativo* a);
+void   reporteNominaAdministrativoIndividual();
+void   reporteNominaTotalAdministrativos();
+
+// -- Extremos (maximo/minimo) recorriendo listas --
+void reporteProfesorMayorMenorSalario();
+void reporteEstudianteMejorPeorPromedio();
+
+// -- Ordenamiento de listas enlazadas (intercambio de datos, no de punteros) --
+void ordenarProfesoresPorSalario();
+
+// -- Busqueda por documento (cedula) en toda la universidad --
+Estudiante* buscarEstudiantePorDocumento(const string &doc, Programa** progOut);
+Profesor*   buscarProfesorPorDocumento(const string &doc, Programa** progOut);
+void buscarPorDocumento();
+
+// -- Censo general (conteo total recorriendo toda la estructura) --
+void reporteCensoGeneral();
+
+// -- Persistencia --
+void guardarDatos();
+void cargarDatos();
+void cargarDatosDeEjemplo();
+void liberarTodaLaMemoria();
+
+// -- Menus --
+void menuFacultades();
+void menuProgramas();
+void menuCursos();
+void menuEstudiantes();
+void menuProfesores();
+void menuAdministrativos();
+void menuReportesNomina();
+void menuPrincipal();
+
+// ======================================================================
+// 6. MAIN
+// ======================================================================
+int main() {
+    titulo("NexoCampus - PROGRAMA INTEGRADO DE TRANSACCIONES ACADEMICAS");
+    cout << "  Universidad Popular del Cesar - Modulo C++ (Listas Enlazadas)\n";
+    linea();
+
+    if (leerSiNo("?Desea cargar los datos guardados en '" + ARCHIVO_DATOS + "'? (s/n): ")) {
+        cargarDatos();
+    } else {
+        cout << "\nSe iniciara el sistema SIN datos previos.\n";
+        if (leerSiNo("?Desea precargar datos de ejemplo (facultades, Medicina, Ing. Sistemas, etc.)? (s/n): ")) {
+            cargarDatosDeEjemplo();
+        }
+    }
+
+    menuPrincipal();
+
+    if (leerSiNo("\n?Desea guardar los datos antes de salir? (s/n): ")) {
+        guardarDatos();
+    }
+    liberarTodaLaMemoria();
+    cout << "\nGracias por usar NexoCampus. Hasta pronto.\n";
+    return 0;
+}
+
+// ======================================================================
+// 7. UTILIDADES DE ENTRADA / PRESENTACION
+// ======================================================================
+void linea() {
+    cout << "----------------------------------------------------------------------\n";
+}
+
+void limpiarPantalla() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
+
+void titulo(const string &t) {
+    limpiarPantalla();
+    cout << "\n========================================================================\n";
+    cout << "  " << t << "\n";
+    cout << "========================================================================\n";
+}
+
+void pausar() {
+    cout << "\n(Presione ENTER para continuar...)";
+    cin.get();
+}
+
+// Si el flujo de entrada se queda sin datos (EOF), el programa termina de forma
+// controlada en vez de quedar en un bucle infinito pidiendo datos que ya no llegaran.
+void verificarFinDeEntrada() {
+    if (cin.eof()) {
+        cout << "\n  >> Fin de la entrada de datos. Cerrando el programa.\n";
+        exit(0);
+    }
+}
+
+int leerEntero(const string &prompt) {
+    int valor;
+    while (true) {
+        cout << prompt;
+        cin >> valor;
+        if (cin.fail()) {
+            verificarFinDeEntrada();
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "  >> Entrada invalida, ingrese un numero entero.\n";
+        } else {
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return valor;
+        }
+    }
+}
+
+double leerDouble(const string &prompt) {
+    double valor;
+    while (true) {
+        cout << prompt;
+        cin >> valor;
+        if (cin.fail()) {
+            verificarFinDeEntrada();
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "  >> Entrada invalida, ingrese un numero.\n";
+        } else {
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return valor;
+        }
+    }
+}
+
+string leerLinea(const string &prompt) {
+    string s;
+    cout << prompt;
+    getline(cin, s);
+    verificarFinDeEntrada();
+    return s;
+}
+
+bool leerSiNo(const string &prompt) {
+    string s;
+    while (true) {
+        cout << prompt;
+        getline(cin, s);
+        verificarFinDeEntrada();
+        if (!s.empty() && (s[0] == 's' || s[0] == 'S')) return true;
+        if (!s.empty() && (s[0] == 'n' || s[0] == 'N')) return false;
+        cout << "  >> Responda 's' o 'n'.\n";
+    }
+}
+
+// ======================================================================
+// 8. ENUM <-> TEXTO
+// ======================================================================
+string nombreCategoria(CategoriaDocente c) {
+    switch (c) {
+        case AUXILIAR:   return "Auxiliar";
+        case ASISTENTE:  return "Asistente";
+        case ASOCIADO:   return "Asociado";
+        case TITULAR:    return "Titular";
+    }
+    return "Desconocida";
+}
+
+string nombreTipoContrato(TipoContratoDocente t) {
+    switch (t) {
+        case PLANTA:      return "Planta";
+        case OCASIONAL:   return "Ocasional";
+        case CATEDRATICO: return "Catedratico";
+    }
+    return "Desconocido";
+}
+
+string nombreTipoPrograma(TipoPrograma t) {
+    switch (t) {
+        case INGENIERIA: return "Ingenieria";
+        case MEDICINA: return "Medicina";
+        case ODONTOLOGIA: return "Odontologia";
+        case ENFERMERIA: return "Enfermeria";
+        case PSICOLOGIA: return "Psicologia";
+        case DERECHO: return "Derecho";
+        case ADMINISTRACION: return "Administracion";
+        case EDUCACION: return "Educacion";
+        default: return "Otro";
+    }
+}
+
+CategoriaDocente categoriaDesdeInt(int v) {
+    if (v < 0 || v > 3) v = 0;
+    return static_cast<CategoriaDocente>(v);
+}
+
+TipoContratoDocente contratoDesdeInt(int v) {
+    if (v < 0 || v > 2) v = 2;
+    return static_cast<TipoContratoDocente>(v);
+}
+
+TipoPrograma tipoProgramaDesdeInt(int v) {
+    if (v < 0 || v > 8) v = 8;
+    return static_cast<TipoPrograma>(v);
+}
+
+// ======================================================================
+// 9. GENERADORES DE CODIGO
+// ======================================================================
+string generarCodigoFacultad() {
+    contF++;
+    ostringstream os; os << "F" << setw(3) << setfill('0') << contF;
+    return os.str();
+}
+string generarCodigoPrograma() {
+    contP++;
+    ostringstream os; os << "P" << setw(3) << setfill('0') << contP;
+    return os.str();
+}
+string generarCodigoCurso() {
+    contC++;
+    ostringstream os; os << "C" << setw(3) << setfill('0') << contC;
+    return os.str();
+}
+string generarCodigoEstudiante() {
+    contE++;
+    ostringstream os; os << "E" << setw(3) << setfill('0') << contE;
+    return os.str();
+}
+string generarCodigoProfesor() {
+    contD++;
+    ostringstream os; os << "D" << setw(3) << setfill('0') << contD;
+    return os.str();
+}
+string generarCodigoAdministrativo() {
+    contA++;
+    ostringstream os; os << "A" << setw(3) << setfill('0') << contA;
+    return os.str();
+}
+
+// ======================================================================
+// 10. BUSQUEDAS - RECORRIDO DE LISTAS ENLAZADAS
+// ======================================================================
+Facultad* buscarFacultad(const string &codigo) {
+    Facultad* actual = cabezaFacultades;
+    while (actual != nullptr) {           // recorrido secuencial de la lista
+        if (actual->codigo == codigo) return actual;
+        actual = actual->sig;
+    }
+    return nullptr;
+}
+
+Programa* buscarProgramaEnFacultad(Facultad* fac, const string &codigo) {
+    if (fac == nullptr) return nullptr;
+    Programa* actual = fac->listaProgramas;
+    while (actual != nullptr) {
+        if (actual->codigo == codigo) return actual;
+        actual = actual->sig;
+    }
+    return nullptr;
+}
+
+// Recorre TODAS las facultades y, dentro de cada una, todos los programas.
+Programa* buscarProgramaGlobal(const string &codigo, Facultad** facOut) {
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = buscarProgramaEnFacultad(f, codigo);
+        if (p != nullptr) {
+            if (facOut != nullptr) *facOut = f;
+            return p;
+        }
+        f = f->sig;
+    }
+    if (facOut != nullptr) *facOut = nullptr;
+    return nullptr;
+}
+
+Curso* buscarCursoEnPrograma(Programa* prog, const string &codigo) {
+    if (prog == nullptr) return nullptr;
+    Curso* actual = prog->listaCursos;
+    while (actual != nullptr) {
+        if (actual->codigo == codigo) return actual;
+        actual = actual->sig;
+    }
+    return nullptr;
+}
+
+Estudiante* buscarEstudianteEnPrograma(Programa* prog, const string &codigo) {
+    if (prog == nullptr) return nullptr;
+    Estudiante* actual = prog->listaEstudiantes;
+    while (actual != nullptr) {
+        if (actual->codigo == codigo) return actual;
+        actual = actual->sig;
+    }
+    return nullptr;
+}
+
+// Recorre facultades -> programas -> estudiantes (busqueda global anidada)
+Estudiante* buscarEstudianteGlobal(const string &codigo, Programa** progOut, Facultad** facOut) {
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Estudiante* e = buscarEstudianteEnPrograma(p, codigo);
+            if (e != nullptr) {
+                if (progOut != nullptr) *progOut = p;
+                if (facOut  != nullptr) *facOut  = f;
+                return e;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+    if (progOut != nullptr) *progOut = nullptr;
+    if (facOut  != nullptr) *facOut  = nullptr;
+    return nullptr;
+}
+
+Profesor* buscarProfesorEnPrograma(Programa* prog, const string &codigo) {
+    if (prog == nullptr) return nullptr;
+    Profesor* actual = prog->listaProfesores;
+    while (actual != nullptr) {
+        if (actual->codigo == codigo) return actual;
+        actual = actual->sig;
+    }
+    return nullptr;
+}
+
+Profesor* buscarProfesorGlobal(const string &codigo, Programa** progOut, Facultad** facOut) {
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Profesor* d = buscarProfesorEnPrograma(p, codigo);
+            if (d != nullptr) {
+                if (progOut != nullptr) *progOut = p;
+                if (facOut  != nullptr) *facOut  = f;
+                return d;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+    if (progOut != nullptr) *progOut = nullptr;
+    if (facOut  != nullptr) *facOut  = nullptr;
+    return nullptr;
+}
+
+Administrativo* buscarAdministrativo(const string &codigo) {
+    Administrativo* actual = cabezaAdministrativos;
+    while (actual != nullptr) {
+        if (actual->codigo == codigo) return actual;
+        actual = actual->sig;
+    }
+    return nullptr;
+}
+
+Programa* seleccionarProgramaPorCodigo() {
+    string cod = leerLinea("Codigo del programa academico: ");
+    Programa* p = buscarProgramaGlobal(cod, nullptr);
+    if (p == nullptr) cout << "  >> No existe un programa con ese codigo.\n";
+    return p;
+}
+
+// ======================================================================
+// 11. CRUD FACULTAD
+// ======================================================================
+void crearFacultad() {
+    titulo("CREAR FACULTAD");
+    Facultad* nueva = new Facultad();
+    nueva->codigo = generarCodigoFacultad();
+    nueva->nombre = leerLinea("Nombre de la facultad: ");
+    nueva->activo = true;
+    nueva->listaProgramas = nullptr;
+    nueva->sig = nullptr;
+
+    // Insercion al final de la lista (para conservar orden de creacion)
+    if (cabezaFacultades == nullptr) {
+        cabezaFacultades = nueva;
+    } else {
+        Facultad* actual = cabezaFacultades;
+        while (actual->sig != nullptr) actual = actual->sig;
+        actual->sig = nueva;
+    }
+    cout << "  >> Facultad creada con codigo: " << nueva->codigo << "\n";
+}
+
+void listarFacultades() {
+    titulo("LISTADO DE FACULTADES");
+    if (cabezaFacultades == nullptr) {
+        cout << "  (No hay facultades registradas)\n";
+        return;
+    }
+    cout << left << setw(8) << "CODIGO" << setw(40) << "NOMBRE"
+         << setw(10) << "ESTADO" << setw(10) << "PROGRAMAS" << "\n";
+    linea();
+    Facultad* actual = cabezaFacultades;
+    while (actual != nullptr) {
+        int numProgramas = 0;
+        Programa* p = actual->listaProgramas;
+        while (p != nullptr) { numProgramas++; p = p->sig; }
+        cout << left << setw(8) << actual->codigo << setw(40) << actual->nombre
+             << setw(10) << (actual->activo ? "Activa" : "Inactiva")
+             << setw(10) << numProgramas << "\n";
+        actual = actual->sig;
+    }
+}
+
+void modificarFacultad() {
+    titulo("MODIFICAR FACULTAD");
+    string cod = leerLinea("Codigo de la facultad a modificar: ");
+    Facultad* f = buscarFacultad(cod);
+    if (f == nullptr) { cout << "  >> No existe esa facultad.\n"; return; }
+    cout << "  Nombre actual: " << f->nombre << "\n";
+    string nuevoNombre = leerLinea("  Nuevo nombre (ENTER para no cambiar): ");
+    if (!nuevoNombre.empty()) f->nombre = nuevoNombre;
+    cout << "  >> Facultad actualizada.\n";
+}
+
+void desactivarFacultad() {
+    titulo("ACTIVAR / DESACTIVAR FACULTAD");
+    string cod = leerLinea("Codigo de la facultad: ");
+    Facultad* f = buscarFacultad(cod);
+    if (f == nullptr) { cout << "  >> No existe esa facultad.\n"; return; }
+    f->activo = !f->activo;
+    cout << "  >> Facultad ahora esta " << (f->activo ? "ACTIVA" : "INACTIVA") << "\n";
+}
+
+// Libera recursivamente toda la memoria de un programa (cursos, estudiantes+notas, profesores)
+void liberarPrograma(Programa* p) {
+    if (p == nullptr) return;
+    // liberar cursos
+    Curso* c = p->listaCursos;
+    while (c != nullptr) { Curso* tmp = c; c = c->sig; delete tmp; }
+    // liberar estudiantes y sus notas
+    Estudiante* e = p->listaEstudiantes;
+    while (e != nullptr) {
+        Nota* n = e->cursosMatriculados;
+        while (n != nullptr) { Nota* tmpN = n; n = n->sig; delete tmpN; }
+        Estudiante* tmpE = e; e = e->sig; delete tmpE;
+    }
+    // liberar profesores
+    Profesor* d = p->listaProfesores;
+    while (d != nullptr) { Profesor* tmpD = d; d = d->sig; delete tmpD; }
+    delete p;
+}
+
+void eliminarFacultad() {
+    titulo("ELIMINAR FACULTAD");
+    string cod = leerLinea("Codigo de la facultad a eliminar: ");
+    Facultad* actual = cabezaFacultades;
+    Facultad* anterior = nullptr;
+    while (actual != nullptr && actual->codigo != cod) {
+        anterior = actual;
+        actual = actual->sig;
+    }
+    if (actual == nullptr) { cout << "  >> No existe esa facultad.\n"; return; }
+    if (!leerSiNo("  Esto eliminara la facultad y TODOS sus programas/cursos/estudiantes/profesores. ?Continuar? (s/n): "))
+        return;
+    if (anterior == nullptr) cabezaFacultades = actual->sig;
+    else anterior->sig = actual->sig;
+
+    Programa* p = actual->listaProgramas;
+    while (p != nullptr) { Programa* tmp = p; p = p->sig; liberarPrograma(tmp); }
+    delete actual;
+    cout << "  >> Facultad eliminada.\n";
+}
+
+// ======================================================================
+// 12. CRUD PROGRAMA ACADEMICO
+// ======================================================================
+void crearPrograma() {
+    titulo("CREAR PROGRAMA ACADEMICO");
+    string codFac = leerLinea("Codigo de la facultad a la que pertenece: ");
+    Facultad* f = buscarFacultad(codFac);
+    if (f == nullptr) { cout << "  >> No existe esa facultad.\n"; return; }
+
+    cout << "\n  Tipo de programa:\n";
+    cout << "    0. Ingenieria\n    1. Medicina\n    2. Odontologia\n    3. Enfermeria\n";
+    cout << "    4. Psicologia\n    5. Derecho\n    6. Administracion\n    7. Educacion\n    8. Otro\n";
+    int tipoSel = leerEntero("  Seleccione (0-8): ");
+
+    Programa* nuevo = new Programa();
+    nuevo->codigo = generarCodigoPrograma();
+    nuevo->nombre = leerLinea("Nombre del programa (ej: Medicina, Ingenieria de Sistemas): ");
+    nuevo->tipo = tipoProgramaDesdeInt(tipoSel);
+    nuevo->activo = true;
+    nuevo->listaCursos = nullptr;
+    nuevo->listaEstudiantes = nullptr;
+    nuevo->listaProfesores = nullptr;
+    nuevo->sig = nullptr;
+
+    if (f->listaProgramas == nullptr) {
+        f->listaProgramas = nuevo;
+    } else {
+        Programa* actual = f->listaProgramas;
+        while (actual->sig != nullptr) actual = actual->sig;
+        actual->sig = nuevo;
+    }
+    cout << "  >> Programa creado con codigo: " << nuevo->codigo
+         << " | Tipo: " << nombreTipoPrograma(nuevo->tipo)
+         << " | Facultad: " << f->nombre << "\n";
+}
+
+void listarProgramas() {
+    titulo("LISTADO DE PROGRAMAS ACADEMICOS (por facultad)");
+    if (cabezaFacultades == nullptr) { cout << "  (No hay facultades)\n"; return; }
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        cout << "\nFacultad: " << f->nombre << " [" << f->codigo << "]\n";
+        if (f->listaProgramas == nullptr) {
+            cout << "    (sin programas)\n";
+        } else {
+            cout << "    " << left << setw(8) << "CODIGO" << setw(28) << "NOMBRE"
+                 << setw(18) << "TIPO" << setw(10) << "ESTADO" << "\n";
+            Programa* p = f->listaProgramas;
+            while (p != nullptr) {
+                cout << "    " << left << setw(8) << p->codigo << setw(28) << p->nombre
+                     << setw(18) << nombreTipoPrograma(p->tipo)
+                     << setw(10) << (p->activo ? "Activo" : "Inactivo") << "\n";
+                p = p->sig;
+            }
+        }
+        f = f->sig;
+    }
+}
+
+void modificarPrograma() {
+    titulo("MODIFICAR PROGRAMA ACADEMICO");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    cout << "  Nombre actual: " << p->nombre << "\n";
+    string nuevoNombre = leerLinea("  Nuevo nombre (ENTER para no cambiar): ");
+    if (!nuevoNombre.empty()) p->nombre = nuevoNombre;
+    cout << "  >> Programa actualizado.\n";
+}
+
+void desactivarPrograma() {
+    titulo("ACTIVAR / DESACTIVAR PROGRAMA");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    p->activo = !p->activo;
+    cout << "  >> Programa ahora esta " << (p->activo ? "ACTIVO" : "INACTIVO") << "\n";
+}
+
+void eliminarPrograma() {
+    titulo("ELIMINAR PROGRAMA ACADEMICO");
+    string codFac = leerLinea("Codigo de la facultad: ");
+    Facultad* f = buscarFacultad(codFac);
+    if (f == nullptr) { cout << "  >> No existe esa facultad.\n"; return; }
+    string cod = leerLinea("Codigo del programa a eliminar: ");
+    Programa* actual = f->listaProgramas;
+    Programa* anterior = nullptr;
+    while (actual != nullptr && actual->codigo != cod) {
+        anterior = actual;
+        actual = actual->sig;
+    }
+    if (actual == nullptr) { cout << "  >> No existe ese programa en esa facultad.\n"; return; }
+    if (!leerSiNo("  Esto eliminara el programa y todos sus cursos/estudiantes/profesores. ?Continuar? (s/n): "))
+        return;
+    if (anterior == nullptr) f->listaProgramas = actual->sig;
+    else anterior->sig = actual->sig;
+    liberarPrograma(actual);
+    cout << "  >> Programa eliminado.\n";
+}
+
+// ======================================================================
+// 13. CRUD CURSO
+// ======================================================================
+void crearCurso() {
+    titulo("CREAR CURSO");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+
+    Curso* nuevo = new Curso();
+    nuevo->codigo = generarCodigoCurso();
+    nuevo->nombre = leerLinea("Nombre del curso: ");
+    nuevo->creditos = leerEntero("Numero de creditos: ");
+    nuevo->activo = true;
+    nuevo->sig = nullptr;
+
+    if (p->listaCursos == nullptr) {
+        p->listaCursos = nuevo;
+    } else {
+        Curso* actual = p->listaCursos;
+        while (actual->sig != nullptr) actual = actual->sig;
+        actual->sig = nuevo;
+    }
+    cout << "  >> Curso creado con codigo: " << nuevo->codigo << " en " << p->nombre << "\n";
+}
+
+void listarCursos() {
+    titulo("LISTADO DE CURSOS");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    if (p->listaCursos == nullptr) { cout << "  (Sin cursos)\n"; return; }
+    cout << left << setw(8) << "CODIGO" << setw(35) << "NOMBRE"
+         << setw(10) << "CREDITOS" << setw(10) << "ESTADO" << "\n";
+    linea();
+    Curso* actual = p->listaCursos;
+    while (actual != nullptr) {
+        cout << left << setw(8) << actual->codigo << setw(35) << actual->nombre
+             << setw(10) << actual->creditos
+             << setw(10) << (actual->activo ? "Activo" : "Inactivo") << "\n";
+        actual = actual->sig;
+    }
+}
+
+void modificarCurso() {
+    titulo("MODIFICAR CURSO");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    string cod = leerLinea("Codigo del curso: ");
+    Curso* c = buscarCursoEnPrograma(p, cod);
+    if (c == nullptr) { cout << "  >> No existe ese curso.\n"; return; }
+    string nuevoNombre = leerLinea("  Nuevo nombre (ENTER para no cambiar): ");
+    if (!nuevoNombre.empty()) c->nombre = nuevoNombre;
+    string cambiarCred = leerLinea("  ?Cambiar creditos? (s/n): ");
+    if (!cambiarCred.empty() && (cambiarCred[0]=='s'||cambiarCred[0]=='S'))
+        c->creditos = leerEntero("  Nuevos creditos: ");
+    cout << "  >> Curso actualizado.\n";
+}
+
+void eliminarCurso() {
+    titulo("ELIMINAR CURSO");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    string cod = leerLinea("Codigo del curso a eliminar: ");
+    Curso* actual = p->listaCursos;
+    Curso* anterior = nullptr;
+    while (actual != nullptr && actual->codigo != cod) {
+        anterior = actual;
+        actual = actual->sig;
+    }
+    if (actual == nullptr) { cout << "  >> No existe ese curso.\n"; return; }
+    if (anterior == nullptr) p->listaCursos = actual->sig;
+    else anterior->sig = actual->sig;
+    delete actual;
+    cout << "  >> Curso eliminado.\n";
+}
+
+// ======================================================================
+// 14. CRUD ESTUDIANTE + MATRICULAS + PROMEDIO + ALERTA EBRA
+// ======================================================================
+void crearEstudiante() {
+    titulo("CREAR ESTUDIANTE");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+
+    Estudiante* nuevo = new Estudiante();
+    nuevo->codigo = generarCodigoEstudiante();
+    nuevo->nombre = leerLinea("Nombre del estudiante: ");
+    nuevo->documento = leerLinea("Documento de identidad: ");
+    nuevo->email = leerLinea("Correo electronico: ");
+    nuevo->categoria = leerLinea("Categoria (Regular/Transferencia/Intercambio/Reingreso): ");
+    nuevo->activo = true;
+    nuevo->cursosMatriculados = nullptr;
+    nuevo->sig = nullptr;
+
+    if (p->listaEstudiantes == nullptr) {
+        p->listaEstudiantes = nuevo;
+    } else {
+        Estudiante* actual = p->listaEstudiantes;
+        while (actual->sig != nullptr) actual = actual->sig;
+        actual->sig = nuevo;
+    }
+    cout << "  >> Estudiante creado con codigo: " << nuevo->codigo << " en " << p->nombre << "\n";
+}
+
+void listarEstudiantes() {
+    titulo("LISTADO DE ESTUDIANTES");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    if (p->listaEstudiantes == nullptr) { cout << "  (Sin estudiantes)\n"; return; }
+    cout << left << setw(8) << "CODIGO" << setw(28) << "NOMBRE" << setw(14) << "DOCUMENTO"
+         << setw(14) << "CATEGORIA" << setw(10) << "ESTADO" << setw(10) << "PROMEDIO" << "\n";
+    linea();
+    Estudiante* actual = p->listaEstudiantes;
+    while (actual != nullptr) {
+        double prom = calcularPromedio(actual);
+        cout << left << setw(8) << actual->codigo << setw(28) << actual->nombre
+             << setw(14) << actual->documento << setw(14) << actual->categoria
+             << setw(10) << (actual->activo ? "Activo" : "Inactivo");
+        if (prom < 0) cout << setw(10) << "N/A" << "\n";
+        else cout << fixed << setprecision(2) << setw(10) << prom << "\n";
+        actual = actual->sig;
+    }
+}
+
+void modificarEstudiante() {
+    titulo("MODIFICAR ESTUDIANTE");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    string cod = leerLinea("Codigo del estudiante: ");
+    Estudiante* e = buscarEstudianteEnPrograma(p, cod);
+    if (e == nullptr) { cout << "  >> No existe ese estudiante.\n"; return; }
+    string nuevoNombre = leerLinea("  Nuevo nombre (ENTER para no cambiar): ");
+    if (!nuevoNombre.empty()) e->nombre = nuevoNombre;
+    string nuevoEmail = leerLinea("  Nuevo email (ENTER para no cambiar): ");
+    if (!nuevoEmail.empty()) e->email = nuevoEmail;
+    string nuevaCategoria = leerLinea("  Nueva categoria (ENTER para no cambiar): ");
+    if (!nuevaCategoria.empty()) e->categoria = nuevaCategoria;
+    cout << "  >> Estudiante actualizado.\n";
+}
+
+void desactivarEstudiante() {
+    titulo("ACTIVAR / DESACTIVAR ESTUDIANTE");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    string cod = leerLinea("Codigo del estudiante: ");
+    Estudiante* e = buscarEstudianteEnPrograma(p, cod);
+    if (e == nullptr) { cout << "  >> No existe ese estudiante.\n"; return; }
+    e->activo = !e->activo;
+    cout << "  >> Estudiante ahora esta " << (e->activo ? "ACTIVO" : "INACTIVO") << "\n";
+}
+
+void eliminarEstudiante() {
+    titulo("ELIMINAR ESTUDIANTE");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    string cod = leerLinea("Codigo del estudiante a eliminar: ");
+    Estudiante* actual = p->listaEstudiantes;
+    Estudiante* anterior = nullptr;
+    while (actual != nullptr && actual->codigo != cod) {
+        anterior = actual;
+        actual = actual->sig;
+    }
+    if (actual == nullptr) { cout << "  >> No existe ese estudiante.\n"; return; }
+    if (anterior == nullptr) p->listaEstudiantes = actual->sig;
+    else anterior->sig = actual->sig;
+    Nota* n = actual->cursosMatriculados;
+    while (n != nullptr) { Nota* tmp = n; n = n->sig; delete tmp; }
+    delete actual;
+    cout << "  >> Estudiante eliminado.\n";
+}
+
+void matricularCurso() {
+    titulo("MATRICULAR CURSO");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    string codEst = leerLinea("Codigo del estudiante: ");
+    Estudiante* e = buscarEstudianteEnPrograma(p, codEst);
+    if (e == nullptr) { cout << "  >> No existe ese estudiante en el programa.\n"; return; }
+    string codCurso = leerLinea("Codigo del curso a matricular: ");
+    Curso* c = buscarCursoEnPrograma(p, codCurso);
+    if (c == nullptr) { cout << "  >> No existe ese curso en el programa.\n"; return; }
+
+    // verificar que no este ya matriculado (y no cancelado)
+    Nota* n = e->cursosMatriculados;
+    while (n != nullptr) {
+        if (n->codigoCurso == c->codigo && !n->cancelado) {
+            cout << "  >> El estudiante ya esta matriculado en ese curso.\n";
+            return;
+        }
+        n = n->sig;
+    }
+
+    Nota* nueva = new Nota();
+    nueva->codigoCurso = c->codigo;
+    nueva->nombreCurso = c->nombre;
+    nueva->valor = -1;
+    nueva->cancelado = false;
+    nueva->sig = nullptr;
+
+    if (e->cursosMatriculados == nullptr) {
+        e->cursosMatriculados = nueva;
+    } else {
+        Nota* actual = e->cursosMatriculados;
+        while (actual->sig != nullptr) actual = actual->sig;
+        actual->sig = nueva;
+    }
+    cout << "  >> Matricula registrada: " << e->nombre << " -> " << c->nombre << "\n";
+}
+
+void cancelarMatricula() {
+    titulo("CANCELAR MATRICULA DE UN CURSO");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    string codEst = leerLinea("Codigo del estudiante: ");
+    Estudiante* e = buscarEstudianteEnPrograma(p, codEst);
+    if (e == nullptr) { cout << "  >> No existe ese estudiante.\n"; return; }
+    string codCurso = leerLinea("Codigo del curso a cancelar: ");
+    Nota* n = e->cursosMatriculados;
+    while (n != nullptr) {
+        if (n->codigoCurso == codCurso && !n->cancelado) {
+            n->cancelado = true;
+            cout << "  >> Matricula cancelada: " << n->nombreCurso << "\n";
+            return;
+        }
+        n = n->sig;
+    }
+    cout << "  >> El estudiante no tiene una matricula activa en ese curso.\n";
+}
+
+void calificarCurso() {
+    titulo("REGISTRAR NOTA DE UN CURSO");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    string codEst = leerLinea("Codigo del estudiante: ");
+    Estudiante* e = buscarEstudianteEnPrograma(p, codEst);
+    if (e == nullptr) { cout << "  >> No existe ese estudiante.\n"; return; }
+    string codCurso = leerLinea("Codigo del curso: ");
+    Nota* n = e->cursosMatriculados;
+    while (n != nullptr) {
+        if (n->codigoCurso == codCurso && !n->cancelado) {
+            double val = leerDouble("Nota (escala 0.0 a 5.0): ");
+            n->valor = (float) val;
+            cout << "  >> Nota registrada.\n";
+            return;
+        }
+        n = n->sig;
+    }
+    cout << "  >> El estudiante no tiene una matricula activa en ese curso.\n";
+}
+
+// Recorre la lista de notas de un estudiante (ignorando canceladas y sin calificar)
+double calcularPromedio(Estudiante* e) {
+    if (e == nullptr) return -1;
+    double suma = 0;
+    int cuenta = 0;
+    Nota* n = e->cursosMatriculados;
+    while (n != nullptr) {
+        if (!n->cancelado && n->valor >= 0) {
+            suma += n->valor;
+            cuenta++;
+        }
+        n = n->sig;
+    }
+    if (cuenta == 0) return -1;
+    return suma / cuenta;
+}
+
+void consultarPromedioEstudiante() {
+    titulo("CONSULTAR PROMEDIO Y ALERTA ACADEMICA");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    string codEst = leerLinea("Codigo del estudiante: ");
+    Estudiante* e = buscarEstudianteEnPrograma(p, codEst);
+    if (e == nullptr) { cout << "  >> No existe ese estudiante.\n"; return; }
+
+    cout << "\n  Historial academico de " << e->nombre << ":\n";
+    cout << "  " << left << setw(30) << "CURSO" << setw(10) << "NOTA" << setw(12) << "ESTADO" << "\n";
+    Nota* n = e->cursosMatriculados;
+    while (n != nullptr) {
+        cout << "  " << left << setw(30) << n->nombreCurso;
+        if (n->valor < 0) cout << setw(10) << "N/A"; else cout << fixed << setprecision(2) << setw(10) << n->valor;
+        cout << setw(12) << (n->cancelado ? "Cancelado" : "Activo") << "\n";
+        n = n->sig;
+    }
+
+    double prom = calcularPromedio(e);
+    if (prom < 0) {
+        cout << "\n  Promedio: N/A (sin notas registradas)\n";
+        return;
+    }
+    cout << fixed << setprecision(2);
+    cout << "\n  PROMEDIO ACUMULADO: " << prom << "\n";
+    if (prom < UMBRAL_EBRA) {
+        cout << "  >>>> ALERTA: El estudiante se encuentra en EBRA "
+             << "(Estudiante en Bajo Rendimiento Academico, promedio < "
+             << UMBRAL_EBRA << ") <<<<\n";
+    }
+}
+
+// ======================================================================
+// 15. CRUD PROFESOR
+// ======================================================================
+void crearProfesor() {
+    titulo("CREAR PROFESOR");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+
+    Profesor* nuevo = new Profesor();
+    nuevo->codigo = generarCodigoProfesor();
+    nuevo->nombre = leerLinea("Nombre del profesor: ");
+    nuevo->documento = leerLinea("Documento de identidad: ");
+    nuevo->email = leerLinea("Correo electronico: ");
+    nuevo->activo = true;
+
+    cout << "\n  Tipo de contratacion:\n";
+    cout << "    0. Planta\n    1. Ocasional\n    2. Catedratico\n";
+    int tc = leerEntero("  Seleccione (0-2): ");
+    nuevo->nomina.tipoContrato = contratoDesdeInt(tc);
+
+    cout << "\n  Categoria docente:\n";
+    cout << "    0. Auxiliar\n    1. Asistente\n    2. Asociado\n    3. Titular\n";
+    int cat = leerEntero("  Seleccione (0-3): ");
+    nuevo->nomina.categoria = categoriaDesdeInt(cat);
+
+    if (nuevo->nomina.tipoContrato == CATEDRATICO) {
+        nuevo->nomina.horasCatedraMes = leerEntero("  Horas catedra al mes: ");
+        nuevo->nomina.puntosTitulo = 0;
+        nuevo->nomina.puntosExperiencia = 0;
+        nuevo->nomina.puntosProductividad = 0;
+    } else {
+        nuevo->nomina.puntosTitulo = leerEntero("  Puntos salariales por titulo: ");
+        nuevo->nomina.puntosExperiencia = leerEntero("  Puntos salariales por experiencia calificada: ");
+        nuevo->nomina.puntosProductividad = leerEntero("  Puntos salariales por productividad academica: ");
+        nuevo->nomina.horasCatedraMes = 0;
+    }
+    nuevo->sig = nullptr;
+
+    if (p->listaProfesores == nullptr) {
+        p->listaProfesores = nuevo;
+    } else {
+        Profesor* actual = p->listaProfesores;
+        while (actual->sig != nullptr) actual = actual->sig;
+        actual->sig = nuevo;
+    }
+    cout << "  >> Profesor creado con codigo: " << nuevo->codigo << " en " << p->nombre << "\n";
+}
+
+void listarProfesores() {
+    titulo("LISTADO DE PROFESORES");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    if (p->listaProfesores == nullptr) { cout << "  (Sin profesores)\n"; return; }
+    cout << left << setw(8) << "CODIGO" << setw(26) << "NOMBRE" << setw(13) << "CONTRATO"
+         << setw(12) << "CATEGORIA" << setw(10) << "ESTADO" << setw(14) << "SALARIO MES" << "\n";
+    linea();
+    Profesor* actual = p->listaProfesores;
+    while (actual != nullptr) {
+        cout << left << setw(8) << actual->codigo << setw(26) << actual->nombre
+             << setw(13) << nombreTipoContrato(actual->nomina.tipoContrato)
+             << setw(12) << nombreCategoria(actual->nomina.categoria)
+             << setw(10) << (actual->activo ? "Activo" : "Inactivo")
+             << fixed << setprecision(0) << setw(14) << calcularSalarioMensualBruto(actual) << "\n";
+        actual = actual->sig;
+    }
+}
+
+void modificarProfesor() {
+    titulo("MODIFICAR PROFESOR");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    string cod = leerLinea("Codigo del profesor: ");
+    Profesor* d = buscarProfesorEnPrograma(p, cod);
+    if (d == nullptr) { cout << "  >> No existe ese profesor.\n"; return; }
+    string nuevoNombre = leerLinea("  Nuevo nombre (ENTER para no cambiar): ");
+    if (!nuevoNombre.empty()) d->nombre = nuevoNombre;
+    if (leerSiNo("  ?Actualizar categoria docente? (s/n): ")) {
+        cout << "    0. Auxiliar\n    1. Asistente\n    2. Asociado\n    3. Titular\n";
+        d->nomina.categoria = categoriaDesdeInt(leerEntero("    Seleccione (0-3): "));
+    }
+    if (leerSiNo("  ?Actualizar tipo de contratacion? (s/n): ")) {
+        cout << "    0. Planta\n    1. Ocasional\n    2. Catedratico\n";
+        d->nomina.tipoContrato = contratoDesdeInt(leerEntero("    Seleccione (0-2): "));
+    }
+    if (d->nomina.tipoContrato == CATEDRATICO) {
+        if (leerSiNo("  ?Actualizar horas catedra/mes? (s/n): "))
+            d->nomina.horasCatedraMes = leerEntero("    Horas catedra al mes: ");
+    } else {
+        if (leerSiNo("  ?Actualizar puntos salariales? (s/n): ")) {
+            d->nomina.puntosTitulo = leerEntero("    Puntos por titulo: ");
+            d->nomina.puntosExperiencia = leerEntero("    Puntos por experiencia: ");
+            d->nomina.puntosProductividad = leerEntero("    Puntos por productividad: ");
+        }
+    }
+    cout << "  >> Profesor actualizado.\n";
+}
+
+void desactivarProfesor() {
+    titulo("ACTIVAR / DESACTIVAR PROFESOR");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    string cod = leerLinea("Codigo del profesor: ");
+    Profesor* d = buscarProfesorEnPrograma(p, cod);
+    if (d == nullptr) { cout << "  >> No existe ese profesor.\n"; return; }
+    d->activo = !d->activo;
+    cout << "  >> Profesor ahora esta " << (d->activo ? "ACTIVO" : "INACTIVO") << "\n";
+}
+
+void eliminarProfesor() {
+    titulo("ELIMINAR PROFESOR");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    string cod = leerLinea("Codigo del profesor a eliminar: ");
+    Profesor* actual = p->listaProfesores;
+    Profesor* anterior = nullptr;
+    while (actual != nullptr && actual->codigo != cod) {
+        anterior = actual;
+        actual = actual->sig;
+    }
+    if (actual == nullptr) { cout << "  >> No existe ese profesor.\n"; return; }
+    if (anterior == nullptr) p->listaProfesores = actual->sig;
+    else anterior->sig = actual->sig;
+    delete actual;
+    cout << "  >> Profesor eliminado.\n";
+}
+
+// ======================================================================
+// 16. CRUD ADMINISTRATIVO
+// ======================================================================
+void crearAdministrativo() {
+    titulo("CREAR ADMINISTRATIVO");
+    Administrativo* nuevo = new Administrativo();
+    nuevo->codigo = generarCodigoAdministrativo();
+    nuevo->nombre = leerLinea("Nombre: ");
+    nuevo->documento = leerLinea("Documento de identidad: ");
+    nuevo->cargo = leerLinea("Cargo: ");
+    nuevo->tipoContrato = leerLinea("Tipo de contratacion (Planta/Contratista/Provisional): ");
+    nuevo->salarioBase = leerDouble("Salario base mensual: ");
+    nuevo->activo = true;
+    nuevo->sig = nullptr;
+
+    if (cabezaAdministrativos == nullptr) {
+        cabezaAdministrativos = nuevo;
+    } else {
+        Administrativo* actual = cabezaAdministrativos;
+        while (actual->sig != nullptr) actual = actual->sig;
+        actual->sig = nuevo;
+    }
+    cout << "  >> Administrativo creado con codigo: " << nuevo->codigo << "\n";
+}
+
+void listarAdministrativos() {
+    titulo("LISTADO DE ADMINISTRATIVOS");
+    if (cabezaAdministrativos == nullptr) { cout << "  (No hay administrativos)\n"; return; }
+    cout << left << setw(8) << "CODIGO" << setw(24) << "NOMBRE" << setw(20) << "CARGO"
+         << setw(14) << "CONTRATO" << setw(10) << "ESTADO" << setw(14) << "SALARIO" << "\n";
+    linea();
+    Administrativo* actual = cabezaAdministrativos;
+    while (actual != nullptr) {
+        cout << left << setw(8) << actual->codigo << setw(24) << actual->nombre
+             << setw(20) << actual->cargo << setw(14) << actual->tipoContrato
+             << setw(10) << (actual->activo ? "Activo" : "Inactivo")
+             << fixed << setprecision(0) << setw(14) << actual->salarioBase << "\n";
+        actual = actual->sig;
+    }
+}
+
+void modificarAdministrativo() {
+    titulo("MODIFICAR ADMINISTRATIVO");
+    string cod = leerLinea("Codigo del administrativo: ");
+    Administrativo* a = buscarAdministrativo(cod);
+    if (a == nullptr) { cout << "  >> No existe ese administrativo.\n"; return; }
+    string nuevoNombre = leerLinea("  Nuevo nombre (ENTER para no cambiar): ");
+    if (!nuevoNombre.empty()) a->nombre = nuevoNombre;
+    string nuevoCargo = leerLinea("  Nuevo cargo (ENTER para no cambiar): ");
+    if (!nuevoCargo.empty()) a->cargo = nuevoCargo;
+    if (leerSiNo("  ?Actualizar salario base? (s/n): "))
+        a->salarioBase = leerDouble("  Nuevo salario base: ");
+    cout << "  >> Administrativo actualizado.\n";
+}
+
+void desactivarAdministrativo() {
+    titulo("ACTIVAR / DESACTIVAR ADMINISTRATIVO");
+    string cod = leerLinea("Codigo del administrativo: ");
+    Administrativo* a = buscarAdministrativo(cod);
+    if (a == nullptr) { cout << "  >> No existe ese administrativo.\n"; return; }
+    a->activo = !a->activo;
+    cout << "  >> Administrativo ahora esta " << (a->activo ? "ACTIVO" : "INACTIVO") << "\n";
+}
+
+void eliminarAdministrativo() {
+    titulo("ELIMINAR ADMINISTRATIVO");
+    string cod = leerLinea("Codigo del administrativo a eliminar: ");
+    Administrativo* actual = cabezaAdministrativos;
+    Administrativo* anterior = nullptr;
+    while (actual != nullptr && actual->codigo != cod) {
+        anterior = actual;
+        actual = actual->sig;
+    }
+    if (actual == nullptr) { cout << "  >> No existe ese administrativo.\n"; return; }
+    if (anterior == nullptr) cabezaAdministrativos = actual->sig;
+    else anterior->sig = actual->sig;
+    delete actual;
+    cout << "  >> Administrativo eliminado.\n";
+}
+
+// ======================================================================
+// 17. MOTOR DE NOMINA DOCENTE (Decreto 1279/2002 - Acuerdo 027/2024)
+// ======================================================================
+
+// Tarifa de hora catedra segun categoria (ilustrativa, ajustar a valores reales)
+double tarifaHoraCatedra(CategoriaDocente c) {
+    switch (c) {
+        case AUXILIAR:  return 39000.0;
+        case ASISTENTE: return 45000.0;
+        case ASOCIADO:  return 52000.0;
+        case TITULAR:   return 60000.0;
+    }
+    return 39000.0;
+}
+
+// Salario mensual BRUTO. Planta/Ocasional: puntos salariales * valor punto.
+// Catedratico: horas catedra al mes * tarifa hora catedra segun su categoria.
+double calcularSalarioMensualBruto(Profesor* p) {
+    if (p == nullptr) return 0.0;
+    if (p->nomina.tipoContrato == CATEDRATICO) {
+        return p->nomina.horasCatedraMes * tarifaHoraCatedra(p->nomina.categoria);
+    }
+    int puntosTotales = p->nomina.puntosTitulo + p->nomina.puntosExperiencia
+                       + p->nomina.puntosProductividad;
+    return puntosTotales * VALOR_PUNTO_SALARIAL;
+}
+
+double calcularSaludMensual(Profesor* p) {
+    return calcularSalarioMensualBruto(p) * PORC_SALUD;
+}
+
+double calcularPensionMensual(Profesor* p) {
+    return calcularSalarioMensualBruto(p) * PORC_PENSION;
+}
+
+double calcularNetoMensual(Profesor* p) {
+    return calcularSalarioMensualBruto(p) - calcularSaludMensual(p) - calcularPensionMensual(p);
+}
+
+// Provision de prestaciones sociales (cesantias + intereses + prima + vacaciones).
+// No aplica tipicamente a catedraticos por hora (se liquidan de forma distinta).
+double calcularPrestacionesSocialesMensual(Profesor* p) {
+    if (p == nullptr) return 0.0;
+    if (p->nomina.tipoContrato == CATEDRATICO) return 0.0;
+    double base = calcularSalarioMensualBruto(p);
+    double cesantias = base * PORC_CESANTIAS;
+    double interesCesantias = cesantias * PORC_INT_CESANTIAS;
+    double prima = base * PORC_PRIMA;
+    double vacaciones = base * PORC_VACACIONES;
+    return cesantias + interesCesantias + prima + vacaciones;
+}
+
+double calcularSalarioAnualBruto(Profesor* p) {
+    return calcularSalarioMensualBruto(p) * 12.0;
+}
+
+double calcularSalarioAnualNeto(Profesor* p) {
+    return calcularNetoMensual(p) * 12.0;
+}
+
+// Costo anual total para la universidad: 12 meses de salario bruto + prestaciones anuales
+double calcularCostoAnualUniversidad(Profesor* p) {
+    return calcularSalarioAnualBruto(p) + (calcularPrestacionesSocialesMensual(p) * 12.0);
+}
+
+void mostrarDesgloseNomina(Profesor* p) {
+    if (p == nullptr) return;
+    cout << fixed << setprecision(2);
+    cout << "\n  Profesor: " << p->nombre << " [" << p->codigo << "]\n";
+    cout << "  Contrato: " << nombreTipoContrato(p->nomina.tipoContrato)
+         << "   Categoria: " << nombreCategoria(p->nomina.categoria) << "\n";
+    if (p->nomina.tipoContrato == CATEDRATICO) {
+        cout << "  Horas catedra/mes: " << p->nomina.horasCatedraMes
+             << "   Tarifa hora: $" << tarifaHoraCatedra(p->nomina.categoria) << "\n";
+    } else {
+        int totalPuntos = p->nomina.puntosTitulo + p->nomina.puntosExperiencia + p->nomina.puntosProductividad;
+        cout << "  Puntos: titulo=" << p->nomina.puntosTitulo
+             << " experiencia=" << p->nomina.puntosExperiencia
+             << " productividad=" << p->nomina.puntosProductividad
+             << " (total=" << totalPuntos << ")  valor punto=$" << VALOR_PUNTO_SALARIAL << "\n";
+    }
+    linea();
+    cout << "  Salario mensual BRUTO      : $ " << calcularSalarioMensualBruto(p) << "\n";
+    cout << "  (-) Aporte salud (4%)      : $ " << calcularSaludMensual(p) << "\n";
+    cout << "  (-) Aporte pension (4%)    : $ " << calcularPensionMensual(p) << "\n";
+    cout << "  Salario mensual NETO       : $ " << calcularNetoMensual(p) << "\n";
+    cout << "  Prestaciones sociales/mes  : $ " << calcularPrestacionesSocialesMensual(p) << "\n";
+    linea();
+    cout << "  SALARIO ANUAL BRUTO (x12)      : $ " << calcularSalarioAnualBruto(p) << "\n";
+    cout << "  SALARIO ANUAL NETO (x12)       : $ " << calcularSalarioAnualNeto(p) << "\n";
+    cout << "  COSTO ANUAL PARA LA UNIVERSIDAD: $ " << calcularCostoAnualUniversidad(p) << "\n";
+}
+
+// ======================================================================
+// 18. REPORTES: RECORRIDOS COMPLETOS DE LA ESTRUCTURA ANIDADA
+// ======================================================================
+void reporteNominaProfesorIndividual() {
+    titulo("NOMINA DE UN PROFESOR (mensual y anual)");
+    string cod = leerLinea("Codigo del profesor: ");
+    Profesor* d = buscarProfesorGlobal(cod, nullptr, nullptr);
+    if (d == nullptr) { cout << "  >> No existe ese profesor.\n"; return; }
+    mostrarDesgloseNomina(d);
+}
+
+// Recorre facultades -> programas -> profesores, sumando salarios de un programa puntual
+void reporteNominaPorPrograma() {
+    titulo("NOMINA TOTAL DE UN PROGRAMA ACADEMICO");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    double totalMensual = 0, totalAnual = 0;
+    int cuenta = 0;
+    cout << left << setw(8) << "CODIGO" << setw(26) << "NOMBRE" << setw(13) << "CONTRATO"
+         << setw(16) << "MENSUAL BRUTO" << setw(16) << "ANUAL BRUTO" << "\n";
+    linea();
+    Profesor* d = p->listaProfesores;
+    while (d != nullptr) {
+        double m = calcularSalarioMensualBruto(d);
+        double a = calcularSalarioAnualBruto(d);
+        cout << left << setw(8) << d->codigo << setw(26) << d->nombre
+             << setw(13) << nombreTipoContrato(d->nomina.tipoContrato)
+             << fixed << setprecision(0) << setw(16) << m << setw(16) << a << "\n";
+        totalMensual += m; totalAnual += a; cuenta++;
+        d = d->sig;
+    }
+    linea();
+    cout << "  Profesores: " << cuenta << "\n";
+    cout << fixed << setprecision(0);
+    cout << "  TOTAL NOMINA MENSUAL DEL PROGRAMA: $ " << totalMensual << "\n";
+    cout << "  TOTAL NOMINA ANUAL  DEL PROGRAMA : $ " << totalAnual << "\n";
+}
+
+// Recorre TODOS los programas de UNA facultad (dos niveles de listas anidadas)
+void reporteNominaPorFacultad() {
+    titulo("NOMINA TOTAL DE UNA FACULTAD");
+    string codFac = leerLinea("Codigo de la facultad: ");
+    Facultad* f = buscarFacultad(codFac);
+    if (f == nullptr) { cout << "  >> No existe esa facultad.\n"; return; }
+
+    double totalMensual = 0, totalAnual = 0;
+    int cuentaProf = 0;
+    Programa* p = f->listaProgramas;
+    while (p != nullptr) {
+        cout << "\n  Programa: " << p->nombre << " [" << p->codigo << "]\n";
+        Profesor* d = p->listaProfesores;
+        if (d == nullptr) cout << "    (sin profesores)\n";
+        while (d != nullptr) {
+            double m = calcularSalarioMensualBruto(d);
+            cout << "    - " << d->nombre << " (" << nombreTipoContrato(d->nomina.tipoContrato)
+                 << "): $ " << fixed << setprecision(0) << m << " / mes\n";
+            totalMensual += m;
+            totalAnual += calcularSalarioAnualBruto(d);
+            cuentaProf++;
+            d = d->sig;
+        }
+        p = p->sig;
+    }
+    linea();
+    cout << "  Total profesores en la facultad: " << cuentaProf << "\n";
+    cout << fixed << setprecision(0);
+    cout << "  TOTAL NOMINA MENSUAL DE LA FACULTAD: $ " << totalMensual << "\n";
+    cout << "  TOTAL NOMINA ANUAL  DE LA FACULTAD : $ " << totalAnual << "\n";
+}
+
+// Recorre TODA la universidad: facultades -> programas -> profesores (recorrido completo)
+void reporteNominaUniversidadCompleta() {
+    titulo("NOMINA TOTAL DE TODA LA UNIVERSIDAD (recorrido completo)");
+    double totalMensual = 0, totalAnual = 0, totalCostoAnualUniv = 0;
+    int cuentaProf = 0;
+
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        double subtotalFac = 0;
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Profesor* d = p->listaProfesores;
+            while (d != nullptr) {
+                double m = calcularSalarioMensualBruto(d);
+                subtotalFac += m;
+                totalMensual += m;
+                totalAnual += calcularSalarioAnualBruto(d);
+                totalCostoAnualUniv += calcularCostoAnualUniversidad(d);
+                cuentaProf++;
+                d = d->sig;
+            }
+            p = p->sig;
+        }
+        cout << "  Facultad " << left << setw(30) << f->nombre
+             << " -> nomina mensual: $ " << fixed << setprecision(0) << subtotalFac << "\n";
+        f = f->sig;
+    }
+
+    linea();
+    cout << "  Total de profesores en la universidad: " << cuentaProf << "\n";
+    cout << fixed << setprecision(0);
+    cout << "  NOMINA MENSUAL TOTAL (bruta)           : $ " << totalMensual << "\n";
+    cout << "  NOMINA ANUAL TOTAL (bruta, x12)         : $ " << totalAnual << "\n";
+    cout << "  COSTO ANUAL TOTAL PARA LA UNIVERSIDAD   : $ " << totalCostoAnualUniv
+         << "  (incluye prestaciones sociales)\n";
+}
+
+// Recorre TODA la estructura buscando estudiantes con promedio < UMBRAL_EBRA
+void reporteEstudiantesEnEBRA() {
+    titulo("ESTUDIANTES EN EBRA (Bajo Rendimiento Academico) - TODA LA UNIVERSIDAD");
+    int encontrados = 0;
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Estudiante* e = p->listaEstudiantes;
+            while (e != nullptr) {
+                double prom = calcularPromedio(e);
+                if (prom >= 0 && prom < UMBRAL_EBRA) {
+                    cout << "  [ALERTA] " << left << setw(25) << e->nombre
+                         << " (" << e->codigo << ")  Programa: " << setw(25) << p->nombre
+                         << " Promedio: " << fixed << setprecision(2) << prom << "\n";
+                    encontrados++;
+                }
+                e = e->sig;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+    if (encontrados == 0) cout << "  No hay estudiantes en EBRA actualmente.\n";
+    else cout << "\n  Total de estudiantes en EBRA: " << encontrados << "\n";
+}
+
+// Recorrido jerarquico completo: facultad -> programa -> cursos/estudiantes/profesores
+void reporteArbolCompletoUniversidad() {
+    titulo("ARBOL COMPLETO DE LA UNIVERSIDAD (recorrido de todas las listas)");
+    if (cabezaFacultades == nullptr) { cout << "  (No hay datos)\n"; return; }
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        cout << "\nFACULTAD: " << f->nombre << " [" << f->codigo << "] "
+             << (f->activo ? "(Activa)" : "(Inactiva)") << "\n";
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            cout << "  PROGRAMA: " << p->nombre << " [" << p->codigo << "] "
+                 << (p->activo ? "(Activo)" : "(Inactivo)") << "\n";
+
+            cout << "    Cursos:\n";
+            Curso* c = p->listaCursos;
+            if (c == nullptr) cout << "      (ninguno)\n";
+            while (c != nullptr) {
+                cout << "      - " << c->nombre << " [" << c->codigo << "] ("
+                     << c->creditos << " creditos)\n";
+                c = c->sig;
+            }
+
+            cout << "    Profesores:\n";
+            Profesor* d = p->listaProfesores;
+            if (d == nullptr) cout << "      (ninguno)\n";
+            while (d != nullptr) {
+                cout << "      - " << d->nombre << " [" << d->codigo << "] "
+                     << nombreTipoContrato(d->nomina.tipoContrato) << "/"
+                     << nombreCategoria(d->nomina.categoria) << "\n";
+                d = d->sig;
+            }
+
+            cout << "    Estudiantes:\n";
+            Estudiante* e = p->listaEstudiantes;
+            if (e == nullptr) cout << "      (ninguno)\n";
+            while (e != nullptr) {
+                double prom = calcularPromedio(e);
+                cout << "      - " << e->nombre << " [" << e->codigo << "] promedio: ";
+                if (prom < 0) cout << "N/A"; else cout << fixed << setprecision(2) << prom;
+                cout << "\n";
+                e = e->sig;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+}
+
+// Recorre todos los profesores de la universidad y los agrupa/cuenta por categoria
+void reporteProfesoresPorCategoria() {
+    titulo("PROFESORES POR CATEGORIA Y TIPO DE CONTRATO (recorrido y conteo)");
+    int porCategoria[4] = {0,0,0,0};
+    int porContrato[3] = {0,0,0};
+    int totalProfesores = 0;
+
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Profesor* d = p->listaProfesores;
+            while (d != nullptr) {
+                porCategoria[d->nomina.categoria]++;
+                porContrato[d->nomina.tipoContrato]++;
+                totalProfesores++;
+                d = d->sig;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+
+    cout << "  Total de profesores: " << totalProfesores << "\n\n";
+    cout << "  Por categoria:\n";
+    cout << "    Auxiliar : " << porCategoria[AUXILIAR]  << "\n";
+    cout << "    Asistente: " << porCategoria[ASISTENTE] << "\n";
+    cout << "    Asociado : " << porCategoria[ASOCIADO]  << "\n";
+    cout << "    Titular  : " << porCategoria[TITULAR]   << "\n";
+    cout << "\n  Por tipo de contrato:\n";
+    cout << "    Planta     : " << porContrato[PLANTA]      << "\n";
+    cout << "    Ocasional  : " << porContrato[OCASIONAL]   << "\n";
+    cout << "    Catedratico: " << porContrato[CATEDRATICO] << "\n";
+}
+
+// ======================================================================
+// 18-B. NOMINA DE ADMINISTRATIVOS (mensual y anual) - MISMO MODELO QUE DOCENTES
+// ======================================================================
+double calcularNetoMensualAdministrativo(Administrativo* a) {
+    if (a == nullptr) return 0.0;
+    double salud = a->salarioBase * PORC_SALUD;
+    double pension = a->salarioBase * PORC_PENSION;
+    return a->salarioBase - salud - pension;
+}
+
+double calcularSalarioAnualBrutoAdministrativo(Administrativo* a) {
+    if (a == nullptr) return 0.0;
+    return a->salarioBase * 12.0;
+}
+
+double calcularSalarioAnualNetoAdministrativo(Administrativo* a) {
+    return calcularNetoMensualAdministrativo(a) * 12.0;
+}
+
+void reporteNominaAdministrativoIndividual() {
+    titulo("NOMINA DE UN ADMINISTRATIVO (mensual y anual)");
+    string cod = leerLinea("Codigo del administrativo: ");
+    Administrativo* a = buscarAdministrativo(cod);
+    if (a == nullptr) { cout << "  >> No existe ese administrativo.\n"; return; }
+    cout << fixed << setprecision(2);
+    cout << "\n  Administrativo: " << a->nombre << " [" << a->codigo << "]\n";
+    cout << "  Cargo: " << a->cargo << "   Contrato: " << a->tipoContrato << "\n";
+    linea();
+    cout << "  Salario mensual BRUTO : $ " << a->salarioBase << "\n";
+    cout << "  (-) Salud (4%)        : $ " << a->salarioBase * PORC_SALUD << "\n";
+    cout << "  (-) Pension (4%)      : $ " << a->salarioBase * PORC_PENSION << "\n";
+    cout << "  Salario mensual NETO  : $ " << calcularNetoMensualAdministrativo(a) << "\n";
+    linea();
+    cout << "  SALARIO ANUAL BRUTO (x12): $ " << calcularSalarioAnualBrutoAdministrativo(a) << "\n";
+    cout << "  SALARIO ANUAL NETO (x12) : $ " << calcularSalarioAnualNetoAdministrativo(a) << "\n";
+}
+
+// Recorre TODA la lista de administrativos sumando su nomina mensual y anual
+void reporteNominaTotalAdministrativos() {
+    titulo("NOMINA TOTAL DEL PERSONAL ADMINISTRATIVO (recorrido de lista)");
+    if (cabezaAdministrativos == nullptr) { cout << "  (No hay administrativos registrados)\n"; return; }
+    double totalMensual = 0, totalAnual = 0;
+    int cuenta = 0;
+    cout << left << setw(8) << "CODIGO" << setw(24) << "NOMBRE" << setw(16) << "MENSUAL BRUTO"
+         << setw(16) << "ANUAL BRUTO" << "\n";
+    linea();
+    Administrativo* a = cabezaAdministrativos;
+    while (a != nullptr) {
+        double anual = calcularSalarioAnualBrutoAdministrativo(a);
+        cout << left << setw(8) << a->codigo << setw(24) << a->nombre
+             << fixed << setprecision(0) << setw(16) << a->salarioBase << setw(16) << anual << "\n";
+        totalMensual += a->salarioBase;
+        totalAnual += anual;
+        cuenta++;
+        a = a->sig;
+    }
+    linea();
+    cout << "  Total administrativos: " << cuenta << "\n";
+    cout << fixed << setprecision(0);
+    cout << "  NOMINA MENSUAL TOTAL ADMINISTRATIVOS: $ " << totalMensual << "\n";
+    cout << "  NOMINA ANUAL TOTAL ADMINISTRATIVOS  : $ " << totalAnual << "\n";
+}
+
+// ======================================================================
+// 18-C. EXTREMOS: MAYOR/MENOR SALARIO Y MEJOR/PEOR PROMEDIO (recorrido completo)
+// ======================================================================
+// Recorre facultades -> programas -> profesores buscando el salario mas alto y mas bajo
+void reporteProfesorMayorMenorSalario() {
+    titulo("PROFESOR CON MAYOR Y MENOR SALARIO (recorrido de toda la universidad)");
+    Profesor* mayor = nullptr; Profesor* menor = nullptr;
+    double salarioMayor = -1, salarioMenor = -1;
+
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Profesor* d = p->listaProfesores;
+            while (d != nullptr) {
+                double s = calcularSalarioMensualBruto(d);
+                if (mayor == nullptr || s > salarioMayor) { mayor = d; salarioMayor = s; }
+                if (menor == nullptr || s < salarioMenor) { menor = d; salarioMenor = s; }
+                d = d->sig;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+
+    if (mayor == nullptr) { cout << "  (No hay profesores registrados)\n"; return; }
+    cout << fixed << setprecision(0);
+    cout << "  MAYOR SALARIO: " << mayor->nombre << " [" << mayor->codigo << "] -> $ "
+         << salarioMayor << " /mes ($ " << salarioMayor * 12 << " /anio)\n";
+    cout << "  MENOR SALARIO: " << menor->nombre << " [" << menor->codigo << "] -> $ "
+         << salarioMenor << " /mes ($ " << salarioMenor * 12 << " /anio)\n";
+}
+
+// Recorre facultades -> programas -> estudiantes buscando el mejor y el peor promedio
+void reporteEstudianteMejorPeorPromedio() {
+    titulo("ESTUDIANTE CON MEJOR Y PEOR PROMEDIO (recorrido de toda la universidad)");
+    Estudiante* mejor = nullptr; Estudiante* peor = nullptr;
+    double promMejor = -1, promPeor = -1;
+
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Estudiante* e = p->listaEstudiantes;
+            while (e != nullptr) {
+                double prom = calcularPromedio(e);
+                if (prom >= 0) { // solo cuenta si tiene al menos una nota
+                    if (mejor == nullptr || prom > promMejor) { mejor = e; promMejor = prom; }
+                    if (peor  == nullptr || prom < promPeor)  { peor  = e; promPeor  = prom; }
+                }
+                e = e->sig;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+
+    if (mejor == nullptr) { cout << "  (No hay estudiantes con notas registradas)\n"; return; }
+    cout << fixed << setprecision(2);
+    cout << "  MEJOR PROMEDIO: " << mejor->nombre << " [" << mejor->codigo << "] -> " << promMejor << "\n";
+    cout << "  PEOR PROMEDIO : " << peor->nombre  << " [" << peor->codigo  << "] -> " << promPeor  << "\n";
+}
+
+// ======================================================================
+// 18-D. ORDENAMIENTO DE UNA LISTA ENLAZADA (burbuja intercambiando DATOS)
+// ======================================================================
+// Ordena la lista de profesores de UN programa por su salario mensual.
+// Se intercambian los CAMPOS de los nodos (no los punteros 'sig'), que es
+// la forma mas sencilla y la que normalmente se pide en el examen.
+void ordenarProfesoresPorSalario() {
+    titulo("ORDENAR PROFESORES DE UN PROGRAMA POR SALARIO");
+    Programa* p = seleccionarProgramaPorCodigo();
+    if (p == nullptr) return;
+    if (p->listaProfesores == nullptr || p->listaProfesores->sig == nullptr) {
+        cout << "  >> El programa tiene 0 o 1 profesor, no hay nada que ordenar.\n";
+        return;
+    }
+    bool descendente = leerSiNo("?Ordenar de mayor a menor salario? (s = descendente / n = ascendente): ");
+
+    bool huboIntercambio;
+    do {
+        huboIntercambio = false;
+        Profesor* actual = p->listaProfesores;
+        while (actual->sig != nullptr) {
+            double sActual = calcularSalarioMensualBruto(actual);
+            double sSiguiente = calcularSalarioMensualBruto(actual->sig);
+            bool debeIntercambiar = descendente ? (sActual < sSiguiente) : (sActual > sSiguiente);
+            if (debeIntercambiar) {
+                // Intercambio de los DATOS (codigo, nombre, documento, email, nomina, activo)
+                swap(actual->codigo, actual->sig->codigo);
+                swap(actual->nombre, actual->sig->nombre);
+                swap(actual->documento, actual->sig->documento);
+                swap(actual->email, actual->sig->email);
+                swap(actual->activo, actual->sig->activo);
+                swap(actual->nomina, actual->sig->nomina);
+                huboIntercambio = true;
+            }
+            actual = actual->sig;
+        }
+    } while (huboIntercambio);
+
+    cout << "  >> Lista ordenada. Resultado:\n";
+    listarProfesores(); // reutiliza el listado ya existente (pedira de nuevo el codigo del programa)
+}
+
+// ======================================================================
+// 18-E. BUSQUEDA POR DOCUMENTO / CEDULA (campo alterno al codigo)
+// ======================================================================
+Estudiante* buscarEstudiantePorDocumento(const string &doc, Programa** progOut) {
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Estudiante* e = p->listaEstudiantes;
+            while (e != nullptr) {
+                if (e->documento == doc) {
+                    if (progOut != nullptr) *progOut = p;
+                    return e;
+                }
+                e = e->sig;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+    if (progOut != nullptr) *progOut = nullptr;
+    return nullptr;
+}
+
+Profesor* buscarProfesorPorDocumento(const string &doc, Programa** progOut) {
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Profesor* d = p->listaProfesores;
+            while (d != nullptr) {
+                if (d->documento == doc) {
+                    if (progOut != nullptr) *progOut = p;
+                    return d;
+                }
+                d = d->sig;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+    if (progOut != nullptr) *progOut = nullptr;
+    return nullptr;
+}
+
+void buscarPorDocumento() {
+    titulo("BUSCAR ESTUDIANTE O PROFESOR POR DOCUMENTO");
+    string doc = leerLinea("Numero de documento a buscar: ");
+
+    Programa* progE = nullptr;
+    Estudiante* e = buscarEstudiantePorDocumento(doc, &progE);
+    if (e != nullptr) {
+        cout << "  >> ESTUDIANTE encontrado: " << e->nombre << " [" << e->codigo << "] - Programa: "
+             << progE->nombre << "\n";
+    }
+
+    Programa* progD = nullptr;
+    Profesor* d = buscarProfesorPorDocumento(doc, &progD);
+    if (d != nullptr) {
+        cout << "  >> PROFESOR encontrado: " << d->nombre << " [" << d->codigo << "] - Programa: "
+             << progD->nombre << "\n";
+    }
+
+    Administrativo* a = cabezaAdministrativos;
+    while (a != nullptr) {
+        if (a->documento == doc) {
+            cout << "  >> ADMINISTRATIVO encontrado: " << a->nombre << " [" << a->codigo << "]\n";
+            break;
+        }
+        a = a->sig;
+    }
+
+    if (e == nullptr && d == nullptr && a == nullptr)
+        cout << "  >> No se encontro ninguna persona con ese documento.\n";
+}
+
+// ======================================================================
+// 18-F. CENSO GENERAL (conteo total recorriendo TODA la estructura anidada)
+// ======================================================================
+void reporteCensoGeneral() {
+    titulo("CENSO GENERAL DE LA UNIVERSIDAD (recorrido completo)");
+    int numFacultades = 0, numProgramas = 0, numCursos = 0, numEstudiantes = 0, numProfesores = 0;
+
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        numFacultades++;
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            numProgramas++;
+            Curso* c = p->listaCursos;
+            while (c != nullptr) { numCursos++; c = c->sig; }
+            Estudiante* e = p->listaEstudiantes;
+            while (e != nullptr) { numEstudiantes++; e = e->sig; }
+            Profesor* d = p->listaProfesores;
+            while (d != nullptr) { numProfesores++; d = d->sig; }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+
+    int numAdministrativos = 0;
+    Administrativo* a = cabezaAdministrativos;
+    while (a != nullptr) { numAdministrativos++; a = a->sig; }
+
+    cout << "  Facultades      : " << numFacultades << "\n";
+    cout << "  Programas       : " << numProgramas << "\n";
+    cout << "  Cursos          : " << numCursos << "\n";
+    cout << "  Estudiantes     : " << numEstudiantes << "\n";
+    cout << "  Profesores      : " << numProfesores << "\n";
+    cout << "  Administrativos : " << numAdministrativos << "\n";
+}
+
+// ======================================================================
+// 19. PERSISTENCIA (guardar / cargar TODA la estructura en un archivo)
+// ======================================================================
+// Formato de texto con secciones delimitadas y campos separados por '|'.
+// El orden de las secciones importa al cargar: Facultades -> Programas ->
+// Cursos -> Estudiantes -> Matriculas -> Profesores.
+
+void guardarDatos() {
+    ofstream archivo(ARCHIVO_DATOS);
+    if (!archivo.is_open()) {
+        cout << "  >> ERROR: no se pudo abrir el archivo para escritura.\n";
+        return;
+    }
+    archivo << fixed << setprecision(2); // evita notacion cientifica en los numeros guardados
+
+    archivo << "#FACULTADES\n";
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        archivo << f->codigo << "|" << f->nombre << "|" << f->activo << "\n";
+        f = f->sig;
+    }
+    archivo << "#FIN_FACULTADES\n";
+
+    archivo << "#PROGRAMAS\n";
+    f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            archivo << p->codigo << "|" << f->codigo << "|" << p->nombre << "|" << (int)p->tipo << "|" << p->activo << "\n";
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+    archivo << "#FIN_PROGRAMAS\n";
+
+    archivo << "#CURSOS\n";
+    f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Curso* c = p->listaCursos;
+            while (c != nullptr) {
+                archivo << c->codigo << "|" << p->codigo << "|" << c->nombre << "|"
+                         << c->creditos << "|" << c->activo << "\n";
+                c = c->sig;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+    archivo << "#FIN_CURSOS\n";
+
+    archivo << "#ESTUDIANTES\n";
+    f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Estudiante* e = p->listaEstudiantes;
+            while (e != nullptr) {
+                archivo << e->codigo << "|" << p->codigo << "|" << e->nombre << "|"
+                         << e->documento << "|" << e->email << "|" << e->categoria << "|"
+                         << e->activo << "\n";
+                e = e->sig;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+    archivo << "#FIN_ESTUDIANTES\n";
+
+    archivo << "#MATRICULAS\n";
+    f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Estudiante* e = p->listaEstudiantes;
+            while (e != nullptr) {
+                Nota* n = e->cursosMatriculados;
+                while (n != nullptr) {
+                    archivo << e->codigo << "|" << n->codigoCurso << "|" << n->nombreCurso << "|"
+                             << n->valor << "|" << n->cancelado << "\n";
+                    n = n->sig;
+                }
+                e = e->sig;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+    archivo << "#FIN_MATRICULAS\n";
+
+    archivo << "#PROFESORES\n";
+    f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Profesor* d = p->listaProfesores;
+            while (d != nullptr) {
+                archivo << d->codigo << "|" << p->codigo << "|" << d->nombre << "|"
+                         << d->documento << "|" << d->email << "|"
+                         << (int)d->nomina.tipoContrato << "|" << (int)d->nomina.categoria << "|"
+                         << d->nomina.puntosTitulo << "|" << d->nomina.puntosExperiencia << "|"
+                         << d->nomina.puntosProductividad << "|" << d->nomina.horasCatedraMes << "|"
+                         << d->activo << "\n";
+                d = d->sig;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+    archivo << "#FIN_PROFESORES\n";
+
+    archivo << "#ADMINISTRATIVOS\n";
+    Administrativo* a = cabezaAdministrativos;
+    while (a != nullptr) {
+        archivo << a->codigo << "|" << a->nombre << "|" << a->documento << "|" << a->cargo << "|"
+                 << a->tipoContrato << "|" << a->salarioBase << "|" << a->activo << "\n";
+        a = a->sig;
+    }
+    archivo << "#FIN_ADMINISTRATIVOS\n";
+
+    archivo << "#CONTADORES\n";
+    archivo << contF << "|" << contP << "|" << contC << "|" << contE << "|" << contD << "|" << contA << "\n";
+    archivo << "#FIN_CONTADORES\n";
+
+    archivo.close();
+    cout << "  >> Datos guardados correctamente en '" << ARCHIVO_DATOS << "'.\n";
+}
+
+// separa una linea por '|'
+void separarCampos(const string &linea, string campos[], int maxCampos) {
+    stringstream ss(linea);
+    string item;
+    int i = 0;
+    while (getline(ss, item, '|') && i < maxCampos) {
+        campos[i] = item;
+        i++;
+    }
+}
+
+void cargarDatos() {
+    ifstream archivo(ARCHIVO_DATOS);
+    if (!archivo.is_open()) {
+        cout << "  >> No se encontro el archivo '" << ARCHIVO_DATOS << "'. Se iniciara sin datos.\n";
+        return;
+    }
+    liberarTodaLaMemoria(); // limpiar lo que hubiera en memoria antes de cargar
+
+    string linea;
+    string seccion = "";
+    while (getline(archivo, linea)) {
+        if (linea.empty()) continue;
+        if (linea[0] == '#') {
+            seccion = linea;
+            continue;
+        }
+        string campos[15];
+
+        if (seccion == "#FACULTADES") {
+            separarCampos(linea, campos, 3);
+            Facultad* nueva = new Facultad();
+            nueva->codigo = campos[0];
+            nueva->nombre = campos[1];
+            nueva->activo = (campos[2] == "1");
+            nueva->listaProgramas = nullptr;
+            nueva->sig = nullptr;
+            if (cabezaFacultades == nullptr) cabezaFacultades = nueva;
+            else {
+                Facultad* act = cabezaFacultades;
+                while (act->sig != nullptr) act = act->sig;
+                act->sig = nueva;
+            }
+        } else if (seccion == "#PROGRAMAS") {
+            separarCampos(linea, campos, 5);
+            Facultad* f = buscarFacultad(campos[1]);
+            if (f != nullptr) {
+                Programa* nuevo = new Programa();
+                nuevo->codigo = campos[0];
+                nuevo->nombre = campos[2];
+                nuevo->tipo = tipoProgramaDesdeInt(stoi(campos[3]));
+                nuevo->activo = (campos[4] == "1");
+                nuevo->listaCursos = nullptr;
+                nuevo->listaEstudiantes = nullptr;
+                nuevo->listaProfesores = nullptr;
+                nuevo->sig = nullptr;
+                if (f->listaProgramas == nullptr) f->listaProgramas = nuevo;
+                else {
+                    Programa* act = f->listaProgramas;
+                    while (act->sig != nullptr) act = act->sig;
+                    act->sig = nuevo;
+                }
+            }
+        } else if (seccion == "#CURSOS") {
+            separarCampos(linea, campos, 5);
+            Programa* p = buscarProgramaGlobal(campos[1], nullptr);
+            if (p != nullptr) {
+                Curso* nuevo = new Curso();
+                nuevo->codigo = campos[0];
+                nuevo->nombre = campos[2];
+                nuevo->creditos = stoi(campos[3]);
+                nuevo->activo = (campos[4] == "1");
+                nuevo->sig = nullptr;
+                if (p->listaCursos == nullptr) p->listaCursos = nuevo;
+                else {
+                    Curso* act = p->listaCursos;
+                    while (act->sig != nullptr) act = act->sig;
+                    act->sig = nuevo;
+                }
+            }
+        } else if (seccion == "#ESTUDIANTES") {
+            separarCampos(linea, campos, 7);
+            Programa* p = buscarProgramaGlobal(campos[1], nullptr);
+            if (p != nullptr) {
+                Estudiante* nuevo = new Estudiante();
+                nuevo->codigo = campos[0];
+                nuevo->nombre = campos[2];
+                nuevo->documento = campos[3];
+                nuevo->email = campos[4];
+                nuevo->categoria = campos[5];
+                nuevo->activo = (campos[6] == "1");
+                nuevo->cursosMatriculados = nullptr;
+                nuevo->sig = nullptr;
+                if (p->listaEstudiantes == nullptr) p->listaEstudiantes = nuevo;
+                else {
+                    Estudiante* act = p->listaEstudiantes;
+                    while (act->sig != nullptr) act = act->sig;
+                    act->sig = nuevo;
+                }
+            }
+        } else if (seccion == "#MATRICULAS") {
+            separarCampos(linea, campos, 5);
+            Estudiante* e = buscarEstudianteGlobal(campos[0], nullptr, nullptr);
+            if (e != nullptr) {
+                Nota* nueva = new Nota();
+                nueva->codigoCurso = campos[1];
+                nueva->nombreCurso = campos[2];
+                nueva->valor = stof(campos[3]);
+                nueva->cancelado = (campos[4] == "1");
+                nueva->sig = nullptr;
+                if (e->cursosMatriculados == nullptr) e->cursosMatriculados = nueva;
+                else {
+                    Nota* act = e->cursosMatriculados;
+                    while (act->sig != nullptr) act = act->sig;
+                    act->sig = nueva;
+                }
+            }
+        } else if (seccion == "#PROFESORES") {
+            separarCampos(linea, campos, 12);
+            Programa* p = buscarProgramaGlobal(campos[1], nullptr);
+            if (p != nullptr) {
+                Profesor* nuevo = new Profesor();
+                nuevo->codigo = campos[0];
+                nuevo->nombre = campos[2];
+                nuevo->documento = campos[3];
+                nuevo->email = campos[4];
+                nuevo->nomina.tipoContrato = contratoDesdeInt(stoi(campos[5]));
+                nuevo->nomina.categoria = categoriaDesdeInt(stoi(campos[6]));
+                nuevo->nomina.puntosTitulo = stoi(campos[7]);
+                nuevo->nomina.puntosExperiencia = stoi(campos[8]);
+                nuevo->nomina.puntosProductividad = stoi(campos[9]);
+                nuevo->nomina.horasCatedraMes = stoi(campos[10]);
+                nuevo->activo = (campos[11] == "1");
+                nuevo->sig = nullptr;
+                if (p->listaProfesores == nullptr) p->listaProfesores = nuevo;
+                else {
+                    Profesor* act = p->listaProfesores;
+                    while (act->sig != nullptr) act = act->sig;
+                    act->sig = nuevo;
+                }
+            }
+        } else if (seccion == "#ADMINISTRATIVOS") {
+            separarCampos(linea, campos, 7);
+            Administrativo* nuevo = new Administrativo();
+            nuevo->codigo = campos[0];
+            nuevo->nombre = campos[1];
+            nuevo->documento = campos[2];
+            nuevo->cargo = campos[3];
+            nuevo->tipoContrato = campos[4];
+            nuevo->salarioBase = stod(campos[5]);
+            nuevo->activo = (campos[6] == "1");
+            nuevo->sig = nullptr;
+            if (cabezaAdministrativos == nullptr) cabezaAdministrativos = nuevo;
+            else {
+                Administrativo* act = cabezaAdministrativos;
+                while (act->sig != nullptr) act = act->sig;
+                act->sig = nuevo;
+            }
+        } else if (seccion == "#CONTADORES") {
+            separarCampos(linea, campos, 6);
+            if (!campos[0].empty()) contF = stoi(campos[0]);
+            if (!campos[1].empty()) contP = stoi(campos[1]);
+            if (!campos[2].empty()) contC = stoi(campos[2]);
+            if (!campos[3].empty()) contE = stoi(campos[3]);
+            if (!campos[4].empty()) contD = stoi(campos[4]);
+            if (!campos[5].empty()) contA = stoi(campos[5]);
+        }
+    }
+    archivo.close();
+    cout << "  >> Datos cargados correctamente desde '" << ARCHIVO_DATOS << "'.\n";
+}
+
+// ======================================================================
+// 20. DATOS DE EJEMPLO (demuestra que se puede a?adir cualquier programa,
+//     por ejemplo Medicina, sin modificar la estructura de datos)
+// ======================================================================
+void cargarDatosDeEjemplo() {
+    // ---- Facultad de Ingenierias y Tecnologicas ----
+    Facultad* fIng = new Facultad();
+    fIng->codigo = generarCodigoFacultad();
+    fIng->nombre = "Facultad de Ingenierias y Tecnologicas";
+    fIng->activo = true; fIng->listaProgramas = nullptr; fIng->sig = nullptr;
+    cabezaFacultades = fIng;
+
+    Programa* pSis = new Programa();
+    pSis->codigo = generarCodigoPrograma();
+    pSis->nombre = "Ingenieria de Sistemas";
+    pSis->tipo = INGENIERIA;
+    pSis->activo = true;
+    pSis->listaCursos = nullptr; pSis->listaEstudiantes = nullptr; pSis->listaProfesores = nullptr;
+    pSis->sig = nullptr;
+    fIng->listaProgramas = pSis;
+
+    Curso* c1 = new Curso(); c1->codigo = generarCodigoCurso(); c1->nombre = "Estructura de Datos";
+    c1->creditos = 4; c1->activo = true; c1->sig = nullptr;
+    Curso* c2 = new Curso(); c2->codigo = generarCodigoCurso(); c2->nombre = "Programacion Orientada a Objetos";
+    c2->creditos = 3; c2->activo = true; c2->sig = c1==nullptr?nullptr:nullptr;
+    c1->sig = c2; c2->sig = nullptr;
+    pSis->listaCursos = c1;
+
+    Profesor* d1 = new Profesor();
+    d1->codigo = generarCodigoProfesor(); d1->nombre = "Adith Perez"; d1->documento = "1065800000";
+    d1->email = "adithperez@unicesar.edu.co"; d1->activo = true;
+    d1->nomina.tipoContrato = PLANTA; d1->nomina.categoria = ASOCIADO;
+    d1->nomina.puntosTitulo = 900; d1->nomina.puntosExperiencia = 300; d1->nomina.puntosProductividad = 150;
+    d1->nomina.horasCatedraMes = 0; d1->sig = nullptr;
+    pSis->listaProfesores = d1;
+
+    Estudiante* e1 = new Estudiante();
+    e1->codigo = generarCodigoEstudiante(); e1->nombre = "Estudiante Ejemplo Uno";
+    e1->documento = "1090000001"; e1->email = "est1@unicesar.edu.co"; e1->categoria = "Regular";
+    e1->activo = true; e1->cursosMatriculados = nullptr; e1->sig = nullptr;
+    pSis->listaEstudiantes = e1;
+
+    // ---- Facultad de Ciencias de la Salud (con Medicina) ----
+    Facultad* fSalud = new Facultad();
+    fSalud->codigo = generarCodigoFacultad();
+    fSalud->nombre = "Facultad de Ciencias de la Salud";
+    fSalud->activo = true; fSalud->listaProgramas = nullptr; fSalud->sig = nullptr;
+    fIng->sig = fSalud;
+
+    Programa* pMed = new Programa();
+    pMed->codigo = generarCodigoPrograma();
+    pMed->nombre = "Medicina";
+    pMed->tipo = MEDICINA;
+    pMed->activo = true;
+    pMed->listaCursos = nullptr; pMed->listaEstudiantes = nullptr; pMed->listaProfesores = nullptr;
+    pMed->sig = nullptr;
+    fSalud->listaProgramas = pMed;
+
+    Programa* pEnf = new Programa();
+    pEnf->codigo = generarCodigoPrograma();
+    pEnf->nombre = "Enfermeria";
+    pEnf->tipo = ENFERMERIA;
+    pEnf->activo = true;
+    pEnf->listaCursos = nullptr; pEnf->listaEstudiantes = nullptr; pEnf->listaProfesores = nullptr;
+    pEnf->sig = nullptr;
+    pMed->sig = pEnf;
+
+    Curso* cm1 = new Curso(); cm1->codigo = generarCodigoCurso(); cm1->nombre = "Anatomia Humana I";
+    cm1->creditos = 5; cm1->activo = true; cm1->sig = nullptr;
+    pMed->listaCursos = cm1;
+
+    Curso* ce1 = new Curso(); ce1->codigo = generarCodigoCurso(); ce1->nombre = "Fundamentos de Enfermeria";
+    ce1->creditos = 4; ce1->activo = true; ce1->sig = nullptr;
+    pEnf->listaCursos = ce1;
+
+    Profesor* dm1 = new Profesor();
+    dm1->codigo = generarCodigoProfesor(); dm1->nombre = "Doctora Ejemplo Medicina";
+    dm1->documento = "1065900000"; dm1->email = "docmedicina@unicesar.edu.co"; dm1->activo = true;
+    dm1->nomina.tipoContrato = CATEDRATICO; dm1->nomina.categoria = TITULAR;
+    dm1->nomina.puntosTitulo = 0; dm1->nomina.puntosExperiencia = 0; dm1->nomina.puntosProductividad = 0;
+    dm1->nomina.horasCatedraMes = 60; dm1->sig = nullptr;
+    pMed->listaProfesores = dm1;
+
+    Estudiante* em1 = new Estudiante();
+    em1->codigo = generarCodigoEstudiante(); em1->nombre = "Estudiante Ejemplo Medicina";
+    em1->documento = "1090000002"; em1->email = "estmed@unicesar.edu.co"; em1->categoria = "Regular";
+    em1->activo = true; em1->cursosMatriculados = nullptr; em1->sig = nullptr;
+    pMed->listaEstudiantes = em1;
+
+    // ---- Administrativo de ejemplo ----
+    Administrativo* a1 = new Administrativo();
+    a1->codigo = generarCodigoAdministrativo(); a1->nombre = "Administrativo Ejemplo";
+    a1->documento = "1065700000"; a1->cargo = "Secretario Academico";
+    a1->tipoContrato = "Planta"; a1->salarioBase = 2500000; a1->activo = true; a1->sig = nullptr;
+    cabezaAdministrativos = a1;
+
+    cout << "  >> Datos de ejemplo cargados (incluye Medicina, Enfermeria y otras carreras del area de salud).\n";
+}
+
+// ======================================================================
+// 21. LIBERACION TOTAL DE MEMORIA (evita fugas al salir o recargar)
+// ======================================================================
+void liberarTodaLaMemoria() {
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        Facultad* tmpF = f;
+        f = f->sig;
+        Programa* p = tmpF->listaProgramas;
+        while (p != nullptr) { Programa* tmpP = p; p = p->sig; liberarPrograma(tmpP); }
+        delete tmpF;
+    }
+    cabezaFacultades = nullptr;
+
+    Administrativo* a = cabezaAdministrativos;
+    while (a != nullptr) { Administrativo* tmp = a; a = a->sig; delete tmp; }
+    cabezaAdministrativos = nullptr;
+}
+
+// ======================================================================
+// 22. MENUS
+// ======================================================================
+void menuFacultades() {
+    int op;
+    do {
+        titulo("GESTION DE FACULTADES");
+        cout << "  1. Crear facultad\n";
+        cout << "  2. Listar facultades\n";
+        cout << "  3. Modificar facultad\n";
+        cout << "  4. Activar/Desactivar facultad\n";
+        cout << "  5. Eliminar facultad\n";
+        cout << "  0. Volver\n";
+        op = leerEntero("  Opcion: ");
+        switch (op) {
+            case 1: crearFacultad(); break;
+            case 2: listarFacultades(); break;
+            case 3: modificarFacultad(); break;
+            case 4: desactivarFacultad(); break;
+            case 5: eliminarFacultad(); break;
+            case 0: break;
+            default: cout << "  >> Opcion invalida.\n";
+        }
+    } while (op != 0);
+}
+
+void menuProgramas() {
+    int op;
+    do {
+        titulo("GESTION DE PROGRAMAS ACADEMICOS");
+        cout << "  1. Crear programa (ej: Medicina, Ing. de Sistemas, etc.)\n";
+        cout << "  2. Listar programas por facultad\n";
+        cout << "  3. Modificar programa\n";
+        cout << "  4. Activar/Desactivar programa\n";
+        cout << "  5. Eliminar programa\n";
+        cout << "  0. Volver\n";
+        op = leerEntero("  Opcion: ");
+        switch (op) {
+            case 1: crearPrograma(); break;
+            case 2: listarProgramas(); break;
+            case 3: modificarPrograma(); break;
+            case 4: desactivarPrograma(); break;
+            case 5: eliminarPrograma(); break;
+            case 0: break;
+            default: cout << "  >> Opcion invalida.\n";
+        }
+    } while (op != 0);
+}
+
+void menuCursos() {
+    int op;
+    do {
+        titulo("GESTION DE CURSOS");
+        cout << "  1. Crear curso\n";
+        cout << "  2. Listar cursos de un programa\n";
+        cout << "  3. Modificar curso\n";
+        cout << "  4. Eliminar curso\n";
+        cout << "  0. Volver\n";
+        op = leerEntero("  Opcion: ");
+        switch (op) {
+            case 1: crearCurso(); break;
+            case 2: listarCursos(); break;
+            case 3: modificarCurso(); break;
+            case 4: eliminarCurso(); break;
+            case 0: break;
+            default: cout << "  >> Opcion invalida.\n";
+        }
+    } while (op != 0);
+}
+
+void menuEstudiantes() {
+    int op;
+    do {
+        titulo("GESTION DE ESTUDIANTES");
+        cout << "  1. Crear estudiante\n";
+        cout << "  2. Listar estudiantes de un programa\n";
+        cout << "  3. Modificar estudiante\n";
+        cout << "  4. Activar/Desactivar estudiante\n";
+        cout << "  5. Eliminar estudiante\n";
+        cout << "  6. Matricular curso\n";
+        cout << "  7. Cancelar matricula de un curso\n";
+        cout << "  8. Registrar nota de un curso\n";
+        cout << "  9. Consultar promedio y alerta EBRA\n";
+        cout << "  0. Volver\n";
+        op = leerEntero("  Opcion: ");
+        switch (op) {
+            case 1: crearEstudiante(); break;
+            case 2: listarEstudiantes(); break;
+            case 3: modificarEstudiante(); break;
+            case 4: desactivarEstudiante(); break;
+            case 5: eliminarEstudiante(); break;
+            case 6: matricularCurso(); break;
+            case 7: cancelarMatricula(); break;
+            case 8: calificarCurso(); break;
+            case 9: consultarPromedioEstudiante(); break;
+            case 0: break;
+            default: cout << "  >> Opcion invalida.\n";
+        }
+    } while (op != 0);
+}
+
+void menuProfesores() {
+    int op;
+    do {
+        titulo("GESTION DE PROFESORES");
+        cout << "  1. Crear profesor\n";
+        cout << "  2. Listar profesores de un programa\n";
+        cout << "  3. Modificar profesor\n";
+        cout << "  4. Activar/Desactivar profesor\n";
+        cout << "  5. Eliminar profesor\n";
+        cout << "  0. Volver\n";
+        op = leerEntero("  Opcion: ");
+        switch (op) {
+            case 1: crearProfesor(); break;
+            case 2: listarProfesores(); break;
+            case 3: modificarProfesor(); break;
+            case 4: desactivarProfesor(); break;
+            case 5: eliminarProfesor(); break;
+            case 0: break;
+            default: cout << "  >> Opcion invalida.\n";
+        }
+    } while (op != 0);
+}
+
+void menuAdministrativos() {
+    int op;
+    do {
+        titulo("GESTION DE ADMINISTRATIVOS");
+        cout << "  1. Crear administrativo\n";
+        cout << "  2. Listar administrativos\n";
+        cout << "  3. Modificar administrativo\n";
+        cout << "  4. Activar/Desactivar administrativo\n";
+        cout << "  5. Eliminar administrativo\n";
+        cout << "  0. Volver\n";
+        op = leerEntero("  Opcion: ");
+        switch (op) {
+            case 1: crearAdministrativo(); break;
+            case 2: listarAdministrativos(); break;
+            case 3: modificarAdministrativo(); break;
+            case 4: desactivarAdministrativo(); break;
+            case 5: eliminarAdministrativo(); break;
+            case 0: break;
+            default: cout << "  >> Opcion invalida.\n";
+        }
+    } while (op != 0);
+}
+
+void menuReportesNomina() {
+    int op;
+    do {
+        titulo("REPORTES Y NOMINA (recorridos de listas)");
+        cout << "  1.  Nomina de un profesor (mensual y anual)\n";
+        cout << "  2.  Nomina total de un programa\n";
+        cout << "  3.  Nomina total de una facultad\n";
+        cout << "  4.  Nomina total de TODA la universidad (mensual y anual)\n";
+        cout << "  5.  Estudiantes en EBRA (toda la universidad)\n";
+        cout << "  6.  Arbol completo de la universidad\n";
+        cout << "  7.  Profesores por categoria y tipo de contrato\n";
+        cout << "  8.  Nomina de un administrativo (mensual y anual)\n";
+        cout << "  9.  Nomina total de TODOS los administrativos\n";
+        cout << "  10. Profesor con mayor y menor salario\n";
+        cout << "  11. Estudiante con mejor y peor promedio\n";
+        cout << "  12. Ordenar profesores de un programa por salario\n";
+        cout << "  13. Buscar estudiante/profesor/administrativo por documento\n";
+        cout << "  14. Censo general de la universidad (conteos totales)\n";
+        cout << "  0.  Volver\n";
+        op = leerEntero("  Opcion: ");
+        switch (op) {
+            case 1:  reporteNominaProfesorIndividual(); break;
+            case 2:  reporteNominaPorPrograma(); break;
+            case 3:  reporteNominaPorFacultad(); break;
+            case 4:  reporteNominaUniversidadCompleta(); break;
+            case 5:  reporteEstudiantesEnEBRA(); break;
+            case 6:  reporteArbolCompletoUniversidad(); break;
+            case 7:  reporteProfesoresPorCategoria(); break;
+            case 8:  reporteNominaAdministrativoIndividual(); break;
+            case 9:  reporteNominaTotalAdministrativos(); break;
+            case 10: reporteProfesorMayorMenorSalario(); break;
+            case 11: reporteEstudianteMejorPeorPromedio(); break;
+            case 12: ordenarProfesoresPorSalario(); break;
+            case 13: buscarPorDocumento(); break;
+            case 14: reporteCensoGeneral(); break;
+            case 0: break;
+            default: cout << "  >> Opcion invalida.\n";
+        }
+    } while (op != 0);
+}
+
+void menuPrincipal() {
+    int op;
+    do {
+        titulo("MENU PRINCIPAL - NexoCampus (UPC)");
+        cout << "  1. Gestion de Facultades\n";
+        cout << "  2. Gestion de Programas Academicos\n";
+        cout << "  3. Gestion de Cursos\n";
+        cout << "  4. Gestion de Estudiantes\n";
+        cout << "  5. Gestion de Profesores\n";
+        cout << "  6. Gestion de Administrativos\n";
+        cout << "  7. Reportes y Nomina\n";
+        cout << "  8. Guardar datos en archivo\n";
+        cout << "  9. Cargar datos desde archivo\n";
+        cout << "  0. Salir\n";
+        op = leerEntero("  Opcion: ");
+        switch (op) {
+            case 1: menuFacultades(); break;
+            case 2: menuProgramas(); break;
+            case 3: menuCursos(); break;
+            case 4: menuEstudiantes(); break;
+            case 5: menuProfesores(); break;
+            case 6: menuAdministrativos(); break;
+            case 7: menuReportesNomina(); break;
+            case 8: guardarDatos(); break;
+            case 9: cargarDatos(); break;
+            case 0: cout << "\n  Saliendo del menu principal...\n"; break;
+            default: cout << "  >> Opcion invalida.\n";
+        }
+    } while (op != 0);
+}

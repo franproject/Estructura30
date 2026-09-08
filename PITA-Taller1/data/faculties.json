@@ -1,0 +1,10 @@
+[
+  {
+    "faculty_id": 1,
+    "name": "sistemas",
+    "dean": "franier",
+    "creation_date": "2/09/2026",
+    "active": true,
+    "program_list": []
+  }
+]

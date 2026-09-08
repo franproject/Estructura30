@@ -1,0 +1,39 @@
+# General project ignores
+.vscode/
+.idea/
+.DS_Store
+
+# C++ build artifacts
+build/
+cmake-build-debug/
+cmake-build-release/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.o
+*.obj
+*.exe
+*.out
+*.dll
+*.so
+*.a
+*.lib
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+.pytest_cache/
+.mypy_cache/
+
+# Temporary/editor files
+*.log
+*.tmp
+*.swp
+
+build-*/

@@ -7,6 +7,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from .icons import icon
+
 
 class StatCard(QFrame):
     """Tarjeta individual con valor, título, icono y variación."""
@@ -29,8 +31,20 @@ class StatCard(QFrame):
         self.lbl_title = QLabel(title)
         self.lbl_title.setObjectName("statLabel")
 
-        self.lbl_icon = QLabel("")
+        self.lbl_icon = QLabel()
         self.lbl_icon.setFixedSize(36, 36)
+        self.lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon_name = {
+            "Facultades": "building",
+            "Programas": "hat",
+            "Cursos": "book",
+            "Estudiantes": "users",
+            "Profesores": "hat",
+            "Administrativos": "briefcase",
+            "Inscripciones activas": "clipboard",
+            "Alertas EBRA": "bell",
+        }.get(title, "chart")
+        self.lbl_icon.setPixmap(icon(icon_name, text_color, 20).pixmap(20, 20))
         self.lbl_icon.setStyleSheet(
             f"background-color: {bg_color}; border-radius: 8px;"
         )

@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>NexoCampus — Dashboard académico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: #F8FAFC; color: #0F172A; font-size: 13px; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.25); border-radius: 4px; }
+    .light-scroll::-webkit-scrollbar-thumb { background: #CBD5E1; }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar {
+      width: 220px; min-width: 220px;
+      background: linear-gradient(180deg, #14532D 0%, #166534 100%);
+      display: flex; flex-direction: column; height: 100%; overflow-y: auto; flex-shrink: 0;
+    }
+
+    /* Brand */
+    .brand { padding: 22px 18px 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .brand-row { display: flex; align-items: center; gap: 10px; }
+    .brand-box { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .brand-name { font-weight: 900; font-size: 17px; color: #fff; letter-spacing: .3px; line-height: 1; }
+    .brand-sub  { font-size: 9px; color: rgba(255,255,255,.45); line-height: 1.5; margin-top: 2px; }
+
+    /* Nav label */
+    .nav-lbl { font-size: 9px; font-weight: 700; letter-spacing: .14em; color: rgba(255,255,255,.35); text-transform: uppercase; padding: 16px 18px 5px; }
+
+    /* Nav item */
+    .ni { display: flex; align-items: center; gap: 9px; padding: 9px 14px; cursor: pointer; color: rgba(255,255,255,.68); font-size: 13px; font-weight: 500; transition: all .15s; border-radius: 9px; margin: 1px 8px; }
+    .ni:hover { background: rgba(255,255,255,.09); color: #fff; }
+    .ni.active { background: #16A34A; color: #fff; font-weight: 700; box-shadow: 0 2px 12px rgba(22,163,74,.3); }
+    .ni-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; opacity: .75; }
+    .ni.active .ni-icon { opacity: 1; }
+    .ni-arrow { margin-left: auto; transition: transform .2s; opacity: .4; }
+    .ni-arrow.open { transform: rotate(180deg); }
+
+    /* Sub item */
+    .si { display: flex; align-items: center; gap: 8px; padding: 8px 14px 8px 38px; cursor: pointer; color: rgba(255,255,255,.55); font-size: 12px; font-weight: 500; transition: all .15s; border-radius: 9px; margin: 1px 8px; }
+    .si:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.9); }
+    .si.active-sub { color: #86EFAC; font-weight: 600; }
+
+    /* Collapsible */
+    .sub { overflow: hidden; transition: max-height .25s ease; max-height: 0; }
+    .sub.open { max-height: 300px; }
+
+    /* Sidebar bottom */
+    .s-foot { margin-top: auto; border-top: 1px solid rgba(255,255,255,.08); padding: 10px 8px 14px; }
+
+    /* ─── HEADER ─── */
+    .header { height: 58px; background: #fff; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; padding: 0 24px; gap: 14px; flex-shrink: 0; }
+    .h-search { display: flex; align-items: center; gap: 8px; background: #F1F5F9; border-radius: 10px; padding: 7px 14px; flex: 1; max-width: 320px; color: #94A3B8; font-size: 13px; cursor: text; }
+    .h-icon-btn { width: 34px; height: 34px; border-radius: 9px; background: #F1F5F9; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748B; transition: all .15s; position: relative; }
+    .h-icon-btn:hover { background: #E2E8F0; }
+    .h-notif-dot { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: #EF4444; border-radius: 999px; border: 2px solid #fff; }
+    .h-sep { width: 1px; background: #E2E8F0; align-self: stretch; margin: 8px 0; }
+    .h-avatar { width: 32px; height: 32px; border-radius: 999px; background: linear-gradient(135deg, #16A34A, #14532D); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 11px; flex-shrink: 0; }
+
+    /* ─── PAGES ─── */
+    .page { display: none; }
+    .page.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ─── STAT CARD ─── */
+    .sc { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all .2s; }
+    .sc:hover { box-shadow: 0 4px 18px rgba(0,0,0,.08); transform: translateY(-2px); border-color: #BBF7D0; }
+    .sc-icon { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sc-val { font-size: 26px; font-weight: 800; color: #0F172A; line-height: 1; }
+    .sc-lbl { font-size: 11px; color: #64748B; font-weight: 500; margin-top: 2px; }
+    .sc-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; }
+    .sc-sub { font-size: 10px; color: #94A3B8; }
+    .delta-up   { font-size: 11px; font-weight: 700; color: #16A34A; }
+    .delta-zero { font-size: 11px; font-weight: 600; color: #94A3B8; }
+    .delta-dn   { font-size: 11px; font-weight: 700; color: #DC2626; }
+
+    /* ─── PANEL ─── */
+    .panel { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; }
+    .panel-h { padding: 13px 16px; border-bottom: 1px solid #F1F5F9; display: flex; align-items: center; justify-content: space-between; }
+    .panel-t { font-weight: 700; font-size: 13px; color: #0F172A; display: flex; align-items: center; gap: 8px; }
+    .panel-ico { width: 22px; height: 22px; background: #DCFCE7; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+
+    /* ─── QUICK ACTION ─── */
+    .qa { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: all .2s; flex: 1; min-width: 0; }
+    .qa:hover { border-color: #86EFAC; box-shadow: 0 4px 16px rgba(22,163,74,.1); transform: translateY(-2px); }
+    .qa-ico { width: 42px; height: 42px; border-radius: 11px; background: #DCFCE7; display: flex; align-items: center; justify-content: center; }
+    .qa-lbl { font-size: 12px; font-weight: 600; color: #0F172A; text-align: center; }
+
+    /* ─── BUTTONS ─── */
+    .btn-green { background: #16A34A; color: #fff; border: none; border-radius: 9px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background .15s; font-family: inherit; }
+    .btn-green:hover { background: #15803D; }
+    .btn-outline { background: transparent; color: #16A34A; border: 1.5px solid #16A34A; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; width: 100%; transition: all .15s; font-family: inherit; margin-top: 8px; }
+    .btn-outline:hover { background: #F0FDF4; }
+    .btn-ghost { background: #F1F5F9; color: #475569; border: none; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; }
+
+    /* ─── TABLE ─── */
+    .trow:hover { background: #F8FAFC; }
+
+    /* ─── TAG / CHIP ─── */
+    .chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .chip-green { background: #DCFCE7; color: #15803D; }
+    .chip-red   { background: #FEE2E2; color: #DC2626; }
+    .chip-amber { background: #FEF9C3; color: #B45309; }
+    .chip-gray  { background: #F1F5F9; color: #64748B; }
+
+    /* ─── PAGE TITLE ─── */
+    .pt { display: flex; align-items: center; gap: 10px; }
+    .pt-bar { width: 4px; height: 28px; background: #16A34A; border-radius: 4px; flex-shrink: 0; }
+    .pt-h1 { font-size: 20px; font-weight: 800; color: #0F172A; }
+    .pt-sub { font-size: 12px; color: #94A3B8; margin-top: 1px; }
+
+    /* ─── INFO ROW ─── */
+    .ir { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #F8FAFC; font-size: 12px; }
+    .ir:last-child { border: none; }
+
+    /* ─── ICON WRAPPERS ─── */
+    .ico-wrap { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  </style>
+</head>
+<body style="display:flex;height:100vh;overflow:hidden">
+
+<!-- ═══════════════════════ SVG ICON DEFS ═══════════════════════ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <!-- home -->
+  <symbol id="ic-home" viewBox="0 0 20 20"><path d="M10 2L3 8v10h5v-6h4v6h5V8z"/></symbol>
+  <!-- building (facultades) -->
+  <symbol id="ic-building" viewBox="0 0 20 20"><rect x="2" y="7" width="16" height="11" rx="1"/><path d="M1 7l9-5 9 5"/><rect x="8" y="13" width="4" height="5"/><rect x="5" y="9" width="2" height="2"/><rect x="13" y="9" width="2" height="2"/></symbol>
+  <!-- hat (programas) -->
+  <symbol id="ic-hat" viewBox="0 0 20 20"><ellipse cx="10" cy="10" rx="8" ry="2.5"/><path d="M4 10.5c0 3 2.686 5.5 6 5.5s6-2.5 6-5.5"/><path d="M10 2v8"/><circle cx="10" cy="2" r="1.2"/></symbol>
+  <!-- book (cursos) -->
+  <symbol id="ic-book" viewBox="0 0 20 20"><path d="M4 3h9a2 2 0 012 2v11a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2z"/><path d="M15 3a2 2 0 012 2v11a2 2 0 01-2 2"/><path d="M7 8h4M7 12h4"/></symbol>
+  <!-- user (estudiante) -->
+  <symbol id="ic-user" viewBox="0 0 20 20"><circle cx="10" cy="7" r="3.5"/><path d="M3 17c0-3.866 3.134-7 7-7s7 3.134 7 7"/></symbol>
+  <!-- users (personas) -->
+  <symbol id="ic-users" viewBox="0 0 20 20"><circle cx="7.5" cy="7" r="3"/><path d="M1 17c0-3.314 2.91-6 6.5-6"/><circle cx="13" cy="7" r="3"/><path d="M19 17c0-3.314-2.91-6-6.5-6"/><path d="M10.5 11.5C9.05 11.18 7.8 10 7.5 8.5"/></symbol>
+  <!-- briefcase (admin) -->
+  <symbol id="ic-brief" viewBox="0 0 20 20"><rect x="2" y="7" width="16" height="11" rx="2"/><path d="M7 7V5a1 1 0 011-1h4a1 1 0 011 1v2"/><path d="M2 12h16"/></symbol>
+  <!-- clipboard (inscripciones) -->
+  <symbol id="ic-clip" viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="14" rx="2"/><path d="M8 4V3a1 1 0 011-1h2a1 1 0 011 1v1"/><path d="M7 9h6M7 13h4"/></symbol>
+  <!-- money (nómina) -->
+  <symbol id="ic-money" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8"/><path d="M10 6v8M8 8.5a1.5 1.5 0 003 0c0-.828-.5-1.5-1.5-1.5s-1.5.672-1.5 1.5V11a1.5 1.5 0 003 0"/></symbol>
+  <!-- chart (reportes) -->
+  <symbol id="ic-chart" viewBox="0 0 20 20"><rect x="3" y="10" width="3" height="7" rx="1"/><rect x="8.5" y="6" width="3" height="11" rx="1"/><rect x="14" y="3" width="3" height="14" rx="1"/><path d="M2 18h16"/></symbol>
+  <!-- gear (config) -->
+  <symbol id="ic-gear" viewBox="0 0 20 20"><circle cx="10" cy="10" r="2.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"/></symbol>
+  <!-- logout -->
+  <symbol id="ic-logout" viewBox="0 0 20 20"><path d="M13 4H5a1 1 0 00-1 1v10a1 1 0 001 1h8"/><path d="M16 10H8M13 7l3 3-3 3"/></symbol>
+  <!-- bell -->
+  <symbol id="ic-bell" viewBox="0 0 20 20"><path d="M10 2a6 6 0 016 6v3l1.5 2.5H2.5L4 11V8a6 6 0 016-6z"/><path d="M8.5 17a1.5 1.5 0 003 0"/></symbol>
+  <!-- search -->
+  <symbol id="ic-search" viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4"/></symbol>
+  <!-- calendar -->
+  <symbol id="ic-cal" viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="14" rx="2"/><path d="M3 9h14M7 2v3M13 2v3"/></symbol>
+  <!-- clock -->
+  <symbol id="ic-clock" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4l2.5 2.5"/></symbol>
+  <!-- alert triangle -->
+  <symbol id="ic-alert" viewBox="0 0 20 20"><path d="M10 2L1.5 17h17z"/><path d="M10 8v4M10 14.5v.5"/></symbol>
+  <!-- chevron down -->
+  <symbol id="ic-chev" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5"/></symbol>
+  <!-- expand -->
+  <symbol id="ic-expand" viewBox="0 0 20 20"><path d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5"/></symbol>
+  <!-- plus -->
+  <symbol id="ic-plus" viewBox="0 0 20 20"><path d="M10 4v12M4 10h12"/></symbol>
+  <!-- filter -->
+  <symbol id="ic-filter" viewBox="0 0 20 20"><path d="M3 5h14M6 10h8M9 15h2"/></symbol>
+  <!-- edit -->
+  <symbol id="ic-edit" viewBox="0 0 20 20"><path d="M14.5 2.5a2.121 2.121 0 013 3L7 16H4v-3z"/></symbol>
+  <!-- trash -->
+  <symbol id="ic-trash" viewBox="0 0 20 20"><path d="M4 7h12M8 7V4h4v3M6 7l1 10h6l1-10"/></symbol>
+</svg>
+
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<aside class="sidebar">
+  <!-- Brand -->
+  <div class="brand">
+    <div class="brand-row">
+      <div class="brand-box">
+        <svg width="22" height="22" fill="white" opacity=".9" viewBox="0 0 20 20"><use href="#ic-building"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">NexoCampus</div>
+        <div class="brand-sub">Programa Integrado de<br>Transacciones Académicas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav-lbl">Navegación</div>
+  <div class="ni active" onclick="go('dashboard',this)">
+    <span class="ni-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-home"/></svg></span>
+    Inicio
+  </div>
+
+  <!-- Académico -->
+  <div class="ni" onclick="toggleSub('s-academico','arr-ac',this)">
+    <span class="ni-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><use href="#ic-hat"/></svg></span>
+    Académico
+    <svg id="arr-ac" class="ni-arrow" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#ic-chev"/></svg>
+  </div>
+  <div class="sub open" id="s-academico">
+    <div class="si" onclick="go('facultades',null)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><use href="#ic-building"/></svg>
+      Facultades
+    </div>
+    <div class="si" onclick="go('programas',null)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><use href="#ic-hat"/></svg>
+      Programas
+    </div>
+    <div class="si" onclick="go('cursos',null)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><use href="#ic-book"/></svg>
+      Cursos
+    </div>
+  </div>
+
+  <!-- Personas -->
+  <div class="ni" onclick="toggleSub('s-personas','arr-pe',this)">
+    <span class="ni-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><use href="#ic-users"/></svg></span>
+    Personas
+    <svg id="arr-pe" class="ni-arrow open" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#ic-chev"/></svg>
+  </div>
+  <div class="sub open" id="s-personas">
+    <div class="si" onclick="go('estudiantes',null)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><use href="#ic-user"/></svg>
+      Estudiantes
+    </div>
+    <div class="si" onclick="go('profesores',null)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><use href="#ic-hat"/></svg>
+      Profesores
+    </div>
+    <div class="si" onclick="go('administrativos',null)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><use href="#ic-brief"/></svg>
+      Administrativos
+    </div>
+  </div>
+
+  <!-- Gestión -->
+  <div class="ni" onclick="toggleSub('s-gestion','arr-ge',this)">
+    <span class="ni-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><use href="#ic-clip"/></svg></span>
+    Gestión
+    <svg id="arr-ge" class="ni-arrow open" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#ic-chev"/></svg>
+  </div>
+  <div class="sub open" id="s-gestion">
+    <div class="si" onclick="go('inscripciones',null)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><use href="#ic-clip"/></svg>
+      Inscripciones
+    </div>
+    <div class="si" onclick="go('nomina',null)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><use href="#ic-money"/></svg>
+      Nómina
+    </div>
+  </div>
+
+  <!-- Reportes -->
+  <div class="nav-lbl">Herramientas</div>
+  <div class="ni" onclick="go('reportes',this)">
+    <span class="ni-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><use href="#ic-chart"/></svg></span>
+    Reportes
+  </div>
+
+  <!-- Footer -->
+  <div class="s-foot">
+    <div class="ni" style="margin-bottom:2px">
+      <span class="ni-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><use href="#ic-gear"/></svg></span>
+      Configuración
+    </div>
+    <div class="ni">
+      <span class="ni-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><use href="#ic-logout"/></svg></span>
+      Cerrar sesión
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════════════ MAIN ═══════════════════════ -->
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+
+  <!-- Header -->
+  <div class="header">
+    <!-- Brand text (header) -->
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="width:30px;height:30px;background:#16A34A;border-radius:8px;display:flex;align-items:center;justify-content:center">
+        <svg width="16" height="16" fill="white" stroke="white" stroke-width=".3" stroke-linecap="round"><use href="#ic-building"/></svg>
+      </div>
+      <div>
+        <div style="font-weight:800;font-size:14px;color:#14532D;letter-spacing:.3px;line-height:1">NexoCampus</div>
+        <div style="font-size:9px;color:#94A3B8;line-height:1;margin-top:1px">Portal universitario</div>
+      </div>
+    </div>
+    <div class="h-sep"></div>
+    <!-- Search -->
+    <div class="h-search" style="flex:1;max-width:320px">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#ic-search"/></svg>
+      Buscar en Nexus...
+    </div>
+    <div style="flex:1"></div>
+    <!-- Date -->
+    <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:#64748B">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><use href="#ic-cal"/></svg>
+      <span>06 de Septiembre de 2026</span>
+      <span style="color:#CBD5E1">|</span>
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><use href="#ic-clock"/></svg>
+      <span style="font-weight:600;color:#334155">20:23</span>
+    </div>
+    <div class="h-sep"></div>
+    <!-- Bell -->
+    <button class="h-icon-btn">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><use href="#ic-bell"/></svg>
+      <span class="h-notif-dot"></span>
+    </button>
+    <div class="h-sep"></div>
+    <!-- Profile -->
+    <div style="display:flex;align-items:center;gap:8px;cursor:pointer">
+      <div class="h-avatar">SA</div>
+      <div>
+        <div style="font-weight:700;font-size:12px;color:#0F172A;line-height:1.2">Administrador</div>
+        <div style="font-size:10px;color:#94A3B8">Sistema</div>
+      </div>
+      <svg width="12" height="12" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"><use href="#ic-chev"/></svg>
+    </div>
+  </div>
+
+  <!-- ═══════ DASHBOARD ═══════ -->
+  <div id="page-dashboard" class="page active light-scroll" style="overflow-y:auto;padding:24px;gap:20px">
+
+    <!-- Page title + btn -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:4px;height:32px;background:#16A34A;border-radius:4px;flex-shrink:0"></div>
+        <div>
+          <h1 style="font-size:20px;font-weight:800;color:#0F172A">Dashboard académico</h1>
+          <p style="font-size:12px;color:#94A3B8;margin-top:1px">Vista general del sistema universitario — Período 2026-II</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 8 Stat cards (2 × 4) ── -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+
+      <div class="sc" onclick="go('facultades',null)">
+        <div class="sc-icon" style="background:#DCFCE7">
+          <svg width="22" height="22" fill="none" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"><use href="#ic-building"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="sc-lbl">Facultades</div>
+          <div class="sc-val">5</div>
+          <div class="sc-meta"><span class="sc-sub">Total registradas</span><span class="delta-up">▲ 1</span></div>
+        </div>
+      </div>
+
+      <div class="sc" onclick="go('programas',null)">
+        <div class="sc-icon" style="background:#D1FAE5">
+          <svg width="22" height="22" fill="none" stroke="#059669" stroke-width="1.8" stroke-linecap="round"><use href="#ic-hat"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="sc-lbl">Programas</div>
+          <div class="sc-val">12</div>
+          <div class="sc-meta"><span class="sc-sub">Total registrados</span><span class="delta-zero">= 0</span></div>
+        </div>
+      </div>
+
+      <div class="sc" onclick="go('cursos',null)">
+        <div class="sc-icon" style="background:#DBEAFE">
+          <svg width="22" height="22" fill="none" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round"><use href="#ic-book"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="sc-lbl">Cursos</div>
+          <div class="sc-val">48</div>
+          <div class="sc-meta"><span class="sc-sub">Total registrados</span><span class="delta-up">▲ 2</span></div>
+        </div>
+      </div>
+
+      <div class="sc" onclick="go('estudiantes',null)">
+        <div class="sc-icon" style="background:#EDE9FE">
+          <svg width="22" height="22" fill="none" stroke="#7C3AED" stroke-width="1.8" stroke-linecap="round"><use href="#ic-users"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="sc-lbl">Estudiantes</div>
+          <div class="sc-val">320</div>
+          <div class="sc-meta"><span class="sc-sub">Total registrados</span><span class="delta-up">▲ 5</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+
+      <div class="sc" onclick="go('profesores',null)">
+        <div class="sc-icon" style="background:#D1FAE5">
+          <svg width="22" height="22" fill="none" stroke="#059669" stroke-width="1.8" stroke-linecap="round"><use href="#ic-hat"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="sc-lbl">Profesores</div>
+          <div class="sc-val">45</div>
+          <div class="sc-meta"><span class="sc-sub">Total registrados</span><span class="delta-zero">= 0</span></div>
+        </div>
+      </div>
+
+      <div class="sc" onclick="go('administrativos',null)">
+        <div class="sc-icon" style="background:#FEF3C7">
+          <svg width="22" height="22" fill="none" stroke="#D97706" stroke-width="1.8" stroke-linecap="round"><use href="#ic-brief"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="sc-lbl">Administrativos</div>
+          <div class="sc-val">12</div>
+          <div class="sc-meta"><span class="sc-sub">Total registrados</span><span class="delta-up">▲ 1</span></div>
+        </div>
+      </div>
+
+      <div class="sc" onclick="go('inscripciones',null)">
+        <div class="sc-icon" style="background:#DCFCE7">
+          <svg width="22" height="22" fill="none" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"><use href="#ic-clip"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="sc-lbl">Inscripciones activas</div>
+          <div class="sc-val">287</div>
+          <div class="sc-meta"><span class="sc-sub">En el período actual</span><span class="delta-up">▲ 7%</span></div>
+        </div>
+      </div>
+
+      <div class="sc" style="border-color:#FEE2E2" onclick="go('reportes',null)">
+        <div class="sc-icon" style="background:#FEE2E2">
+          <svg width="22" height="22" fill="none" stroke="#DC2626" stroke-width="1.8" stroke-linecap="round"><use href="#ic-alert"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="sc-lbl">Alertas EBRA</div>
+          <div class="sc-val" style="color:#DC2626">3</div>
+          <div class="sc-meta"><span class="sc-sub">Estudiantes en riesgo</span><span class="delta-dn">▲ 1</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Middle: Info + Distribution + Últimos registros ── -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+
+      <!-- Información general -->
+      <div class="panel" style="display:flex;flex-direction:column">
+        <div class="panel-h">
+          <div class="panel-t">
+            <div class="panel-ico">
+              <svg width="12" height="12" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round"><use href="#ic-clip"/></svg>
+            </div>
+            Información general
+          </div>
+        </div>
+        <div style="padding:12px 16px;flex:1">
+          <div class="ir">
+            <svg width="14" height="14" fill="none" stroke="#94A3B8" stroke-width="1.7" stroke-linecap="round"><use href="#ic-building"/></svg>
+            <span style="color:#64748B;flex:1">Facultades</span>
+            <span style="font-weight:700;color:#0F172A">5</span>
+          </div>
+          <div class="ir">
+            <svg width="14" height="14" fill="none" stroke="#94A3B8" stroke-width="1.7" stroke-linecap="round"><use href="#ic-hat"/></svg>
+            <span style="color:#64748B;flex:1">Programas</span>
+            <span style="font-weight:700;color:#0F172A">12</span>
+          </div>
+          <div class="ir">
+            <svg width="14" height="14" fill="none" stroke="#94A3B8" stroke-width="1.7" stroke-linecap="round"><use href="#ic-book"/></svg>
+            <span style="color:#64748B;flex:1">Cursos</span>
+            <span style="font-weight:700;color:#0F172A">48</span>
+          </div>
+          <div class="ir">
+            <svg width="14" height="14" fill="none" stroke="#94A3B8" stroke-width="1.7" stroke-linecap="round"><use href="#ic-users"/></svg>
+            <span style="color:#64748B;flex:1">Estudiantes</span>
+            <span style="font-weight:700;color:#0F172A">320</span>
+          </div>
+          <div class="ir">
+            <svg width="14" height="14" fill="none" stroke="#94A3B8" stroke-width="1.7" stroke-linecap="round"><use href="#ic-hat"/></svg>
+            <span style="color:#64748B;flex:1">Profesores</span>
+            <span style="font-weight:700;color:#0F172A">45</span>
+          </div>
+          <div class="ir">
+            <svg width="14" height="14" fill="none" stroke="#94A3B8" stroke-width="1.7" stroke-linecap="round"><use href="#ic-brief"/></svg>
+            <span style="color:#64748B;flex:1">Administrativos</span>
+            <span style="font-weight:700;color:#0F172A">12</span>
+          </div>
+        </div>
+        <!-- Nómina strip -->
+        <div style="padding:12px 16px;border-top:1px solid #F1F5F9">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+            <svg width="13" height="13" fill="none" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"><use href="#ic-money"/></svg>
+            <span style="font-weight:700;font-size:12px;color:#0F172A">Nómina (Mes actual)</span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:6px">
+            <span style="font-size:11px;color:#64748B">Total a pagar:</span>
+            <span style="font-weight:800;font-size:15px;color:#0F172A">$ 48.750.000</span>
+          </div>
+          <button class="btn-outline" onclick="go('nomina',null)">Ver detalle</button>
+        </div>
+      </div>
+
+      <!-- Distribución donut -->
+      <div class="panel">
+        <div class="panel-h">
+          <div class="panel-t">
+            <div class="panel-ico">
+              <svg width="12" height="12" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round"><use href="#ic-chart"/></svg>
+            </div>
+            Distribución por programa
+          </div>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px">
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#F1F5F9" stroke-width="16"/>
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#16A34A" stroke-width="16" stroke-dasharray="110 204" stroke-dashoffset="-51" stroke-linecap="round" transform="rotate(-90 70 70)"/>
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#3B82F6" stroke-width="16" stroke-dasharray="63 251" stroke-dashoffset="-161" stroke-linecap="round" transform="rotate(-90 70 70)"/>
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#8B5CF6" stroke-width="16" stroke-dasharray="47 267" stroke-dashoffset="-224" stroke-linecap="round" transform="rotate(-90 70 70)"/>
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#F59E0B" stroke-width="16" stroke-dasharray="47 267" stroke-dashoffset="-271" stroke-linecap="round" transform="rotate(-90 70 70)"/>
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#10B981" stroke-width="16" stroke-dasharray="31 283" stroke-dashoffset="-318" stroke-linecap="round" transform="rotate(-90 70 70)"/>
+            <text x="70" y="66" text-anchor="middle" fill="#0F172A" font-size="20" font-weight="800" font-family="Inter,sans-serif">320</text>
+            <text x="70" y="80" text-anchor="middle" fill="#94A3B8" font-size="9" font-family="Inter,sans-serif">estudiantes</text>
+          </svg>
+          <div style="width:100%;display:flex;flex-direction:column;gap:5px">
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px">
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:999px;background:#16A34A;display:inline-block"></span><span style="color:#64748B">Ing. de Sistemas</span></span>
+              <span style="font-weight:700;color:#0F172A">35%</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px">
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:999px;background:#3B82F6;display:inline-block"></span><span style="color:#64748B">Ing. Civil</span></span>
+              <span style="font-weight:700;color:#0F172A">20%</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px">
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:999px;background:#8B5CF6;display:inline-block"></span><span style="color:#64748B">Ing. Industrial</span></span>
+              <span style="font-weight:700;color:#0F172A">15%</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px">
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:999px;background:#F59E0B;display:inline-block"></span><span style="color:#64748B">Administración</span></span>
+              <span style="font-weight:700;color:#0F172A">15%</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px">
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:999px;background:#10B981;display:inline-block"></span><span style="color:#64748B">Contaduría</span></span>
+              <span style="font-weight:700;color:#0F172A">10%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Últimos registros (activity) -->
+      <div class="panel">
+        <div class="panel-h">
+          <div class="panel-t">
+            <div class="panel-ico">
+              <svg width="12" height="12" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round"><use href="#ic-clock"/></svg>
+            </div>
+            Últimos registros
+          </div>
+        </div>
+        <!-- Table header -->
+        <div style="display:grid;grid-template-columns:70px 1fr 70px;padding:8px 14px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94A3B8;background:#F8FAFC;border-bottom:1px solid #F1F5F9">
+          <div>Fecha</div><div>Actividad</div><div>Usuario</div>
+        </div>
+        <!-- Empty state -->
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;text-align:center">
+          <svg width="36" height="36" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" viewBox="0 0 20 20" style="margin-bottom:10px"><use href="#ic-clip"/></svg>
+          <div style="font-size:12px;color:#94A3B8;font-weight:500">No hay registros recientes.</div>
+          <div style="font-size:11px;color:#CBD5E1;margin-top:4px">Las actividades aparecerán aquí cuando estén disponibles.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Acciones rápidas ── -->
+    <div class="panel" style="padding:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <svg width="14" height="14" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round"><use href="#ic-plus"/></svg>
+        <span style="font-weight:700;font-size:13px;color:#0F172A">Acciones rápidas</span>
+      </div>
+      <div style="display:flex;gap:10px">
+        <div class="qa" onclick="go('facultades',null)">
+          <div class="qa-ico"><svg width="20" height="20" fill="none" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"><use href="#ic-building"/></svg></div>
+          <span class="qa-lbl">Facultades</span>
+        </div>
+        <div class="qa" onclick="go('programas',null)">
+          <div class="qa-ico"><svg width="20" height="20" fill="none" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"><use href="#ic-hat"/></svg></div>
+          <span class="qa-lbl">Programas</span>
+        </div>
+        <div class="qa" onclick="go('cursos',null)">
+          <div class="qa-ico"><svg width="20" height="20" fill="none" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"><use href="#ic-book"/></svg></div>
+          <span class="qa-lbl">Cursos</span>
+        </div>
+        <div class="qa" onclick="go('estudiantes',null)">
+          <div class="qa-ico"><svg width="20" height="20" fill="none" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"><use href="#ic-user"/></svg></div>
+          <span class="qa-lbl">Estudiantes</span>
+        </div>
+        <div class="qa" onclick="go('profesores',null)">
+          <div class="qa-ico"><svg width="20" height="20" fill="none" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"><use href="#ic-hat"/></svg></div>
+          <span class="qa-lbl">Profesores</span>
+        </div>
+        <div class="qa" onclick="go('nomina',null)">
+          <div class="qa-ico" style="background:#FEF9C3"><svg width="20" height="20" fill="none" stroke="#D97706" stroke-width="1.8" stroke-linecap="round"><use href="#ic-money"/></svg></div>
+          <span class="qa-lbl">Nómina</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ ESTUDIANTES ═══════ -->
+  <div id="page-estudiantes" class="page light-scroll" style="overflow-y:auto;padding:24px;gap:18px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div class="pt">
+        <div class="pt-bar"></div>
+        <div>
+          <div class="pt-h1">Estudiantes</div>
+          <div class="pt-sub">Gestiona los estudiantes registrados en NexoCampus · <b style="color:#334155">320 registros</b></div>
+        </div>
+      </div>
+      <button class="btn-green">
+        <svg width="13" height="13" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><use href="#ic-plus"/></svg>
+        Nuevo estudiante
+      </button>
+    </div>
+    <!-- Mini stats -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+      <div class="sc"><div class="sc-icon" style="background:#EDE9FE"><svg width="20" height="20" fill="none" stroke="#7C3AED" stroke-width="1.8" stroke-linecap="round"><use href="#ic-users"/></svg></div><div><div class="sc-lbl">Total</div><div class="sc-val">320</div></div></div>
+      <div class="sc"><div class="sc-icon" style="background:#DCFCE7"><svg width="20" height="20" fill="none" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"><use href="#ic-user"/></svg></div><div><div class="sc-lbl">Activos</div><div class="sc-val" style="color:#16A34A">296</div></div></div>
+      <div class="sc"><div class="sc-icon" style="background:#FEF3C7"><svg width="20" height="20" fill="none" stroke="#D97706" stroke-width="1.8" stroke-linecap="round"><use href="#ic-user"/></svg></div><div><div class="sc-lbl">Inactivos</div><div class="sc-val" style="color:#D97706">24</div></div></div>
+      <div class="sc" style="border-color:#FEE2E2"><div class="sc-icon" style="background:#FEE2E2"><svg width="20" height="20" fill="none" stroke="#DC2626" stroke-width="1.8" stroke-linecap="round"><use href="#ic-alert"/></svg></div><div><div class="sc-lbl">EBRA</div><div class="sc-val" style="color:#DC2626">3</div></div></div>
+    </div>
+    <!-- Table -->
+    <div class="panel">
+      <div style="padding:12px 16px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:7px;background:#F1F5F9;border-radius:9px;padding:7px 12px;flex:1;max-width:260px;color:#94A3B8;font-size:12px">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#ic-search"/></svg>
+          Buscar estudiante...
+        </div>
+        <button class="btn-ghost" style="display:flex;align-items:center;gap:5px;font-family:inherit">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#ic-filter"/></svg>
+          Filtros
+        </button>
+        <span class="chip chip-green">Activos: 296</span>
+        <span class="chip chip-red">Inactivos: 24</span>
+        <span class="chip chip-amber">EBRA: 3</span>
+      </div>
+      <!-- Head -->
+      <div style="display:grid;grid-template-columns:52px 1fr 130px 120px 70px 90px 60px;padding:9px 16px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94A3B8;background:#F8FAFC;border-bottom:1px solid #F1F5F9">
+        <div>ID</div><div>Estudiante</div><div>Documento</div><div>Programa</div><div>Sem.</div><div>Estado</div><div style="text-align:center">Acc.</div>
+      </div>
+      <!-- Rows -->
+      <div>
+        <div class="trow" style="display:grid;grid-template-columns:52px 1fr 130px 120px 70px 90px 60px;padding:11px 16px;align-items:center;border-bottom:1px solid #F8FAFC;cursor:pointer">
+          <span style="font-size:11px;color:#CBD5E1;font-family:'Inter',monospace;font-weight:500">001</span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:32px;height:32px;border-radius:999px;background:linear-gradient(135deg,#16A34A,#14532D);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:11px;flex-shrink:0">JP</div>
+            <div><div style="font-weight:600;font-size:13px;color:#0F172A">Juan Pérez</div><div style="font-size:10px;color:#94A3B8">juan.perez@upc.edu.co</div></div>
+          </div>
+          <span style="font-size:12px;color:#64748B">1.045.678.901</span>
+          <span style="font-size:12px;color:#64748B">Ing. Sistemas</span>
+          <span style="font-size:12px;font-weight:700;color:#0F172A">4to</span>
+          <span class="chip chip-green">Activo</span>
+          <div style="display:flex;gap:4px;justify-content:center">
+            <button style="width:26px;height:26px;background:#F1F5F9;border:none;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748B" onmouseover="this.style.background='#DCFCE7';this.style.color='#16A34A'" onmouseout="this.style.background='#F1F5F9';this.style.color='#64748B'"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><use href="#ic-edit"/></svg></button>
+            <button style="width:26px;height:26px;background:#F1F5F9;border:none;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748B" onmouseover="this.style.background='#FEE2E2';this.style.color='#DC2626'" onmouseout="this.style.background='#F1F5F9';this.style.color='#64748B'"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><use href="#ic-trash"/></svg></button>
+          </div>
+        </div>
+        <div class="trow" style="display:grid;grid-template-columns:52px 1fr 130px 120px 70px 90px 60px;padding:11px 16px;align-items:center;border-bottom:1px solid #F8FAFC;cursor:pointer;background:#FFFBEB">
+          <span style="font-size:11px;color:#CBD5E1;font-family:'Inter',monospace;font-weight:500">003</span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:32px;height:32px;border-radius:999px;background:linear-gradient(135deg,#EF4444,#DC2626);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:11px;flex-shrink:0">CL</div>
+            <div><div style="font-weight:600;font-size:13px;color:#0F172A">Carlos López</div><div style="font-size:10px;color:#DC2626;font-weight:500">Alerta EBRA — Prom. 2.8</div></div>
+          </div>
+          <span style="font-size:12px;color:#64748B">1.023.456.789</span>
+          <span style="font-size:12px;color:#64748B">Ing. Sistemas</span>
+          <span style="font-size:12px;font-weight:700;color:#0F172A">3ro</span>
+          <span class="chip chip-amber">
+            <svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#ic-alert"/></svg>
+            EBRA
+          </span>
+          <div style="display:flex;gap:4px;justify-content:center">
+            <button style="width:26px;height:26px;background:#F1F5F9;border:none;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748B"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><use href="#ic-edit"/></svg></button>
+            <button style="width:26px;height:26px;background:#F1F5F9;border:none;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748B"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><use href="#ic-trash"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <!-- Pagination -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-top:1px solid #F1F5F9">
+        <span style="font-size:11px;color:#94A3B8">Mostrando 1–10 de 320 registros</span>
+        <div style="display:flex;gap:4px">
+          <button style="width:27px;height:27px;background:#F1F5F9;border:none;border-radius:7px;cursor:pointer;color:#64748B;font-size:12px;font-family:inherit">‹</button>
+          <button style="width:27px;height:27px;background:#16A34A;border:none;border-radius:7px;cursor:pointer;color:#fff;font-weight:700;font-size:12px;font-family:inherit">1</button>
+          <button style="width:27px;height:27px;background:#F1F5F9;border:none;border-radius:7px;cursor:pointer;color:#64748B;font-size:12px;font-family:inherit">2</button>
+          <button style="width:27px;height:27px;background:#F1F5F9;border:none;border-radius:7px;cursor:pointer;color:#64748B;font-size:12px;font-family:inherit">3</button>
+          <button style="width:27px;height:27px;background:#F1F5F9;border:none;border-radius:7px;cursor:pointer;color:#64748B;font-size:12px;font-family:inherit">›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PLACEHOLDERS (mismo estilo) ═══════ -->
+  <div id="page-facultades"      class="page light-scroll" style="overflow-y:auto;padding:24px;gap:16px">
+    <div class="pt"><div class="pt-bar"></div><div><div class="pt-h1">Facultades</div><div class="pt-sub">Estructura académica institucional</div></div></div>
+    <div class="panel" style="padding:56px;text-align:center">
+      <svg width="40" height="40" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" style="margin:0 auto 12px"><use href="#ic-building"/></svg>
+      <p style="color:#94A3B8;font-size:13px">Vista CRUD completa — mismo estilo limpio</p>
+    </div>
+  </div>
+  <div id="page-programas"       class="page light-scroll" style="overflow-y:auto;padding:24px;gap:16px">
+    <div class="pt"><div class="pt-bar"></div><div><div class="pt-h1">Programas</div><div class="pt-sub">Oferta académica institucional</div></div></div>
+    <div class="panel" style="padding:56px;text-align:center">
+      <svg width="40" height="40" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" style="margin:0 auto 12px"><use href="#ic-hat"/></svg>
+      <p style="color:#94A3B8;font-size:13px">Vista CRUD completa</p>
+    </div>
+  </div>
+  <div id="page-cursos"          class="page light-scroll" style="overflow-y:auto;padding:24px;gap:16px">
+    <div class="pt"><div class="pt-bar"></div><div><div class="pt-h1">Cursos</div></div></div>
+    <div class="panel" style="padding:56px;text-align:center">
+      <svg width="40" height="40" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" style="margin:0 auto 12px"><use href="#ic-book"/></svg>
+      <p style="color:#94A3B8;font-size:13px">Vista CRUD completa</p>
+    </div>
+  </div>
+  <div id="page-profesores"      class="page light-scroll" style="overflow-y:auto;padding:24px;gap:16px">
+    <div class="pt"><div class="pt-bar"></div><div><div class="pt-h1">Profesores</div></div></div>
+    <div class="panel" style="padding:56px;text-align:center">
+      <svg width="40" height="40" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" style="margin:0 auto 12px"><use href="#ic-hat"/></svg>
+      <p style="color:#94A3B8;font-size:13px">Vista CRUD completa</p>
+    </div>
+  </div>
+  <div id="page-administrativos" class="page light-scroll" style="overflow-y:auto;padding:24px;gap:16px">
+    <div class="pt"><div class="pt-bar"></div><div><div class="pt-h1">Administrativos</div></div></div>
+    <div class="panel" style="padding:56px;text-align:center">
+      <svg width="40" height="40" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" style="margin:0 auto 12px"><use href="#ic-brief"/></svg>
+      <p style="color:#94A3B8;font-size:13px">Vista CRUD completa</p>
+    </div>
+  </div>
+  <div id="page-inscripciones"   class="page light-scroll" style="overflow-y:auto;padding:24px;gap:16px">
+    <div class="pt"><div class="pt-bar"></div><div><div class="pt-h1">Inscripciones</div></div></div>
+    <div class="panel" style="padding:56px;text-align:center">
+      <svg width="40" height="40" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" style="margin:0 auto 12px"><use href="#ic-clip"/></svg>
+      <p style="color:#94A3B8;font-size:13px">Vista CRUD completa</p>
+    </div>
+  </div>
+  <div id="page-nomina"          class="page light-scroll" style="overflow-y:auto;padding:24px;gap:16px">
+    <div class="pt"><div class="pt-bar"></div><div><div class="pt-h1">Nómina</div></div></div>
+    <div class="panel" style="padding:56px;text-align:center">
+      <svg width="40" height="40" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" style="margin:0 auto 12px"><use href="#ic-money"/></svg>
+      <p style="color:#94A3B8;font-size:13px">Reporte de nómina académica</p>
+    </div>
+  </div>
+  <div id="page-reportes"        class="page light-scroll" style="overflow-y:auto;padding:24px;gap:16px">
+    <div class="pt"><div class="pt-bar"></div><div><div class="pt-h1">Reportes</div></div></div>
+    <div class="panel" style="padding:56px;text-align:center">
+      <svg width="40" height="40" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" style="margin:0 auto 12px"><use href="#ic-chart"/></svg>
+      <p style="color:#94A3B8;font-size:13px">Reportes académicos con gráficos</p>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+function go(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+  document.querySelectorAll('.ni:not([onclick*="toggleSub"])').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+}
+function toggleSub(menuId, arrId) {
+  document.getElementById(menuId).classList.toggle('open');
+  document.getElementById(arrId).classList.toggle('open');
+}
+</script>
+</body>
+</html>

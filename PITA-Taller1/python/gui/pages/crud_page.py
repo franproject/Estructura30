@@ -1,7 +1,8 @@
 """Página genérica CRUD profesional para NexoCampus."""
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import (
     QHBoxLayout,
+    QLabel,
     QMessageBox,
     QPushButton,
     QVBoxLayout,
@@ -87,7 +88,12 @@ class CrudPage(QWidget):
 
         # Tabla de Datos
         self.table = DataTable(headers=self.columns)
+        self.table.set_row_actions()
+        self.table.edit_requested.connect(self._edit_source_item)
+        self.table.delete_requested.connect(self._delete_source_item)
         layout.addWidget(self.table)
+        self.pagination = self._build_pagination()
+        layout.addWidget(self.pagination)
 
         # Estado Vacío (se alterna dinámicamente)
         self.empty_state = EmptyState(
@@ -120,17 +126,59 @@ class CrudPage(QWidget):
         if not items_all:
             self.table.hide()
             self.empty_state.show()
+            self.table.populate([])
+            self._update_pagination()
         else:
             self.empty_state.hide()
             self.table.show()
             rows_formatted = [self.row_builder(item) for item in self._items]
             self.table.populate(rows_formatted)
+            self._update_pagination()
 
     def _selected_item(self):
-        row = self.table.currentRow()
+        row = self.table.current_source_row()
         if 0 <= row < len(self._items):
             return self._items[row]
         return None
+
+    def _edit_source_item(self, source_index: int):
+        self.table.selectRow(source_index - (self.table.page - 1) * self.table.page_size)
+        self.edit_item()
+
+    def _delete_source_item(self, source_index: int):
+        self.table.selectRow(source_index - (self.table.page - 1) * self.table.page_size)
+        self.delete_item()
+
+    def _build_pagination(self):
+        footer = QWidget()
+        layout = QHBoxLayout(footer)
+        layout.setContentsMargins(4, 4, 4, 0)
+        self.page_info = QLabel()
+        self.page_info.setStyleSheet("color: #94A3B8; font-size: 11px;")
+        layout.addWidget(self.page_info)
+        layout.addStretch()
+        self.page_buttons = QHBoxLayout()
+        self.page_buttons.setSpacing(4)
+        layout.addLayout(self.page_buttons)
+        self.table.page_changed.connect(lambda *_: self._update_pagination())
+        return footer
+
+    def _update_pagination(self):
+        total = self.table.total_rows
+        start = 0 if total == 0 else (self.table.page - 1) * self.table.page_size + 1
+        end = min(self.table.page * self.table.page_size, total)
+        self.page_info.setText(f"Mostrando {start}\u2013{end} de {total} registros")
+        while self.page_buttons.count():
+            item = self.page_buttons.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        for page in range(1, self.table.page_count + 1):
+            button = QPushButton(str(page))
+            button.setFixedSize(27, 27)
+            button.setObjectName("activePageButton" if page == self.table.page else "pageButton")
+            button.clicked.connect(lambda checked=False, target=page: self.table.set_page(target))
+            self.page_buttons.addWidget(button)
+        self.pagination.setVisible(total > self.table.page_size)
 
     def create_item(self):
         dialog = EntityDialog(f"Nuevo Registro - {self.title}", self.fields, parent=self)

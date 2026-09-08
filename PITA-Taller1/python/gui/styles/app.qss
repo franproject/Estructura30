@@ -216,6 +216,36 @@ QPushButton#ghostButton:hover {
     background-color: #E2E8F0;
 }
 
+QPushButton#tableActionButton {
+    background-color: #F1F5F9;
+    border: none;
+    border-radius: 7px;
+    padding: 0;
+}
+
+QPushButton#tableActionButton:hover {
+    background-color: #DCFCE7;
+}
+
+QPushButton#tableActionButton:last-child:hover {
+    background-color: #FEE2E2;
+}
+
+QPushButton#pageButton, QPushButton#activePageButton {
+    background-color: #F1F5F9;
+    color: #64748B;
+    border: none;
+    border-radius: 7px;
+    padding: 0;
+    font-size: 12px;
+}
+
+QPushButton#activePageButton {
+    background-color: #16A34A;
+    color: #FFFFFF;
+    font-weight: 700;
+}
+
 /* Inputs & Forms */
 QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QDateEdit {
     background-color: #FFFFFF;

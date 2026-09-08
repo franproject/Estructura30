@@ -1,5 +1,5 @@
 """Header superior limpio de NexoCampus."""
-from PySide6.QtCore import QDateTime, Qt
+from PySide6.QtCore import QDateTime, Qt, QSize
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -9,6 +9,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from .icons import icon
 
 
 class TopHeader(QFrame):
@@ -50,6 +52,7 @@ class TopHeader(QFrame):
         self.search_input.setObjectName("headerSearch")
         self.search_input.setPlaceholderText("Buscar en Nexus...")
         self.search_input.setMaximumWidth(320)
+        self.search_input.addAction(icon("search", "#94A3B8", 15), QLineEdit.ActionPosition.LeadingPosition)
         layout.addWidget(self.search_input)
 
         layout.addStretch()
@@ -68,11 +71,22 @@ class TopHeader(QFrame):
         layout.addWidget(sep2)
 
         # Notificación
-        notif_btn = QPushButton("🔔")
+        notif_btn = QPushButton()
+        notif_btn.setIcon(icon("bell", "#64748B", 18))
+        notif_btn.setIconSize(QSize(18, 18))
         notif_btn.setObjectName("ghostButton")
         notif_btn.setFixedSize(36, 36)
         notif_btn.setToolTip("Notificaciones")
-        layout.addWidget(notif_btn)
+        notif_wrap = QWidget()
+        notif_wrap.setFixedSize(36, 36)
+        notif_btn.setParent(notif_wrap)
+        notif_btn.move(0, 0)
+        dot = QLabel(notif_wrap)
+        dot.setObjectName("notificationDot")
+        dot.setFixedSize(8, 8)
+        dot.move(24, 4)
+        dot.setStyleSheet("background: #EF4444; border: 2px solid white; border-radius: 4px;")
+        layout.addWidget(notif_wrap)
 
         # Perfil de usuario
         user_layout = QHBoxLayout()

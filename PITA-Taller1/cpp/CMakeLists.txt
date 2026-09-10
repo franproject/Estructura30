@@ -4,12 +4,20 @@ project(PITA LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Compile the complete academic system as one self-contained source file.
+# Compila el sistema académico PITA con sus tres unidades de traducción:
+# PITA.cpp (núcleo académico), payroll_engine.cpp (motor de nómina) y
+# payroll_cycle.cpp (ciclo de liquidación formal).
 add_executable(PITA
     PITA.cpp
     payroll_engine.cpp
     payroll_cycle.cpp
 )
+
+if (MSVC)
+    target_compile_options(PITA PRIVATE /W4)
+else()
+    target_compile_options(PITA PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
 add_executable(payroll_engine_tests
     payroll_engine.cpp

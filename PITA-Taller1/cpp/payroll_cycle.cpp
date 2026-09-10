@@ -159,7 +159,7 @@ PayrollRunRecord PayrollCycle::calculateRun(
             engineNovelty.affectsIbc = novelty.affectsIbc;
             engineNovelties.push_back(engineNovelty);
         }
-        const PayrollResult result = calculatePayroll(employee, PayrollPeriod{periodId, effectiveDays(*period, employee)}, rules, engineNovelties);
+        const PayrollResult result = calculatePayroll(employee, PayrollPeriod{periodId, effectiveDays(*period, employee), period->year, period->month, period->startDate, period->endDate, "OPEN"}, rules, engineNovelties);
         run.employeeIds.push_back(employeeId);
         run.details.push_back(result);
         run.grossTotal += result.grossSalary;
@@ -304,15 +304,15 @@ void savePayrollCycleSections(std::ostream& output, const PayrollCycle& cycle) {
                    << detail.serviceBonus << '|' << detail.employerPension << '|'
                    << detail.employerHealth << '|' << detail.arl << '|'
                    << detail.compensationFund << '|' << detail.sena << '|' << detail.icbf << '\n';
-            for (const auto& concept : detail.salaryConcepts) {
+            for (const auto& concepto : detail.salaryConcepts) {
                 output << "CONCEPT|" << run.runId << '|' << detail.employeeId << "|S|"
-                       << concept.code << '|' << concept.amount << '|' << concept.isSalary << '|'
-                       << concept.affectsIbc << '|' << concept.origin << '|' << concept.sourceId << '\n';
+                       << concepto.code << '|' << concepto.amount << '|' << concepto.isSalary << '|'
+                       << concepto.affectsIbc << '|' << concepto.origin << '|' << concepto.sourceId << '\n';
             }
-            for (const auto& concept : detail.nonSalaryConcepts) {
+            for (const auto& concepto : detail.nonSalaryConcepts) {
                 output << "CONCEPT|" << run.runId << '|' << detail.employeeId << "|N|"
-                       << concept.code << '|' << concept.amount << '|' << concept.isSalary << '|'
-                       << concept.affectsIbc << '|' << concept.origin << '|' << concept.sourceId << '\n';
+                       << concepto.code << '|' << concepto.amount << '|' << concepto.isSalary << '|'
+                       << concepto.affectsIbc << '|' << concepto.origin << '|' << concepto.sourceId << '\n';
             }
             for (const auto& trace : detail.calculationTrace)
                 output << "TRACE|" << run.runId << '|' << detail.employeeId << '|' << trace << '\n';
@@ -325,6 +325,17 @@ void savePayrollCycleSections(std::ostream& output, const PayrollCycle& cycle) {
     }
     output << "#FIN_PAYROLL_AUDIT\n";
 }
+
+// Constantes de tamano minimo de campos por seccion
+constexpr int PAYROLL_SECTION_MIN_FIELDS_PERIODS             = 9;
+constexpr int PAYROLL_SECTION_MIN_FIELDS_NOVELTIES           = 12;
+constexpr int PAYROLL_SECTION_MIN_FIELDS_RUN_CONCEPT         = 10;
+constexpr int PAYROLL_SECTION_MIN_FIELDS_RUN_TRACE           = 4;
+constexpr int PAYROLL_SECTION_MIN_FIELDS_RUN_DETAIL          = 13;
+constexpr int PAYROLL_SECTION_MIN_FIELDS_RUN_DETAIL_EXTENDED = 31;
+constexpr int PAYROLL_SECTION_MIN_FIELDS_RUNS                = 10;
+constexpr int PAYROLL_SECTION_MIN_FIELDS_RUNS_EXTENDED       = 19;
+constexpr int PAYROLL_SECTION_MIN_FIELDS_AUDIT               = 7;
 
 void loadPayrollCycleSections(std::istream& input, PayrollCycle& cycle) {
     cycle.clear();
@@ -340,27 +351,27 @@ void loadPayrollCycleSections(std::istream& input, PayrollCycle& cycle) {
         }
         const auto fields = split(line, '|');
         try {
-            if (section == "#PAYROLL_PERIODS" && fields.size() >= 9) {
+            if (section == "#PAYROLL_PERIODS" && static_cast<int>(fields.size()) >= PAYROLL_SECTION_MIN_FIELDS_PERIODS) {
                 cycle.periods_.push_back({fields[0], std::stoi(fields[1]), std::stoi(fields[2]), fields[3], fields[4],
                     static_cast<PeriodStatus>(std::stoi(fields[5])), fields[6], fields[7], fields[8]});
-            } else if (section == "#PAYROLL_NOVELTIES" && fields.size() >= 12) {
+            } else if (section == "#PAYROLL_NOVELTIES" && static_cast<int>(fields.size()) >= PAYROLL_SECTION_MIN_FIELDS_NOVELTIES) {
                 cycle.novelties_.push_back({fields[0], fields[1], fields[2], static_cast<NoveltyType>(std::stoi(fields[3])),
                     fields[4], fields[5], std::stoll(fields[6]), std::stoll(fields[7]), "", fields[8], "",
                     std::stoi(fields[9]) != 0, std::stoi(fields[10]) != 0, std::stoi(fields[11]) != 0});
-            } else if (section == "#PAYROLL_RUNS" && fields.size() >= 10 && fields[0] == "CONCEPT") {
+            } else if (section == "#PAYROLL_RUNS" && static_cast<int>(fields.size()) >= PAYROLL_SECTION_MIN_FIELDS_RUN_CONCEPT && fields[0] == "CONCEPT") {
                 if (currentRun == nullptr) continue;
                 auto detail = std::find_if(currentRun->details.begin(), currentRun->details.end(),
                     [&](const auto& item) { return item.employeeId == fields[2]; });
-                if (detail == currentRun->details.end() || fields.size() < 10) continue;
-                PayrollLine concept{fields[4], std::stoll(fields[5]), std::stoi(fields[6]) != 0,
+                if (detail == currentRun->details.end() || static_cast<int>(fields.size()) < PAYROLL_SECTION_MIN_FIELDS_RUN_CONCEPT) continue;
+                PayrollLine concepto{fields[4], std::stoll(fields[5]), std::stoi(fields[6]) != 0,
                     std::stoi(fields[7]) != 0, fields[8], fields[9]};
-                (fields[3] == "S" ? detail->salaryConcepts : detail->nonSalaryConcepts).push_back(concept);
-            } else if (section == "#PAYROLL_RUNS" && fields.size() >= 4 && fields[0] == "TRACE") {
+                (fields[3] == "S" ? detail->salaryConcepts : detail->nonSalaryConcepts).push_back(concepto);
+            } else if (section == "#PAYROLL_RUNS" && static_cast<int>(fields.size()) >= PAYROLL_SECTION_MIN_FIELDS_RUN_TRACE && fields[0] == "TRACE") {
                 if (currentRun == nullptr) continue;
                 auto detail = std::find_if(currentRun->details.begin(), currentRun->details.end(),
                     [&](const auto& item) { return item.employeeId == fields[2]; });
                 if (detail != currentRun->details.end()) detail->calculationTrace.push_back(fields[3]);
-            } else if (section == "#PAYROLL_RUNS" && fields.size() >= 13 && fields[0] == "DETAIL") {
+            } else if (section == "#PAYROLL_RUNS" && static_cast<int>(fields.size()) >= PAYROLL_SECTION_MIN_FIELDS_RUN_DETAIL && fields[0] == "DETAIL") {
                 if (currentRun == nullptr) continue;
                 PayrollResult detail;
                 detail.employeeId = fields[2];
@@ -374,7 +385,7 @@ void loadPayrollCycleSections(std::istream& input, PayrollCycle& cycle) {
                 detail.netSalary = std::stoll(fields[10]);
                 detail.totalEmployerContributions = std::stoll(fields[11]);
                 detail.totalEmployerCost = std::stoll(fields[12]);
-                if (fields.size() >= 31) {
+                if (static_cast<int>(fields.size()) >= PAYROLL_SECTION_MIN_FIELDS_RUN_DETAIL_EXTENDED) {
                     detail.salaryAdjustments = std::stoll(fields[13]);
                     detail.nonSalaryTotal = std::stoll(fields[14]);
                     detail.employeeHealth = std::stoll(fields[15]);
@@ -395,7 +406,7 @@ void loadPayrollCycleSections(std::istream& input, PayrollCycle& cycle) {
                     detail.icbf = std::stoll(fields[30]);
                 }
                 currentRun->details.push_back(detail);
-            } else if (section == "#PAYROLL_RUNS" && fields.size() >= 10) {
+            } else if (section == "#PAYROLL_RUNS" && static_cast<int>(fields.size()) >= PAYROLL_SECTION_MIN_FIELDS_RUNS) {
                 PayrollRunRecord run;
                 run.runId = fields[0];
                 run.periodId = fields[1];
@@ -409,7 +420,7 @@ void loadPayrollCycleSections(std::istream& input, PayrollCycle& cycle) {
                 for (const auto& employeeId : split(fields[9], ',')) {
                     if (!employeeId.empty()) run.employeeIds.push_back(employeeId);
                 }
-                if (fields.size() >= 19) {
+                if (static_cast<int>(fields.size()) >= PAYROLL_SECTION_MIN_FIELDS_RUNS_EXTENDED) {
                     run.createdAt = fields[10];
                     run.calculatedAt = fields[11];
                     run.calculatedBy = fields[12];
@@ -424,7 +435,7 @@ void loadPayrollCycleSections(std::istream& input, PayrollCycle& cycle) {
                 }
                 cycle.runs_.push_back(run);
                 currentRun = &cycle.runs_.back();
-            } else if (section == "#PAYROLL_AUDIT" && fields.size() >= 7) {
+            } else if (section == "#PAYROLL_AUDIT" && static_cast<int>(fields.size()) >= PAYROLL_SECTION_MIN_FIELDS_AUDIT) {
                 cycle.audits_.push_back({fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], "", fields[6]});
             }
         } catch (const std::exception&) {

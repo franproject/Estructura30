@@ -1,0 +1,23 @@
+# ninja log v7
+65	2759	8107725586877324	CMakeFiles/payroll_engine_tests.dir/payroll_engine_tests.cpp.obj	1006f8f1d31ffaa5
+77	4002	8107725587003922	CMakeFiles/payroll_cycle_tests.dir/payroll_engine.cpp.obj	8f96297a6025554
+54	4061	8107725586770382	CMakeFiles/payroll_engine_tests.dir/payroll_engine.cpp.obj	1ec780105df6e016
+36	4154	8107725586463168	CMakeFiles/PITA.dir/payroll_engine.cpp.obj	a03c2d0371e7af31
+35	4745	8107735880289030	CMakeFiles/PITA.dir/payroll_cycle.cpp.obj	938dcc28cb31ef3
+4154	8331	8107725627769682	CMakeFiles/payroll_parity_probe.dir/payroll_parity_probe.cpp.obj	fba17016457df7a
+4003	8881	8107725626249373	CMakeFiles/payroll_cycle_tests.dir/payroll_cycle_tests.cpp.obj	928a5bf16946e18a
+4062	9682	8107725626848256	CMakeFiles/payroll_parity_probe.dir/payroll_engine.cpp.obj	9da48a17b8d3e8e9
+46	4705	8107735880408700	CMakeFiles/payroll_cycle_tests.dir/payroll_cycle.cpp.obj	3b53c2ffaaf28263
+6174	11729	8107725647980654	CMakeFiles/payroll_exhaustive_tests.dir/payroll_engine.cpp.obj	ecead96ba948595d
+9724	12429	8107725683465138	payroll_engine_tests.exe	5d0312b4f20b5ee4
+4706	5957	8107735926996874	payroll_cycle_tests.exe	1418ee597170759e
+8883	14093	8107725675061993	CMakeFiles/payroll_exhaustive_tests.dir/payroll_exhaustive_tests.cpp.obj	4c4c3ba09f24eee9
+11729	14967	8107725703524701	payroll_parity_probe.exe	c925b82012568b06
+22	8345	8107735880155986	CMakeFiles/PITA.dir/PITA.cpp.obj	5efaa1e8b99c3c9d
+58	4641	8107735880525667	CMakeFiles/payroll_exhaustive_tests.dir/payroll_cycle.cpp.obj	528b51a9f3aee75e
+8346	8708	8107735963391284	PITA.exe	d6a676b0bd92cdb5
+4642	5954	8107735926369334	payroll_exhaustive_tests.exe	5579ab92f4b02228
+22	299	8107737166414317	build.ninja	839b25afa1cc1285
+22	299	8107737166414317	C:/Users/frani/Downloads/Estructura/Estructura/PITA-Taller1/cpp/build_cmake/cmake_install.cmake	839b25afa1cc1285
+25	4366	8107737167213488	CMakeFiles/PITA.dir/PITA.cpp.obj	5efaa1e8b99c3c9d
+4368	4728	8107737210640186	PITA.exe	d6a676b0bd92cdb5

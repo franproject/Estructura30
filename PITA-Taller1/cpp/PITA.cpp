@@ -39,6 +39,19 @@
 #include <limits>
 #include <cstdlib>
 #include <utility>
+#include <filesystem>
+#include <algorithm>
+#include <cctype>
+
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#endif
 
 #include "payroll_engine.hpp"
 #include "payroll_cycle.hpp"
@@ -49,8 +62,52 @@ using namespace std;
 // 1. CONSTANTES GLOBALES DEL MODELO DE NOMINA Y NEGOCIO
 // ======================================================================
 const double VALOR_PUNTO_SALARIAL   = 17690.0;  // valor ilustrativo (decreto 1279)
-const double UMBRAL_EBRA            = 3.0;      // promedio minimo (escala 0-5)
-const string ARCHIVO_DATOS          = "pita_datos.txt";
+
+// Tarifas de hora catedra segun categoria docente
+constexpr double TARIFA_CATEDRA_AUXILIAR    = 39000.0;
+constexpr double TARIFA_CATEDRA_ASISTENTE   = 45000.0;
+constexpr double TARIFA_CATEDRA_ASOCIADO    = 52000.0;
+constexpr double TARIFA_CATEDRA_TITULAR     = 60000.0;
+
+// Dias y meses estandar de nomina
+constexpr int    DIAS_MES_NOMINA            = 30;
+constexpr double MESES_ANIO                 = 12.0;
+
+// Limites academicos
+constexpr int    CREDITOS_MIN               = 1;
+constexpr int    CREDITOS_MAX               = 10;
+constexpr float  NOTA_MIN                   = 0.0f;
+constexpr float  NOTA_MAX                   = 5.0f;
+constexpr float  UMBRAL_EBRA                = 3.0f;   // Promedio minimo (escala 0-5)
+
+// Tamano de buffer de campos
+constexpr int    MAX_CAMPOS_CSV             = 25;
+constexpr int    CAMPOS_PROFESOR            = 23;
+
+// const string ARCHIVO_DATOS          = "pita_datos.txt";
+string ARCHIVO_DATOS = "";
+
+string resolverRutaArchivoDatos(const char* argv0 = nullptr) {
+#ifdef _WIN32
+    (void)argv0;
+    char buffer[MAX_PATH];
+    DWORD len = GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    if (len > 0) {
+        return (std::filesystem::path(buffer).parent_path() / "pita_datos.txt").string();
+    }
+    return (std::filesystem::absolute("pita_datos.txt")).string();
+#else
+    std::error_code ec;
+    std::filesystem::path exePath = std::filesystem::read_symlink("/proc/self/exe", ec);
+    if (!ec && !exePath.empty()) {
+        return (exePath.parent_path() / "pita_datos.txt").string();
+    }
+    if (argv0 && argv0[0] != '\0') {
+        return (std::filesystem::absolute(std::filesystem::path(argv0).parent_path() / "pita_datos.txt")).string();
+    }
+    return (std::filesystem::absolute("pita_datos.txt")).string();
+#endif
+}
 
 // ======================================================================
 // 2. ENUMERACIONES
@@ -63,8 +120,11 @@ enum TipoPrograma       { INGENIERIA = 0, MEDICINA = 1, ODONTOLOGIA = 2, ENFERME
 string nombreCategoria(CategoriaDocente c);
 string nombreTipoContrato(TipoContratoDocente t);
 string nombreTipoPrograma(TipoPrograma t);
+CategoriaDocente categoriaDesdeInt(int v, bool& esValido);
 CategoriaDocente categoriaDesdeInt(int v);
+TipoContratoDocente contratoDesdeInt(int v, bool& esValido);
 TipoContratoDocente contratoDesdeInt(int v);
+TipoPrograma tipoProgramaDesdeInt(int v, bool& esValido);
 TipoPrograma tipoProgramaDesdeInt(int v);
 double tarifaHoraCatedra(CategoriaDocente c);
 
@@ -200,12 +260,18 @@ pita::payroll::PayrollCycle cicloNominaFormal;
 // -- utilidades de entrada / presentacion --
 int    leerEntero(const string &prompt);
 double leerDouble(const string &prompt);
-string leerLinea(const string &prompt);
+string leerLinea(const string &prompt, bool requerido = false);
 bool   leerSiNo(const string &prompt);
 void   pausar();
 void   titulo(const string &t);
 void   linea();
 void   verificarFinDeEntrada();
+
+// -- funciones auxiliares de mensajeria --
+void msgError(const string& msg);
+void msgAdvert(const string& msg);
+void msgOk(const string& msg);
+void msgVacio(const string& entidad);
 
 // -- generadores de codigo --
 string generarCodigoFacultad();
@@ -226,6 +292,7 @@ Profesor*   buscarProfesorEnPrograma(Programa* prog, const string &codigo);
 Profesor*   buscarProfesorGlobal(const string &codigo, Programa** progOut, Facultad** facOut);
 Administrativo* buscarAdministrativo(const string &codigo);
 Programa*   seleccionarProgramaPorCodigo(); // pide codigo y lo busca globalmente, imprime error si no existe
+bool        documentoExiste(const string& doc, string& entidadEncontrada);
 
 // -- CRUD Facultad --
 void crearFacultad();
@@ -337,14 +404,17 @@ void menuReportesNomina();
 void menuNominaFormal();
 void dashboardFinancieroFormal();
 void generarDesprendibleFormal();
+void registrarNovedadFormal();
 void menuPrincipal();
 
 // ======================================================================
 // 6. MAIN
 // ======================================================================
-int main() {
+int main(int argc, char* argv[]) {
+    ARCHIVO_DATOS = resolverRutaArchivoDatos(argc > 0 ? argv[0] : nullptr);
     titulo("NexoCampus - PROGRAMA INTEGRADO DE TRANSACCIONES ACADEMICAS");
     cout << "  Universidad Popular del Cesar - Modulo C++ (Listas Enlazadas)\n";
+    msgOk("Ruta de datos: " + ARCHIVO_DATOS);
     linea();
 
     if (leerSiNo("?Desea cargar los datos guardados en '" + ARCHIVO_DATOS + "'? (s/n): ")) {
@@ -389,7 +459,7 @@ void titulo(const string &t) {
 }
 
 void pausar() {
-    cout << "\n(Presione ENTER para continuar...)";
+    cout << "\n  >> Presione ENTER para continuar...";
     cin.get();
 }
 
@@ -411,7 +481,7 @@ int leerEntero(const string &prompt) {
             verificarFinDeEntrada();
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "  >> Entrada invalida, ingrese un numero entero.\n";
+            msgError("Entrada invalida, ingrese un numero entero.");
         } else {
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             return valor;
@@ -428,7 +498,7 @@ double leerDouble(const string &prompt) {
             verificarFinDeEntrada();
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "  >> Entrada invalida, ingrese un numero.\n";
+            msgError("Entrada invalida, ingrese un numero.");
         } else {
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             return valor;
@@ -436,12 +506,31 @@ double leerDouble(const string &prompt) {
     }
 }
 
-string leerLinea(const string &prompt) {
-    string s;
+string leerLinea(const string &prompt, bool requerido) {
+    string resultado;
     cout << prompt;
-    getline(cin, s);
+    getline(cin, resultado);
     verificarFinDeEntrada();
-    return s;
+    if (requerido) {
+        while (resultado.empty() || resultado.find_first_not_of(" \t") == string::npos) {
+            cout << ">> Este campo es obligatorio. Ingrese un valor: ";
+            getline(cin, resultado);
+            verificarFinDeEntrada();
+        }
+    }
+    while (resultado.find('|') != string::npos) {
+        cout << "  >> El caracter '|' no está permitido en este campo. Ingrese nuevamente: ";
+        getline(cin, resultado);
+        verificarFinDeEntrada();
+        if (requerido) {
+            while (resultado.empty() || resultado.find_first_not_of(" \t") == string::npos) {
+                cout << ">> Este campo es obligatorio. Ingrese un valor: ";
+                getline(cin, resultado);
+                verificarFinDeEntrada();
+            }
+        }
+    }
+    return resultado;
 }
 
 bool leerSiNo(const string &prompt) {
@@ -452,7 +541,7 @@ bool leerSiNo(const string &prompt) {
         verificarFinDeEntrada();
         if (!s.empty() && (s[0] == 's' || s[0] == 'S')) return true;
         if (!s.empty() && (s[0] == 'n' || s[0] == 'N')) return false;
-        cout << "  >> Responda 's' o 'n'.\n";
+        msgError("Responda 's' o 'n'.");
     }
 }
 
@@ -492,19 +581,46 @@ string nombreTipoPrograma(TipoPrograma t) {
     }
 }
 
-CategoriaDocente categoriaDesdeInt(int v) {
-    if (v < 0 || v > 3) v = 0;
+CategoriaDocente categoriaDesdeInt(int v, bool& esValido) {
+    if (v < 0 || v > 3) {
+        esValido = false;
+        v = 0;
+    } else {
+        esValido = true;
+    }
     return static_cast<CategoriaDocente>(v);
 }
-
-TipoContratoDocente contratoDesdeInt(int v) {
-    if (v < 0 || v > 2) v = 2;
-    return static_cast<TipoContratoDocente>(v);
+CategoriaDocente categoriaDesdeInt(int v) {
+    bool dummy;
+    return categoriaDesdeInt(v, dummy);
 }
 
-TipoPrograma tipoProgramaDesdeInt(int v) {
-    if (v < 0 || v > 8) v = 8;
+TipoContratoDocente contratoDesdeInt(int v, bool& esValido) {
+    if (v < 0 || v > 2) {
+        esValido = false;
+        v = 2;
+    } else {
+        esValido = true;
+    }
+    return static_cast<TipoContratoDocente>(v);
+}
+TipoContratoDocente contratoDesdeInt(int v) {
+    bool dummy;
+    return contratoDesdeInt(v, dummy);
+}
+
+TipoPrograma tipoProgramaDesdeInt(int v, bool& esValido) {
+    if (v < 0 || v > 8) {
+        esValido = false;
+        v = 8;
+    } else {
+        esValido = true;
+    }
     return static_cast<TipoPrograma>(v);
+}
+TipoPrograma tipoProgramaDesdeInt(int v) {
+    bool dummy;
+    return tipoProgramaDesdeInt(v, dummy);
 }
 
 // ======================================================================
@@ -661,8 +777,60 @@ Administrativo* buscarAdministrativo(const string &codigo) {
 Programa* seleccionarProgramaPorCodigo() {
     string cod = leerLinea("Codigo del programa academico: ");
     Programa* p = buscarProgramaGlobal(cod, nullptr);
-    if (p == nullptr) cout << "  >> No existe un programa con ese codigo.\n";
+    if (p == nullptr) msgError("No existe un programa con ese codigo.");
     return p;
+}
+
+bool documentoExiste(const string& doc, string& entidadEncontrada) {
+    if (doc.empty()) return false;
+
+    // 1. Buscar en Profesores (de todos los programas de todas las facultades)
+    Facultad* f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Profesor* d = p->listaProfesores;
+            while (d != nullptr) {
+                if (d->documento == doc) {
+                    entidadEncontrada = "Profesor, Codigo: " + d->codigo;
+                    return true;
+                }
+                d = d->sig;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+
+    // 2. Buscar en Estudiantes (de todos los programas de todas las facultades)
+    f = cabezaFacultades;
+    while (f != nullptr) {
+        Programa* p = f->listaProgramas;
+        while (p != nullptr) {
+            Estudiante* e = p->listaEstudiantes;
+            while (e != nullptr) {
+                if (e->documento == doc) {
+                    entidadEncontrada = "Estudiante, Codigo: " + e->codigo;
+                    return true;
+                }
+                e = e->sig;
+            }
+            p = p->sig;
+        }
+        f = f->sig;
+    }
+
+    // 3. Buscar en Administrativos
+    Administrativo* a = cabezaAdministrativos;
+    while (a != nullptr) {
+        if (a->documento == doc) {
+            entidadEncontrada = "Administrativo, Codigo: " + a->codigo;
+            return true;
+        }
+        a = a->sig;
+    }
+
+    return false;
 }
 
 // ======================================================================
@@ -672,7 +840,7 @@ void crearFacultad() {
     titulo("CREAR FACULTAD");
     Facultad* nueva = new Facultad();
     nueva->codigo = generarCodigoFacultad();
-    nueva->nombre = leerLinea("Nombre de la facultad: ");
+    nueva->nombre = leerLinea("Nombre de la facultad: ", true);
     nueva->activo = true;
     nueva->listaProgramas = nullptr;
     nueva->sig = nullptr;
@@ -685,13 +853,13 @@ void crearFacultad() {
         while (actual->sig != nullptr) actual = actual->sig;
         actual->sig = nueva;
     }
-    cout << "  >> Facultad creada con codigo: " << nueva->codigo << "\n";
+    msgOk("Facultad creada con codigo: " + nueva->codigo);
 }
 
 void listarFacultades() {
     titulo("LISTADO DE FACULTADES");
     if (cabezaFacultades == nullptr) {
-        cout << "  (No hay facultades registradas)\n";
+        msgVacio("facultades");
         return;
     }
     cout << left << setw(8) << "CODIGO" << setw(40) << "NOMBRE"
@@ -713,20 +881,20 @@ void modificarFacultad() {
     titulo("MODIFICAR FACULTAD");
     string cod = leerLinea("Codigo de la facultad a modificar: ");
     Facultad* f = buscarFacultad(cod);
-    if (f == nullptr) { cout << "  >> No existe esa facultad.\n"; return; }
+    if (f == nullptr) { msgError("No existe esa facultad."); return; }
     cout << "  Nombre actual: " << f->nombre << "\n";
     string nuevoNombre = leerLinea("  Nuevo nombre (ENTER para no cambiar): ");
     if (!nuevoNombre.empty()) f->nombre = nuevoNombre;
-    cout << "  >> Facultad actualizada.\n";
+    msgOk("Facultad actualizada.");
 }
 
 void desactivarFacultad() {
     titulo("ACTIVAR / DESACTIVAR FACULTAD");
     string cod = leerLinea("Codigo de la facultad: ");
     Facultad* f = buscarFacultad(cod);
-    if (f == nullptr) { cout << "  >> No existe esa facultad.\n"; return; }
+    if (f == nullptr) { msgError("No existe esa facultad."); return; }
     f->activo = !f->activo;
-    cout << "  >> Facultad ahora esta " << (f->activo ? "ACTIVA" : "INACTIVA") << "\n";
+    msgOk(string("Facultad ahora esta ") + (f->activo ? "ACTIVA" : "INACTIVA"));
 }
 
 // Libera recursivamente toda la memoria de un programa (cursos, estudiantes+notas, profesores)
@@ -757,16 +925,23 @@ void eliminarFacultad() {
         anterior = actual;
         actual = actual->sig;
     }
-    if (actual == nullptr) { cout << "  >> No existe esa facultad.\n"; return; }
-    if (!leerSiNo("  Esto eliminara la facultad y TODOS sus programas/cursos/estudiantes/profesores. ?Continuar? (s/n): "))
+    if (actual == nullptr) { msgError("No existe esa facultad."); return; }
+
+    int numProgramas = 0;
+    Programa* p = actual->listaProgramas;
+    while (p != nullptr) { numProgramas++; p = p->sig; }
+
+    if (numProgramas > 0) {
+        msgAdvert("La facultad " + cod + " tiene " + to_string(numProgramas)
+             + " programa(s) asociado(s). No se puede eliminar una facultad con programas activos.");
         return;
+    }
+
     if (anterior == nullptr) cabezaFacultades = actual->sig;
     else anterior->sig = actual->sig;
 
-    Programa* p = actual->listaProgramas;
-    while (p != nullptr) { Programa* tmp = p; p = p->sig; liberarPrograma(tmp); }
     delete actual;
-    cout << "  >> Facultad eliminada.\n";
+    msgOk("Facultad eliminada.");
 }
 
 // ======================================================================
@@ -776,7 +951,7 @@ void crearPrograma() {
     titulo("CREAR PROGRAMA ACADEMICO");
     string codFac = leerLinea("Codigo de la facultad a la que pertenece: ");
     Facultad* f = buscarFacultad(codFac);
-    if (f == nullptr) { cout << "  >> No existe esa facultad.\n"; return; }
+    if (f == nullptr) { msgError("No existe esa facultad."); return; }
 
     cout << "\n  Tipo de programa:\n";
     cout << "    0. Ingenieria\n    1. Medicina\n    2. Odontologia\n    3. Enfermeria\n";
@@ -785,8 +960,12 @@ void crearPrograma() {
 
     Programa* nuevo = new Programa();
     nuevo->codigo = generarCodigoPrograma();
-    nuevo->nombre = leerLinea("Nombre del programa (ej: Medicina, Ingenieria de Sistemas): ");
-    nuevo->tipo = tipoProgramaDesdeInt(tipoSel);
+    nuevo->nombre = leerLinea("Nombre del programa (ej: Medicina, Ingenieria de Sistemas): ", true);
+    bool esValidoTipo = true;
+    nuevo->tipo = tipoProgramaDesdeInt(tipoSel, esValidoTipo);
+    if (!esValidoTipo) {
+        msgAdvert("Opcion invalida. Se asigno el valor por defecto. Por favor revise el registro.");
+    }
     nuevo->activo = true;
     nuevo->listaCursos = nullptr;
     nuevo->listaEstudiantes = nullptr;
@@ -800,19 +979,19 @@ void crearPrograma() {
         while (actual->sig != nullptr) actual = actual->sig;
         actual->sig = nuevo;
     }
-    cout << "  >> Programa creado con codigo: " << nuevo->codigo
-         << " | Tipo: " << nombreTipoPrograma(nuevo->tipo)
-         << " | Facultad: " << f->nombre << "\n";
+    msgOk("Programa creado con codigo: " + nuevo->codigo
+         + " | Tipo: " + nombreTipoPrograma(nuevo->tipo)
+         + " | Facultad: " + f->nombre);
 }
 
 void listarProgramas() {
     titulo("LISTADO DE PROGRAMAS ACADEMICOS (por facultad)");
-    if (cabezaFacultades == nullptr) { cout << "  (No hay facultades)\n"; return; }
+    if (cabezaFacultades == nullptr) { msgVacio("facultades"); return; }
     Facultad* f = cabezaFacultades;
     while (f != nullptr) {
         cout << "\nFacultad: " << f->nombre << " [" << f->codigo << "]\n";
         if (f->listaProgramas == nullptr) {
-            cout << "    (sin programas)\n";
+            msgVacio("programas");
         } else {
             cout << "    " << left << setw(8) << "CODIGO" << setw(28) << "NOMBRE"
                  << setw(18) << "TIPO" << setw(10) << "ESTADO" << "\n";
@@ -835,7 +1014,7 @@ void modificarPrograma() {
     cout << "  Nombre actual: " << p->nombre << "\n";
     string nuevoNombre = leerLinea("  Nuevo nombre (ENTER para no cambiar): ");
     if (!nuevoNombre.empty()) p->nombre = nuevoNombre;
-    cout << "  >> Programa actualizado.\n";
+    msgOk("Programa actualizado.");
 }
 
 void desactivarPrograma() {
@@ -843,14 +1022,14 @@ void desactivarPrograma() {
     Programa* p = seleccionarProgramaPorCodigo();
     if (p == nullptr) return;
     p->activo = !p->activo;
-    cout << "  >> Programa ahora esta " << (p->activo ? "ACTIVO" : "INACTIVO") << "\n";
+    msgOk(string("Programa ahora esta ") + (p->activo ? "ACTIVO" : "INACTIVO"));
 }
 
 void eliminarPrograma() {
     titulo("ELIMINAR PROGRAMA ACADEMICO");
     string codFac = leerLinea("Codigo de la facultad: ");
     Facultad* f = buscarFacultad(codFac);
-    if (f == nullptr) { cout << "  >> No existe esa facultad.\n"; return; }
+    if (f == nullptr) { msgError("No existe esa facultad."); return; }
     string cod = leerLinea("Codigo del programa a eliminar: ");
     Programa* actual = f->listaProgramas;
     Programa* anterior = nullptr;
@@ -858,13 +1037,36 @@ void eliminarPrograma() {
         anterior = actual;
         actual = actual->sig;
     }
-    if (actual == nullptr) { cout << "  >> No existe ese programa en esa facultad.\n"; return; }
-    if (!leerSiNo("  Esto eliminara el programa y todos sus cursos/estudiantes/profesores. ?Continuar? (s/n): "))
+    if (actual == nullptr) { msgError("No existe ese programa en esa facultad."); return; }
+
+    int numCursos = 0;
+    Curso* c = actual->listaCursos;
+    while (c != nullptr) { numCursos++; c = c->sig; }
+
+    int numEstudiantes = 0;
+    Estudiante* e = actual->listaEstudiantes;
+    while (e != nullptr) { numEstudiantes++; e = e->sig; }
+
+    int numProfesores = 0;
+    Profesor* d = actual->listaProfesores;
+    while (d != nullptr) { numProfesores++; d = d->sig; }
+
+    if (numCursos > 0 || numEstudiantes > 0 || numProfesores > 0) {
+        string adv = "El programa " + cod + " tiene ";
+        if (numCursos > 0) adv += to_string(numCursos) + " curso(s)";
+        if (numCursos > 0 && (numEstudiantes > 0 || numProfesores > 0)) adv += ", ";
+        if (numEstudiantes > 0) adv += to_string(numEstudiantes) + " estudiante(s)";
+        if (numEstudiantes > 0 && numProfesores > 0) adv += " y ";
+        if (numProfesores > 0) adv += to_string(numProfesores) + " profesor(es)";
+        adv += " asociado(s). No se puede eliminar un programa con registros activos.";
+        msgAdvert(adv);
         return;
+    }
+
     if (anterior == nullptr) f->listaProgramas = actual->sig;
     else anterior->sig = actual->sig;
     liberarPrograma(actual);
-    cout << "  >> Programa eliminado.\n";
+    msgOk("Programa eliminado.");
 }
 
 // ======================================================================
@@ -877,8 +1079,14 @@ void crearCurso() {
 
     Curso* nuevo = new Curso();
     nuevo->codigo = generarCodigoCurso();
-    nuevo->nombre = leerLinea("Nombre del curso: ");
-    nuevo->creditos = leerEntero("Numero de creditos: ");
+    nuevo->nombre = leerLinea("Nombre del curso: ", true);
+    int cred;
+    do {
+        cred = leerEntero("Numero de creditos: ");
+        if (cred < CREDITOS_MIN || cred > CREDITOS_MAX)
+            msgError("Los creditos deben ser un valor entre 1 y 10.");
+    } while (cred < CREDITOS_MIN || cred > CREDITOS_MAX);
+    nuevo->creditos = cred;
     nuevo->activo = true;
     nuevo->sig = nullptr;
 
@@ -889,14 +1097,14 @@ void crearCurso() {
         while (actual->sig != nullptr) actual = actual->sig;
         actual->sig = nuevo;
     }
-    cout << "  >> Curso creado con codigo: " << nuevo->codigo << " en " << p->nombre << "\n";
+    msgOk("Curso creado con codigo: " + nuevo->codigo + " en " + p->nombre);
 }
 
 void listarCursos() {
     titulo("LISTADO DE CURSOS");
     Programa* p = seleccionarProgramaPorCodigo();
     if (p == nullptr) return;
-    if (p->listaCursos == nullptr) { cout << "  (Sin cursos)\n"; return; }
+    if (p->listaCursos == nullptr) { msgVacio("cursos"); return; }
     cout << left << setw(8) << "CODIGO" << setw(35) << "NOMBRE"
          << setw(10) << "CREDITOS" << setw(10) << "ESTADO" << "\n";
     linea();
@@ -915,13 +1123,20 @@ void modificarCurso() {
     if (p == nullptr) return;
     string cod = leerLinea("Codigo del curso: ");
     Curso* c = buscarCursoEnPrograma(p, cod);
-    if (c == nullptr) { cout << "  >> No existe ese curso.\n"; return; }
+    if (c == nullptr) { msgError("No existe ese curso."); return; }
     string nuevoNombre = leerLinea("  Nuevo nombre (ENTER para no cambiar): ");
     if (!nuevoNombre.empty()) c->nombre = nuevoNombre;
     string cambiarCred = leerLinea("  ?Cambiar creditos? (s/n): ");
-    if (!cambiarCred.empty() && (cambiarCred[0]=='s'||cambiarCred[0]=='S'))
-        c->creditos = leerEntero("  Nuevos creditos: ");
-    cout << "  >> Curso actualizado.\n";
+    if (!cambiarCred.empty() && (cambiarCred[0]=='s'||cambiarCred[0]=='S')) {
+        int cred;
+        do {
+            cred = leerEntero("  Nuevos creditos: ");
+            if (cred < CREDITOS_MIN || cred > CREDITOS_MAX)
+                msgError("Los creditos deben ser un valor entre 1 y 10.");
+        } while (cred < CREDITOS_MIN || cred > CREDITOS_MAX);
+        c->creditos = cred;
+    }
+    msgOk("Curso actualizado.");
 }
 
 void eliminarCurso() {
@@ -935,11 +1150,32 @@ void eliminarCurso() {
         anterior = actual;
         actual = actual->sig;
     }
-    if (actual == nullptr) { cout << "  >> No existe ese curso.\n"; return; }
+    if (actual == nullptr) { msgError("No existe ese curso."); return; }
+
+    int matriculados = 0;
+    Estudiante* e = p->listaEstudiantes;
+    while (e != nullptr) {
+        Nota* n = e->cursosMatriculados;
+        while (n != nullptr) {
+            if (n->codigoCurso == cod && !n->cancelado) {
+                matriculados++;
+                break;
+            }
+            n = n->sig;
+        }
+        e = e->sig;
+    }
+
+    if (matriculados > 0) {
+        msgAdvert("El curso " + cod + " tiene " + to_string(matriculados)
+             + " estudiante(s) matriculado(s). No se puede eliminar un curso con matriculas activas.");
+        return;
+    }
+
     if (anterior == nullptr) p->listaCursos = actual->sig;
     else anterior->sig = actual->sig;
     delete actual;
-    cout << "  >> Curso eliminado.\n";
+    msgOk("Curso eliminado.");
 }
 
 // ======================================================================
@@ -950,10 +1186,18 @@ void crearEstudiante() {
     Programa* p = seleccionarProgramaPorCodigo();
     if (p == nullptr) return;
 
+    string nom = leerLinea("Nombre del estudiante: ", true);
+    string doc = leerLinea("Documento de identidad: ");
+    string entidadEncontrada;
+    if (documentoExiste(doc, entidadEncontrada)) {
+        msgError("Ya existe una persona registrada con el documento " + doc + ".\n  Entidad: " + entidadEncontrada + ".");
+        return;
+    }
+
     Estudiante* nuevo = new Estudiante();
     nuevo->codigo = generarCodigoEstudiante();
-    nuevo->nombre = leerLinea("Nombre del estudiante: ");
-    nuevo->documento = leerLinea("Documento de identidad: ");
+    nuevo->nombre = nom;
+    nuevo->documento = doc;
     nuevo->email = leerLinea("Correo electronico: ");
     nuevo->categoria = leerLinea("Categoria (Regular/Transferencia/Intercambio/Reingreso): ");
     nuevo->activo = true;
@@ -967,14 +1211,14 @@ void crearEstudiante() {
         while (actual->sig != nullptr) actual = actual->sig;
         actual->sig = nuevo;
     }
-    cout << "  >> Estudiante creado con codigo: " << nuevo->codigo << " en " << p->nombre << "\n";
+    msgOk("Estudiante creado con codigo: " + nuevo->codigo + " en " + p->nombre);
 }
 
 void listarEstudiantes() {
     titulo("LISTADO DE ESTUDIANTES");
     Programa* p = seleccionarProgramaPorCodigo();
     if (p == nullptr) return;
-    if (p->listaEstudiantes == nullptr) { cout << "  (Sin estudiantes)\n"; return; }
+    if (p->listaEstudiantes == nullptr) { msgVacio("estudiantes"); return; }
     cout << left << setw(8) << "CODIGO" << setw(28) << "NOMBRE" << setw(14) << "DOCUMENTO"
          << setw(14) << "CATEGORIA" << setw(10) << "ESTADO" << setw(10) << "PROMEDIO" << "\n";
     linea();
@@ -996,14 +1240,14 @@ void modificarEstudiante() {
     if (p == nullptr) return;
     string cod = leerLinea("Codigo del estudiante: ");
     Estudiante* e = buscarEstudianteEnPrograma(p, cod);
-    if (e == nullptr) { cout << "  >> No existe ese estudiante.\n"; return; }
+    if (e == nullptr) { msgError("No existe ese estudiante."); return; }
     string nuevoNombre = leerLinea("  Nuevo nombre (ENTER para no cambiar): ");
     if (!nuevoNombre.empty()) e->nombre = nuevoNombre;
     string nuevoEmail = leerLinea("  Nuevo email (ENTER para no cambiar): ");
     if (!nuevoEmail.empty()) e->email = nuevoEmail;
     string nuevaCategoria = leerLinea("  Nueva categoria (ENTER para no cambiar): ");
     if (!nuevaCategoria.empty()) e->categoria = nuevaCategoria;
-    cout << "  >> Estudiante actualizado.\n";
+    msgOk("Estudiante actualizado.");
 }
 
 void desactivarEstudiante() {
@@ -1012,9 +1256,9 @@ void desactivarEstudiante() {
     if (p == nullptr) return;
     string cod = leerLinea("Codigo del estudiante: ");
     Estudiante* e = buscarEstudianteEnPrograma(p, cod);
-    if (e == nullptr) { cout << "  >> No existe ese estudiante.\n"; return; }
+    if (e == nullptr) { msgError("No existe ese estudiante."); return; }
     e->activo = !e->activo;
-    cout << "  >> Estudiante ahora esta " << (e->activo ? "ACTIVO" : "INACTIVO") << "\n";
+    msgOk(string("Estudiante ahora esta ") + (e->activo ? "ACTIVO" : "INACTIVO"));
 }
 
 void eliminarEstudiante() {
@@ -1028,13 +1272,13 @@ void eliminarEstudiante() {
         anterior = actual;
         actual = actual->sig;
     }
-    if (actual == nullptr) { cout << "  >> No existe ese estudiante.\n"; return; }
+    if (actual == nullptr) { msgError("No existe ese estudiante."); return; }
     if (anterior == nullptr) p->listaEstudiantes = actual->sig;
     else anterior->sig = actual->sig;
     Nota* n = actual->cursosMatriculados;
     while (n != nullptr) { Nota* tmp = n; n = n->sig; delete tmp; }
     delete actual;
-    cout << "  >> Estudiante eliminado.\n";
+    msgOk("Estudiante eliminado.");
 }
 
 void matricularCurso() {
@@ -1043,16 +1287,16 @@ void matricularCurso() {
     if (p == nullptr) return;
     string codEst = leerLinea("Codigo del estudiante: ");
     Estudiante* e = buscarEstudianteEnPrograma(p, codEst);
-    if (e == nullptr) { cout << "  >> No existe ese estudiante en el programa.\n"; return; }
+    if (e == nullptr) { msgError("No existe ese estudiante en el programa."); return; }
     string codCurso = leerLinea("Codigo del curso a matricular: ");
     Curso* c = buscarCursoEnPrograma(p, codCurso);
-    if (c == nullptr) { cout << "  >> No existe ese curso en el programa.\n"; return; }
+    if (c == nullptr) { msgError("No existe ese curso en el programa."); return; }
 
     // verificar que no este ya matriculado (y no cancelado)
     Nota* n = e->cursosMatriculados;
     while (n != nullptr) {
         if (n->codigoCurso == c->codigo && !n->cancelado) {
-            cout << "  >> El estudiante ya esta matriculado en ese curso.\n";
+            msgError("El estudiante ya esta matriculado en ese curso.");
             return;
         }
         n = n->sig;
@@ -1072,7 +1316,7 @@ void matricularCurso() {
         while (actual->sig != nullptr) actual = actual->sig;
         actual->sig = nueva;
     }
-    cout << "  >> Matricula registrada: " << e->nombre << " -> " << c->nombre << "\n";
+    msgOk("Matricula registrada: " + e->nombre + " -> " + c->nombre);
 }
 
 void cancelarMatricula() {
@@ -1081,18 +1325,18 @@ void cancelarMatricula() {
     if (p == nullptr) return;
     string codEst = leerLinea("Codigo del estudiante: ");
     Estudiante* e = buscarEstudianteEnPrograma(p, codEst);
-    if (e == nullptr) { cout << "  >> No existe ese estudiante.\n"; return; }
+    if (e == nullptr) { msgError("No existe ese estudiante."); return; }
     string codCurso = leerLinea("Codigo del curso a cancelar: ");
     Nota* n = e->cursosMatriculados;
     while (n != nullptr) {
         if (n->codigoCurso == codCurso && !n->cancelado) {
             n->cancelado = true;
-            cout << "  >> Matricula cancelada: " << n->nombreCurso << "\n";
+            msgOk("Matricula cancelada: " + n->nombreCurso);
             return;
         }
         n = n->sig;
     }
-    cout << "  >> El estudiante no tiene una matricula activa en ese curso.\n";
+    msgError("El estudiante no tiene una matricula activa en ese curso.");
 }
 
 void calificarCurso() {
@@ -1101,19 +1345,24 @@ void calificarCurso() {
     if (p == nullptr) return;
     string codEst = leerLinea("Codigo del estudiante: ");
     Estudiante* e = buscarEstudianteEnPrograma(p, codEst);
-    if (e == nullptr) { cout << "  >> No existe ese estudiante.\n"; return; }
+    if (e == nullptr) { msgError("No existe ese estudiante."); return; }
     string codCurso = leerLinea("Codigo del curso: ");
     Nota* n = e->cursosMatriculados;
     while (n != nullptr) {
         if (n->codigoCurso == codCurso && !n->cancelado) {
-            double val = leerDouble("Nota (escala 0.0 a 5.0): ");
+            double val;
+            do {
+                val = leerDouble("Nota (escala 0.0 a 5.0): ");
+                if (val < NOTA_MIN || val > NOTA_MAX)
+                    msgError("La nota debe estar entre 0.0 y 5.0. Intente de nuevo.");
+            } while (val < NOTA_MIN || val > NOTA_MAX);
             n->valor = (float) val;
-            cout << "  >> Nota registrada.\n";
+            msgOk("Nota registrada.");
             return;
         }
         n = n->sig;
     }
-    cout << "  >> El estudiante no tiene una matricula activa en ese curso.\n";
+    msgError("El estudiante no tiene una matricula activa en ese curso.");
 }
 
 // Recorre la lista de notas de un estudiante (ignorando canceladas y sin calificar)
@@ -1139,7 +1388,7 @@ void consultarPromedioEstudiante() {
     if (p == nullptr) return;
     string codEst = leerLinea("Codigo del estudiante: ");
     Estudiante* e = buscarEstudianteEnPrograma(p, codEst);
-    if (e == nullptr) { cout << "  >> No existe ese estudiante.\n"; return; }
+    if (e == nullptr) { msgError("No existe ese estudiante."); return; }
 
     cout << "\n  Historial academico de " << e->nombre << ":\n";
     cout << "  " << left << setw(30) << "CURSO" << setw(10) << "NOTA" << setw(12) << "ESTADO" << "\n";
@@ -1153,7 +1402,7 @@ void consultarPromedioEstudiante() {
 
     double prom = calcularPromedio(e);
     if (prom < 0) {
-        cout << "\n  Promedio: N/A (sin notas registradas)\n";
+        msgVacio("notas");
         return;
     }
     cout << fixed << setprecision(2);
@@ -1173,32 +1422,75 @@ void crearProfesor() {
     Programa* p = seleccionarProgramaPorCodigo();
     if (p == nullptr) return;
 
+    string nom = leerLinea("Nombre del profesor: ", true);
+    string doc = leerLinea("Documento de identidad: ");
+    string entidadEncontrada;
+    if (documentoExiste(doc, entidadEncontrada)) {
+        msgError("Ya existe una persona registrada con el documento " + doc + ".\n  Entidad: " + entidadEncontrada + ".");
+        return;
+    }
+
     Profesor* nuevo = new Profesor();
     nuevo->codigo = generarCodigoProfesor();
-    nuevo->nombre = leerLinea("Nombre del profesor: ");
-    nuevo->documento = leerLinea("Documento de identidad: ");
+    nuevo->nombre = nom;
+    nuevo->documento = doc;
     nuevo->email = leerLinea("Correo electronico: ");
     nuevo->activo = true;
 
     cout << "\n  Tipo de contratacion:\n";
     cout << "    0. Planta\n    1. Ocasional\n    2. Catedratico\n";
     int tc = leerEntero("  Seleccione (0-2): ");
-    nuevo->nomina.tipoContrato = contratoDesdeInt(tc);
+    bool esValidoContrato = true;
+    nuevo->nomina.tipoContrato = contratoDesdeInt(tc, esValidoContrato);
+    if (!esValidoContrato) {
+        msgAdvert("Opcion invalida. Se asigno el valor por defecto. Por favor revise el registro.");
+    }
 
     cout << "\n  Categoria docente:\n";
     cout << "    0. Auxiliar\n    1. Asistente\n    2. Asociado\n    3. Titular\n";
     int cat = leerEntero("  Seleccione (0-3): ");
-    nuevo->nomina.categoria = categoriaDesdeInt(cat);
+    bool esValidaCat = true;
+    nuevo->nomina.categoria = categoriaDesdeInt(cat, esValidaCat);
+    if (!esValidaCat) {
+        msgAdvert("Opcion invalida. Se asigno el valor por defecto. Por favor revise el registro.");
+    }
 
     if (nuevo->nomina.tipoContrato == CATEDRATICO) {
-        nuevo->nomina.horasCatedraMes = leerEntero("  Horas catedra al mes: ");
+        int h;
+        do {
+            h = leerEntero("  Horas catedra al mes: ");
+            if (h < 0 || h > 300)
+                msgError("Las horas de catedra deben ser entre 0 y 300.");
+        } while (h < 0 || h > 300);
+        nuevo->nomina.horasCatedraMes = h;
         nuevo->nomina.puntosTitulo = 0;
         nuevo->nomina.puntosExperiencia = 0;
         nuevo->nomina.puntosProductividad = 0;
     } else {
-        nuevo->nomina.puntosTitulo = leerEntero("  Puntos salariales por titulo: ");
-        nuevo->nomina.puntosExperiencia = leerEntero("  Puntos salariales por experiencia calificada: ");
-        nuevo->nomina.puntosProductividad = leerEntero("  Puntos salariales por productividad academica: ");
+        int pt;
+        do {
+            pt = leerEntero("  Puntos salariales por titulo: ");
+            if (pt < 0)
+                msgError("Los puntos no pueden ser negativos.");
+        } while (pt < 0);
+        nuevo->nomina.puntosTitulo = pt;
+
+        int pe;
+        do {
+            pe = leerEntero("  Puntos salariales por experiencia calificada: ");
+            if (pe < 0)
+                msgError("Los puntos no pueden ser negativos.");
+        } while (pe < 0);
+        nuevo->nomina.puntosExperiencia = pe;
+
+        int pp;
+        do {
+            pp = leerEntero("  Puntos salariales por productividad academica: ");
+            if (pp < 0)
+                msgError("Los puntos no pueden ser negativos.");
+        } while (pp < 0);
+        nuevo->nomina.puntosProductividad = pp;
+
         nuevo->nomina.horasCatedraMes = 0;
     }
     nuevo->sig = nullptr;
@@ -1210,14 +1502,14 @@ void crearProfesor() {
         while (actual->sig != nullptr) actual = actual->sig;
         actual->sig = nuevo;
     }
-    cout << "  >> Profesor creado con codigo: " << nuevo->codigo << " en " << p->nombre << "\n";
+    msgOk("Profesor creado con codigo: " + nuevo->codigo + " en " + p->nombre);
 }
 
 void listarProfesores() {
     titulo("LISTADO DE PROFESORES");
     Programa* p = seleccionarProgramaPorCodigo();
     if (p == nullptr) return;
-    if (p->listaProfesores == nullptr) { cout << "  (Sin profesores)\n"; return; }
+    if (p->listaProfesores == nullptr) { msgVacio("profesores"); return; }
     cout << left << setw(8) << "CODIGO" << setw(26) << "NOMBRE" << setw(13) << "CONTRATO"
          << setw(12) << "CATEGORIA" << setw(10) << "ESTADO" << setw(14) << "SALARIO MES" << "\n";
     linea();
@@ -1238,28 +1530,65 @@ void modificarProfesor() {
     if (p == nullptr) return;
     string cod = leerLinea("Codigo del profesor: ");
     Profesor* d = buscarProfesorEnPrograma(p, cod);
-    if (d == nullptr) { cout << "  >> No existe ese profesor.\n"; return; }
+    if (d == nullptr) { msgError("No existe ese profesor."); return; }
     string nuevoNombre = leerLinea("  Nuevo nombre (ENTER para no cambiar): ");
     if (!nuevoNombre.empty()) d->nombre = nuevoNombre;
     if (leerSiNo("  ?Actualizar categoria docente? (s/n): ")) {
         cout << "    0. Auxiliar\n    1. Asistente\n    2. Asociado\n    3. Titular\n";
-        d->nomina.categoria = categoriaDesdeInt(leerEntero("    Seleccione (0-3): "));
+        int c = leerEntero("    Seleccione (0-3): ");
+        bool esValidaCat = true;
+        d->nomina.categoria = categoriaDesdeInt(c, esValidaCat);
+        if (!esValidaCat) {
+            msgAdvert("Opcion invalida. Se asigno el valor por defecto. Por favor revise el registro.");
+        }
     }
     if (leerSiNo("  ?Actualizar tipo de contratacion? (s/n): ")) {
         cout << "    0. Planta\n    1. Ocasional\n    2. Catedratico\n";
-        d->nomina.tipoContrato = contratoDesdeInt(leerEntero("    Seleccione (0-2): "));
-    }
-    if (d->nomina.tipoContrato == CATEDRATICO) {
-        if (leerSiNo("  ?Actualizar horas catedra/mes? (s/n): "))
-            d->nomina.horasCatedraMes = leerEntero("    Horas catedra al mes: ");
-    } else {
-        if (leerSiNo("  ?Actualizar puntos salariales? (s/n): ")) {
-            d->nomina.puntosTitulo = leerEntero("    Puntos por titulo: ");
-            d->nomina.puntosExperiencia = leerEntero("    Puntos por experiencia: ");
-            d->nomina.puntosProductividad = leerEntero("    Puntos por productividad: ");
+        int t = leerEntero("    Seleccione (0-2): ");
+        bool esValidoContrato = true;
+        d->nomina.tipoContrato = contratoDesdeInt(t, esValidoContrato);
+        if (!esValidoContrato) {
+            msgAdvert("Opcion invalida. Se asigno el valor por defecto. Por favor revise el registro.");
         }
     }
-    cout << "  >> Profesor actualizado.\n";
+    if (d->nomina.tipoContrato == CATEDRATICO) {
+        if (leerSiNo("  ?Actualizar horas catedra/mes? (s/n): ")) {
+            int h;
+            do {
+                h = leerEntero("    Horas catedra al mes: ");
+                if (h < 0 || h > 300)
+                    msgError("Las horas de catedra deben ser entre 0 y 300.");
+            } while (h < 0 || h > 300);
+            d->nomina.horasCatedraMes = h;
+        }
+    } else {
+        if (leerSiNo("  ?Actualizar puntos salariales? (s/n): ")) {
+            int pt;
+            do {
+                pt = leerEntero("    Puntos por titulo: ");
+                if (pt < 0)
+                    msgError("Los puntos no pueden ser negativos.");
+            } while (pt < 0);
+            d->nomina.puntosTitulo = pt;
+
+            int pe;
+            do {
+                pe = leerEntero("    Puntos por experiencia: ");
+                if (pe < 0)
+                    msgError("Los puntos no pueden ser negativos.");
+            } while (pe < 0);
+            d->nomina.puntosExperiencia = pe;
+
+            int pp;
+            do {
+                pp = leerEntero("    Puntos por productividad: ");
+                if (pp < 0)
+                    msgError("Los puntos no pueden ser negativos.");
+            } while (pp < 0);
+            d->nomina.puntosProductividad = pp;
+        }
+    }
+    msgOk("Profesor actualizado.");
 }
 
 void desactivarProfesor() {
@@ -1268,9 +1597,9 @@ void desactivarProfesor() {
     if (p == nullptr) return;
     string cod = leerLinea("Codigo del profesor: ");
     Profesor* d = buscarProfesorEnPrograma(p, cod);
-    if (d == nullptr) { cout << "  >> No existe ese profesor.\n"; return; }
+    if (d == nullptr) { msgError("No existe ese profesor."); return; }
     d->activo = !d->activo;
-    cout << "  >> Profesor ahora esta " << (d->activo ? "ACTIVO" : "INACTIVO") << "\n";
+    msgOk("Profesor ahora esta " + string(d->activo ? "ACTIVO" : "INACTIVO"));
 }
 
 void eliminarProfesor() {
@@ -1284,11 +1613,11 @@ void eliminarProfesor() {
         anterior = actual;
         actual = actual->sig;
     }
-    if (actual == nullptr) { cout << "  >> No existe ese profesor.\n"; return; }
+    if (actual == nullptr) { msgError("No existe ese profesor."); return; }
     if (anterior == nullptr) p->listaProfesores = actual->sig;
     else anterior->sig = actual->sig;
     delete actual;
-    cout << "  >> Profesor eliminado.\n";
+    msgOk("Profesor eliminado.");
 }
 
 // ======================================================================
@@ -1296,13 +1625,27 @@ void eliminarProfesor() {
 // ======================================================================
 void crearAdministrativo() {
     titulo("CREAR ADMINISTRATIVO");
+    string nom = leerLinea("Nombre: ", true);
+    string doc = leerLinea("Documento de identidad: ");
+    string entidadEncontrada;
+    if (documentoExiste(doc, entidadEncontrada)) {
+        msgError("Ya existe una persona registrada con el documento " + doc + ".\n  Entidad: " + entidadEncontrada + ".");
+        return;
+    }
+
     Administrativo* nuevo = new Administrativo();
     nuevo->codigo = generarCodigoAdministrativo();
-    nuevo->nombre = leerLinea("Nombre: ");
-    nuevo->documento = leerLinea("Documento de identidad: ");
-    nuevo->cargo = leerLinea("Cargo: ");
+    nuevo->nombre = nom;
+    nuevo->documento = doc;
+    nuevo->cargo = leerLinea("Cargo: ", true);
     nuevo->tipoContrato = leerLinea("Tipo de contratacion (Planta/Contratista/Provisional): ");
-    nuevo->salarioBase = leerDouble("Salario base mensual: ");
+    double sal;
+    do {
+        sal = leerDouble("Salario base mensual: ");
+        if (sal < 1300000.0)
+            msgError("El salario base no puede ser inferior al salario minimo legal.");
+    } while (sal < 1300000.0);
+    nuevo->salarioBase = sal;
     nuevo->activo = true;
     nuevo->sig = nullptr;
 
@@ -1313,12 +1656,12 @@ void crearAdministrativo() {
         while (actual->sig != nullptr) actual = actual->sig;
         actual->sig = nuevo;
     }
-    cout << "  >> Administrativo creado con codigo: " << nuevo->codigo << "\n";
+    msgOk("Administrativo creado con codigo: " + nuevo->codigo);
 }
 
 void listarAdministrativos() {
     titulo("LISTADO DE ADMINISTRATIVOS");
-    if (cabezaAdministrativos == nullptr) { cout << "  (No hay administrativos)\n"; return; }
+    if (cabezaAdministrativos == nullptr) { msgVacio("administrativos"); return; }
     cout << left << setw(8) << "CODIGO" << setw(24) << "NOMBRE" << setw(20) << "CARGO"
          << setw(14) << "CONTRATO" << setw(10) << "ESTADO" << setw(14) << "SALARIO" << "\n";
     linea();
@@ -1336,23 +1679,30 @@ void modificarAdministrativo() {
     titulo("MODIFICAR ADMINISTRATIVO");
     string cod = leerLinea("Codigo del administrativo: ");
     Administrativo* a = buscarAdministrativo(cod);
-    if (a == nullptr) { cout << "  >> No existe ese administrativo.\n"; return; }
+    if (a == nullptr) { msgError("No existe ese administrativo."); return; }
     string nuevoNombre = leerLinea("  Nuevo nombre (ENTER para no cambiar): ");
     if (!nuevoNombre.empty()) a->nombre = nuevoNombre;
     string nuevoCargo = leerLinea("  Nuevo cargo (ENTER para no cambiar): ");
     if (!nuevoCargo.empty()) a->cargo = nuevoCargo;
-    if (leerSiNo("  ?Actualizar salario base? (s/n): "))
-        a->salarioBase = leerDouble("  Nuevo salario base: ");
-    cout << "  >> Administrativo actualizado.\n";
+    if (leerSiNo("  ?Actualizar salario base? (s/n): ")) {
+        double sal;
+        do {
+            sal = leerDouble("  Nuevo salario base: ");
+            if (sal < 1300000.0)
+                msgError("El salario base no puede ser inferior al salario minimo legal.");
+        } while (sal < 1300000.0);
+        a->salarioBase = sal;
+    }
+    msgOk("Administrativo actualizado.");
 }
 
 void desactivarAdministrativo() {
     titulo("ACTIVAR / DESACTIVAR ADMINISTRATIVO");
     string cod = leerLinea("Codigo del administrativo: ");
     Administrativo* a = buscarAdministrativo(cod);
-    if (a == nullptr) { cout << "  >> No existe ese administrativo.\n"; return; }
+    if (a == nullptr) { msgError("No existe ese administrativo."); return; }
     a->activo = !a->activo;
-    cout << "  >> Administrativo ahora esta " << (a->activo ? "ACTIVO" : "INACTIVO") << "\n";
+    msgOk("Administrativo ahora esta " + string(a->activo ? "ACTIVO" : "INACTIVO"));
 }
 
 void eliminarAdministrativo() {
@@ -1364,11 +1714,11 @@ void eliminarAdministrativo() {
         anterior = actual;
         actual = actual->sig;
     }
-    if (actual == nullptr) { cout << "  >> No existe ese administrativo.\n"; return; }
+    if (actual == nullptr) { msgError("No existe ese administrativo."); return; }
     if (anterior == nullptr) cabezaAdministrativos = actual->sig;
     else anterior->sig = actual->sig;
     delete actual;
-    cout << "  >> Administrativo eliminado.\n";
+    msgOk("Administrativo eliminado.");
 }
 
 // ======================================================================
@@ -1434,13 +1784,13 @@ vector<pita::payroll::PayrollNovelty> conceptosNomina(Administrativo* a) {
 }
 
 pita::payroll::PayrollResult liquidarProfesor(Profesor* p, int diasLaborados) {
-    pita::payroll::PayrollPeriod period{"LEGACY", diasLaborados};
+    pita::payroll::PayrollPeriod period{"LEGACY", diasLaborados, 0, 0, "", "", "OPEN"};
     pita::payroll::PayrollRules rules;
     return pita::payroll::calculatePayroll(crearEntradaNomina(p), period, rules, conceptosNomina(p));
 }
 
 pita::payroll::PayrollResult liquidarAdministrativo(Administrativo* a, int diasLaborados) {
-    pita::payroll::PayrollPeriod period{"LEGACY", diasLaborados};
+    pita::payroll::PayrollPeriod period{"LEGACY", diasLaborados, 0, 0, "", "", "OPEN"};
     pita::payroll::PayrollRules rules;
     return pita::payroll::calculatePayroll(crearEntradaNomina(a), period, rules, conceptosNomina(a));
 }
@@ -1448,12 +1798,12 @@ pita::payroll::PayrollResult liquidarAdministrativo(Administrativo* a, int diasL
 // Tarifa de hora catedra segun categoria (ilustrativa, ajustar a valores reales)
 double tarifaHoraCatedra(CategoriaDocente c) {
     switch (c) {
-        case AUXILIAR:  return 39000.0;
-        case ASISTENTE: return 45000.0;
-        case ASOCIADO:  return 52000.0;
-        case TITULAR:   return 60000.0;
+        case AUXILIAR:  return TARIFA_CATEDRA_AUXILIAR;
+        case ASISTENTE: return TARIFA_CATEDRA_ASISTENTE;
+        case ASOCIADO:  return TARIFA_CATEDRA_ASOCIADO;
+        case TITULAR:   return TARIFA_CATEDRA_TITULAR;
     }
-    return 39000.0;
+    return TARIFA_CATEDRA_AUXILIAR;
 }
 
 // Salario mensual BRUTO. Planta/Ocasional: puntos salariales * valor punto.
@@ -1465,42 +1815,42 @@ double calcularSalarioMensualBruto(Profesor* p) {
 
 double calcularSaludMensual(Profesor* p) {
     if (p == nullptr) return 0.0;
-    return static_cast<double>(liquidarProfesor(p, 30).employeeHealth);
+    return static_cast<double>(liquidarProfesor(p, DIAS_MES_NOMINA).employeeHealth);
 }
 
 double calcularPensionMensual(Profesor* p) {
     if (p == nullptr) return 0.0;
-    return static_cast<double>(liquidarProfesor(p, 30).employeePension);
+    return static_cast<double>(liquidarProfesor(p, DIAS_MES_NOMINA).employeePension);
 }
 
 double calcularNetoMensual(Profesor* p) {
     if (p == nullptr) return 0.0;
-    return static_cast<double>(liquidarProfesor(p, 30).netSalary);
+    return static_cast<double>(liquidarProfesor(p, DIAS_MES_NOMINA).netSalary);
 }
 
 // Provision de prestaciones sociales (cesantias + intereses + prima + vacaciones).
 // No aplica tipicamente a catedraticos por hora (se liquidan de forma distinta).
 double calcularPrestacionesSocialesMensual(Profesor* p) {
     if (p == nullptr) return 0.0;
-    const auto result = liquidarProfesor(p, 30);
+    const auto result = liquidarProfesor(p, DIAS_MES_NOMINA);
     return static_cast<double>(result.serviceBonusProvision + result.severanceProvision +
         result.severanceInterest + result.christmasBonusProvision + result.vacationProvision +
         result.vacationBonusProvision);
 }
 
 double calcularSalarioAnualBruto(Profesor* p) {
-    return calcularSalarioMensualBruto(p) * 12.0;
+    return calcularSalarioMensualBruto(p) * MESES_ANIO;
 }
 
 double calcularSalarioAnualNeto(Profesor* p) {
     if (p == nullptr) return 0.0;
-    return static_cast<double>(liquidarProfesor(p, 30).netSalary) * 12.0;
+    return static_cast<double>(liquidarProfesor(p, DIAS_MES_NOMINA).netSalary) * MESES_ANIO;
 }
 
 // Costo anual total para la universidad: 12 meses de salario bruto + prestaciones anuales
 double calcularCostoAnualUniversidad(Profesor* p) {
     if (p == nullptr) return 0.0;
-    return static_cast<double>(liquidarProfesor(p, 30).totalEmployerCost) * 12.0;
+    return static_cast<double>(liquidarProfesor(p, DIAS_MES_NOMINA).totalEmployerCost) * MESES_ANIO;
 }
 
 void mostrarDesgloseNomina(Profesor* p) {
@@ -1538,7 +1888,7 @@ void reporteNominaProfesorIndividual() {
     titulo("NOMINA DE UN PROFESOR (mensual y anual)");
     string cod = leerLinea("Codigo del profesor: ");
     Profesor* d = buscarProfesorGlobal(cod, nullptr, nullptr);
-    if (d == nullptr) { cout << "  >> No existe ese profesor.\n"; return; }
+    if (d == nullptr) { msgError("No existe ese profesor."); return; }
     mostrarDesgloseNomina(d);
 }
 
@@ -1578,7 +1928,7 @@ void reporteNominaPorFacultad() {
     titulo("NOMINA TOTAL DE UNA FACULTAD");
     string codFac = leerLinea("Codigo de la facultad: ");
     Facultad* f = buscarFacultad(codFac);
-    if (f == nullptr) { cout << "  >> No existe esa facultad.\n"; return; }
+    if (f == nullptr) { msgError("No existe esa facultad."); return; }
 
     double totalMensual = 0, totalAnual = 0;
     int cuentaProf = 0;
@@ -1586,7 +1936,7 @@ void reporteNominaPorFacultad() {
     while (p != nullptr) {
         cout << "\n  Programa: " << p->nombre << " [" << p->codigo << "]\n";
         Profesor* d = p->listaProfesores;
-        if (d == nullptr) cout << "    (sin profesores)\n";
+        if (d == nullptr) msgVacio("profesores");
         while (d != nullptr) {
             double m = calcularSalarioMensualBruto(d);
             cout << "    - " << d->nombre << " (" << nombreTipoContrato(d->nomina.tipoContrato)
@@ -1672,7 +2022,7 @@ void reporteEstudiantesEnEBRA() {
 // Recorrido jerarquico completo: facultad -> programa -> cursos/estudiantes/profesores
 void reporteArbolCompletoUniversidad() {
     titulo("ARBOL COMPLETO DE LA UNIVERSIDAD (recorrido de todas las listas)");
-    if (cabezaFacultades == nullptr) { cout << "  (No hay datos)\n"; return; }
+    if (cabezaFacultades == nullptr) { msgVacio("facultades"); return; }
     Facultad* f = cabezaFacultades;
     while (f != nullptr) {
         cout << "\nFACULTAD: " << f->nombre << " [" << f->codigo << "] "
@@ -1680,11 +2030,11 @@ void reporteArbolCompletoUniversidad() {
         Programa* p = f->listaProgramas;
         while (p != nullptr) {
             cout << "  PROGRAMA: " << p->nombre << " [" << p->codigo << "] "
-                 << (p->activo ? "(Activo)" : "(Inactivo)") << "\n";
+             << (p->activo ? "(Activo)" : "(Inactivo)") << "\n";
 
             cout << "    Cursos:\n";
             Curso* c = p->listaCursos;
-            if (c == nullptr) cout << "      (ninguno)\n";
+            if (c == nullptr) msgVacio("cursos");
             while (c != nullptr) {
                 cout << "      - " << c->nombre << " [" << c->codigo << "] ("
                      << c->creditos << " creditos)\n";
@@ -1693,7 +2043,7 @@ void reporteArbolCompletoUniversidad() {
 
             cout << "    Profesores:\n";
             Profesor* d = p->listaProfesores;
-            if (d == nullptr) cout << "      (ninguno)\n";
+            if (d == nullptr) msgVacio("profesores");
             while (d != nullptr) {
                 cout << "      - " << d->nombre << " [" << d->codigo << "] "
                      << nombreTipoContrato(d->nomina.tipoContrato) << "/"
@@ -1703,7 +2053,7 @@ void reporteArbolCompletoUniversidad() {
 
             cout << "    Estudiantes:\n";
             Estudiante* e = p->listaEstudiantes;
-            if (e == nullptr) cout << "      (ninguno)\n";
+            if (e == nullptr) msgVacio("estudiantes");
             while (e != nullptr) {
                 double prom = calcularPromedio(e);
                 cout << "      - " << e->nombre << " [" << e->codigo << "] promedio: ";
@@ -1757,28 +2107,28 @@ void reporteProfesoresPorCategoria() {
 // ======================================================================
 double calcularNetoMensualAdministrativo(Administrativo* a) {
     if (a == nullptr) return 0.0;
-    return static_cast<double>(liquidarAdministrativo(a, 30).netSalary);
+    return static_cast<double>(liquidarAdministrativo(a, DIAS_MES_NOMINA).netSalary);
 }
 
 double calcularSalarioAnualBrutoAdministrativo(Administrativo* a) {
     if (a == nullptr) return 0.0;
-    return static_cast<double>(liquidarAdministrativo(a, 30).baseSalary) * 12.0;
+    return static_cast<double>(liquidarAdministrativo(a, DIAS_MES_NOMINA).baseSalary) * MESES_ANIO;
 }
 
 double calcularSalarioAnualNetoAdministrativo(Administrativo* a) {
-    return calcularNetoMensualAdministrativo(a) * 12.0;
+    return calcularNetoMensualAdministrativo(a) * MESES_ANIO;
 }
 
 void reporteNominaAdministrativoIndividual() {
     titulo("NOMINA DE UN ADMINISTRATIVO (mensual y anual)");
     string cod = leerLinea("Codigo del administrativo: ");
     Administrativo* a = buscarAdministrativo(cod);
-    if (a == nullptr) { cout << "  >> No existe ese administrativo.\n"; return; }
+    if (a == nullptr) { msgError("No existe ese administrativo."); return; }
     cout << fixed << setprecision(2);
     cout << "\n  Administrativo: " << a->nombre << " [" << a->codigo << "]\n";
     cout << "  Cargo: " << a->cargo << "   Contrato: " << a->tipoContrato << "\n";
     linea();
-    const auto result = liquidarAdministrativo(a, 30);
+    const auto result = liquidarAdministrativo(a, DIAS_MES_NOMINA);
     cout << "  Salario mensual BRUTO : $ " << result.baseSalary << "\n";
     cout << "  (-) Salud             : $ " << result.employeeHealth << "\n";
     cout << "  (-) Pension           : $ " << result.employeePension << "\n";
@@ -1791,7 +2141,7 @@ void reporteNominaAdministrativoIndividual() {
 // Recorre TODA la lista de administrativos sumando su nomina mensual y anual
 void reporteNominaTotalAdministrativos() {
     titulo("NOMINA TOTAL DEL PERSONAL ADMINISTRATIVO (recorrido de lista)");
-    if (cabezaAdministrativos == nullptr) { cout << "  (No hay administrativos registrados)\n"; return; }
+    if (cabezaAdministrativos == nullptr) { msgVacio("administrativos"); return; }
     double totalMensual = 0, totalAnual = 0;
     int cuenta = 0;
     cout << left << setw(8) << "CODIGO" << setw(24) << "NOMBRE" << setw(16) << "MENSUAL BRUTO"
@@ -1839,12 +2189,12 @@ void reporteProfesorMayorMenorSalario() {
         f = f->sig;
     }
 
-    if (mayor == nullptr) { cout << "  (No hay profesores registrados)\n"; return; }
+    if (mayor == nullptr) { msgVacio("profesores"); return; }
     cout << fixed << setprecision(0);
     cout << "  MAYOR SALARIO: " << mayor->nombre << " [" << mayor->codigo << "] -> $ "
-         << salarioMayor << " /mes ($ " << salarioMayor * 12 << " /anio)\n";
+         << salarioMayor << " /mes ($ " << salarioMayor * MESES_ANIO << " /anio)\n";
     cout << "  MENOR SALARIO: " << menor->nombre << " [" << menor->codigo << "] -> $ "
-         << salarioMenor << " /mes ($ " << salarioMenor * 12 << " /anio)\n";
+         << salarioMenor << " /mes ($ " << salarioMenor * MESES_ANIO << " /anio)\n";
 }
 
 // Recorre facultades -> programas -> estudiantes buscando el mejor y el peor promedio
@@ -1871,7 +2221,7 @@ void reporteEstudianteMejorPeorPromedio() {
         f = f->sig;
     }
 
-    if (mejor == nullptr) { cout << "  (No hay estudiantes con notas registradas)\n"; return; }
+    if (mejor == nullptr) { msgVacio("estudiantes con notas"); return; }
     cout << fixed << setprecision(2);
     cout << "  MEJOR PROMEDIO: " << mejor->nombre << " [" << mejor->codigo << "] -> " << promMejor << "\n";
     cout << "  PEOR PROMEDIO : " << peor->nombre  << " [" << peor->codigo  << "] -> " << promPeor  << "\n";
@@ -1888,7 +2238,7 @@ void ordenarProfesoresPorSalario() {
     Programa* p = seleccionarProgramaPorCodigo();
     if (p == nullptr) return;
     if (p->listaProfesores == nullptr || p->listaProfesores->sig == nullptr) {
-        cout << "  >> El programa tiene 0 o 1 profesor, no hay nada que ordenar.\n";
+        msgAdvert("El programa tiene 0 o 1 profesor, no hay nada que ordenar.");
         return;
     }
     bool descendente = leerSiNo("?Ordenar de mayor a menor salario? (s = descendente / n = ascendente): ");
@@ -1902,20 +2252,23 @@ void ordenarProfesoresPorSalario() {
             double sSiguiente = calcularSalarioMensualBruto(actual->sig);
             bool debeIntercambiar = descendente ? (sActual < sSiguiente) : (sActual > sSiguiente);
             if (debeIntercambiar) {
-                // Intercambio de los DATOS (codigo, nombre, documento, email, nomina, activo)
-                swap(actual->codigo, actual->sig->codigo);
-                swap(actual->nombre, actual->sig->nombre);
-                swap(actual->documento, actual->sig->documento);
-                swap(actual->email, actual->sig->email);
-                swap(actual->activo, actual->sig->activo);
-                swap(actual->nomina, actual->sig->nomina);
+                Profesor* siguiente = actual->sig;
+                Profesor* sigSiguiente = siguiente->sig;
+
+                // Intercambio completo del struct Profesor (preservando los enlaces estructurales)
+                std::swap(*actual, *siguiente);
+
+                // Restaura los punteros sig a sus posiciones estructurales correctas
+                actual->sig = siguiente;
+                siguiente->sig = sigSiguiente;
+
                 huboIntercambio = true;
             }
             actual = actual->sig;
         }
     } while (huboIntercambio);
 
-    cout << "  >> Lista ordenada. Resultado:\n";
+    msgOk("Lista ordenada. Resultado:");
     listarProfesores(); // reutiliza el listado ya existente (pedira de nuevo el codigo del programa)
 }
 
@@ -1971,28 +2324,26 @@ void buscarPorDocumento() {
     Programa* progE = nullptr;
     Estudiante* e = buscarEstudiantePorDocumento(doc, &progE);
     if (e != nullptr) {
-        cout << "  >> ESTUDIANTE encontrado: " << e->nombre << " [" << e->codigo << "] - Programa: "
-             << progE->nombre << "\n";
+        msgOk("ESTUDIANTE encontrado: " + e->nombre + " [" + e->codigo + "] - Programa: " + progE->nombre);
     }
 
     Programa* progD = nullptr;
     Profesor* d = buscarProfesorPorDocumento(doc, &progD);
     if (d != nullptr) {
-        cout << "  >> PROFESOR encontrado: " << d->nombre << " [" << d->codigo << "] - Programa: "
-             << progD->nombre << "\n";
+        msgOk("PROFESOR encontrado: " + d->nombre + " [" + d->codigo + "] - Programa: " + progD->nombre);
     }
 
     Administrativo* a = cabezaAdministrativos;
     while (a != nullptr) {
         if (a->documento == doc) {
-            cout << "  >> ADMINISTRATIVO encontrado: " << a->nombre << " [" << a->codigo << "]\n";
+            msgOk("ADMINISTRATIVO encontrado: " + a->nombre + " [" + a->codigo + "]");
             break;
         }
         a = a->sig;
     }
 
     if (e == nullptr && d == nullptr && a == nullptr)
-        cout << "  >> No se encontro ninguna persona con ese documento.\n";
+        msgError("No se encontro ninguna persona con ese documento.");
 }
 
 // ======================================================================
@@ -2039,9 +2390,10 @@ void reporteCensoGeneral() {
 // Cursos -> Estudiantes -> Matriculas -> Profesores.
 
 void guardarDatos() {
-    ofstream archivo(ARCHIVO_DATOS);
+    string ARCHIVO_TEMP = ARCHIVO_DATOS + ".tmp";
+    ofstream archivo(ARCHIVO_TEMP);
     if (!archivo.is_open()) {
-        cout << "  >> ERROR: no se pudo abrir el archivo para escritura.\n";
+        msgError("No se pudo abrir el archivo para escritura.");
         return;
     }
     archivo << fixed << setprecision(2); // evita notacion cientifica en los numeros guardados
@@ -2167,11 +2519,17 @@ void guardarDatos() {
     pita::payroll::savePayrollCycleSections(archivo, cicloNominaFormal);
 
     archivo.close();
-    cout << "  >> Datos guardados correctamente en '" << ARCHIVO_DATOS << "'.\n";
+    try {
+        std::filesystem::rename(ARCHIVO_TEMP, ARCHIVO_DATOS);
+        msgOk("Datos guardados correctamente en '" + ARCHIVO_DATOS + "'.");
+    } catch (const std::filesystem::filesystem_error &) {
+        msgError("No se pudo reemplazar el archivo de datos. Tus datos estan en " + ARCHIVO_TEMP);
+    }
 }
 
 // separa una linea por '|'
 void separarCampos(const string &linea, string campos[], int maxCampos) {
+    for (int i = 0; i < maxCampos; i++) campos[i] = "";
     stringstream ss(linea);
     string item;
     int i = 0;
@@ -2184,11 +2542,14 @@ void separarCampos(const string &linea, string campos[], int maxCampos) {
 void cargarDatos() {
     ifstream archivo(ARCHIVO_DATOS);
     if (!archivo.is_open()) {
-        cout << "  >> No se encontro el archivo '" << ARCHIVO_DATOS << "'. Se iniciara sin datos.\n";
+        msgAdvert("No se encontro el archivo '" + ARCHIVO_DATOS + "'. Se iniciara sin datos.");
         return;
     }
-    liberarTodaLaMemoria(); // limpiar lo que hubiera en memoria antes de cargar
 
+    try {
+        liberarTodaLaMemoria(); // limpiar lo que hubiera en memoria antes de cargar
+
+    int warningCount = 0;
     string linea;
     string seccion = "";
     while (getline(archivo, linea)) {
@@ -2197,7 +2558,7 @@ void cargarDatos() {
             seccion = linea;
             continue;
         }
-        string campos[25];
+        string campos[MAX_CAMPOS_CSV];
 
         if (seccion == "#FACULTADES") {
             separarCampos(linea, campos, 3);
@@ -2220,7 +2581,12 @@ void cargarDatos() {
                 Programa* nuevo = new Programa();
                 nuevo->codigo = campos[0];
                 nuevo->nombre = campos[2];
-                nuevo->tipo = tipoProgramaDesdeInt(stoi(campos[3]));
+                try {
+                    nuevo->tipo = tipoProgramaDesdeInt(stoi(campos[3]));
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
                 nuevo->activo = (campos[4] == "1");
                 nuevo->listaCursos = nullptr;
                 nuevo->listaEstudiantes = nullptr;
@@ -2232,6 +2598,9 @@ void cargarDatos() {
                     while (act->sig != nullptr) act = act->sig;
                     act->sig = nuevo;
                 }
+            } else {
+                warningCount++;
+                msgAdvert("No se encontro el padre \"" + campos[1] + "\" para el registro \"" + linea + "\". Se omite.");
             }
         } else if (seccion == "#CURSOS") {
             separarCampos(linea, campos, 5);
@@ -2240,7 +2609,12 @@ void cargarDatos() {
                 Curso* nuevo = new Curso();
                 nuevo->codigo = campos[0];
                 nuevo->nombre = campos[2];
-                nuevo->creditos = stoi(campos[3]);
+                try {
+                    nuevo->creditos = stoi(campos[3]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
                 nuevo->activo = (campos[4] == "1");
                 nuevo->sig = nullptr;
                 if (p->listaCursos == nullptr) p->listaCursos = nuevo;
@@ -2249,6 +2623,9 @@ void cargarDatos() {
                     while (act->sig != nullptr) act = act->sig;
                     act->sig = nuevo;
                 }
+            } else {
+                warningCount++;
+                msgAdvert("No se encontro el padre \"" + campos[1] + "\" para el registro \"" + linea + "\". Se omite.");
             }
         } else if (seccion == "#ESTUDIANTES") {
             separarCampos(linea, campos, 7);
@@ -2269,6 +2646,9 @@ void cargarDatos() {
                     while (act->sig != nullptr) act = act->sig;
                     act->sig = nuevo;
                 }
+            } else {
+                warningCount++;
+                msgAdvert("No se encontro el padre \"" + campos[1] + "\" para el registro \"" + linea + "\". Se omite.");
             }
         } else if (seccion == "#MATRICULAS") {
             separarCampos(linea, campos, 5);
@@ -2277,7 +2657,12 @@ void cargarDatos() {
                 Nota* nueva = new Nota();
                 nueva->codigoCurso = campos[1];
                 nueva->nombreCurso = campos[2];
-                nueva->valor = stof(campos[3]);
+                try {
+                    nueva->valor = stof(campos[3]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
                 nueva->cancelado = (campos[4] == "1");
                 nueva->sig = nullptr;
                 if (e->cursosMatriculados == nullptr) e->cursosMatriculados = nueva;
@@ -2286,9 +2671,12 @@ void cargarDatos() {
                     while (act->sig != nullptr) act = act->sig;
                     act->sig = nueva;
                 }
+            } else {
+                warningCount++;
+                msgAdvert("No se encontro el padre \"" + campos[0] + "\" para el registro \"" + linea + "\". Se omite.");
             }
         } else if (seccion == "#PROFESORES") {
-            separarCampos(linea, campos, 20);
+            separarCampos(linea, campos, CAMPOS_PROFESOR);
             Programa* p = buscarProgramaGlobal(campos[1], nullptr);
             if (p != nullptr) {
                 Profesor* nuevo = new Profesor();
@@ -2296,12 +2684,42 @@ void cargarDatos() {
                 nuevo->nombre = campos[2];
                 nuevo->documento = campos[3];
                 nuevo->email = campos[4];
-                nuevo->nomina.tipoContrato = contratoDesdeInt(stoi(campos[5]));
-                nuevo->nomina.categoria = categoriaDesdeInt(stoi(campos[6]));
-                nuevo->nomina.puntosTitulo = stoi(campos[7]);
-                nuevo->nomina.puntosExperiencia = stoi(campos[8]);
-                nuevo->nomina.puntosProductividad = stoi(campos[9]);
-                nuevo->nomina.horasCatedraMes = stoi(campos[10]);
+                try {
+                    nuevo->nomina.tipoContrato = contratoDesdeInt(stoi(campos[5]));
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
+                try {
+                    nuevo->nomina.categoria = categoriaDesdeInt(stoi(campos[6]));
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
+                try {
+                    nuevo->nomina.puntosTitulo = stoi(campos[7]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
+                try {
+                    nuevo->nomina.puntosExperiencia = stoi(campos[8]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
+                try {
+                    nuevo->nomina.puntosProductividad = stoi(campos[9]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
+                try {
+                    nuevo->nomina.horasCatedraMes = stoi(campos[10]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
                 nuevo->activo = (campos[11] == "1");
                 if (!campos[12].empty()) nuevo->fechaIngreso = campos[12];
                 if (!campos[13].empty()) nuevo->fechaRetiro = campos[13];
@@ -2310,10 +2728,38 @@ void cargarDatos() {
                 if (!campos[16].empty()) nuevo->tipoSalario = campos[16];
                 if (!campos[17].empty()) nuevo->claseRiesgoARL = campos[17];
                 if (!campos[18].empty()) nuevo->configuracionSeguridadSocial = campos[18];
-                if (!campos[19].empty()) nuevo->diasLaborados = stoi(campos[19]);
-                if (!campos[20].empty()) nuevo->salarioBase = stod(campos[20]);
-                if (!campos[21].empty()) nuevo->tarifaHora = stod(campos[21]);
-                if (!campos[22].empty()) nuevo->diasServicioContinuo = stoi(campos[22]);
+                if (!campos[19].empty()) {
+                    try {
+                        nuevo->diasLaborados = stoi(campos[19]);
+                    } catch (const std::exception& e) {
+                        msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                        continue;
+                    }
+                }
+                if (!campos[20].empty()) {
+                    try {
+                        nuevo->salarioBase = stod(campos[20]);
+                    } catch (const std::exception& e) {
+                        msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                        continue;
+                    }
+                }
+                if (!campos[21].empty()) {
+                    try {
+                        nuevo->tarifaHora = stod(campos[21]);
+                    } catch (const std::exception& e) {
+                        msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                        continue;
+                    }
+                }
+                if (!campos[22].empty()) {
+                    try {
+                        nuevo->diasServicioContinuo = stoi(campos[22]);
+                    } catch (const std::exception& e) {
+                        msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                        continue;
+                    }
+                }
                 nuevo->sig = nullptr;
                 if (p->listaProfesores == nullptr) p->listaProfesores = nuevo;
                 else {
@@ -2321,6 +2767,9 @@ void cargarDatos() {
                     while (act->sig != nullptr) act = act->sig;
                     act->sig = nuevo;
                 }
+            } else {
+                warningCount++;
+                msgAdvert("No se encontro el padre \"" + campos[1] + "\" para el registro \"" + linea + "\". Se omite.");
             }
         } else if (seccion == "#ADMINISTRATIVOS") {
             separarCampos(linea, campos, 16);
@@ -2330,7 +2779,12 @@ void cargarDatos() {
             nuevo->documento = campos[2];
             nuevo->cargo = campos[3];
             nuevo->tipoContrato = campos[4];
-            nuevo->salarioBase = stod(campos[5]);
+            try {
+                nuevo->salarioBase = stod(campos[5]);
+            } catch (const std::exception& e) {
+                msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                continue;
+            }
             nuevo->activo = (campos[6] == "1");
             if (!campos[7].empty()) nuevo->fechaIngreso = campos[7];
             if (!campos[8].empty()) nuevo->fechaRetiro = campos[8];
@@ -2339,8 +2793,22 @@ void cargarDatos() {
             if (!campos[11].empty()) nuevo->tipoSalario = campos[11];
             if (!campos[12].empty()) nuevo->claseRiesgoARL = campos[12];
             if (!campos[13].empty()) nuevo->configuracionSeguridadSocial = campos[13];
-            if (!campos[14].empty()) nuevo->diasLaborados = stoi(campos[14]);
-            if (!campos[15].empty()) nuevo->diasServicioContinuo = stoi(campos[15]);
+            if (!campos[14].empty()) {
+                try {
+                    nuevo->diasLaborados = stoi(campos[14]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
+            }
+            if (!campos[15].empty()) {
+                try {
+                    nuevo->diasServicioContinuo = stoi(campos[15]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
+            }
             nuevo->sig = nullptr;
             if (cabezaAdministrativos == nullptr) cabezaAdministrativos = nuevo;
             else {
@@ -2350,19 +2818,129 @@ void cargarDatos() {
             }
         } else if (seccion == "#CONTADORES") {
             separarCampos(linea, campos, 6);
-            if (!campos[0].empty()) contF = stoi(campos[0]);
-            if (!campos[1].empty()) contP = stoi(campos[1]);
-            if (!campos[2].empty()) contC = stoi(campos[2]);
-            if (!campos[3].empty()) contE = stoi(campos[3]);
-            if (!campos[4].empty()) contD = stoi(campos[4]);
-            if (!campos[5].empty()) contA = stoi(campos[5]);
+            if (!campos[0].empty()) {
+                try {
+                    contF = stoi(campos[0]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
+            }
+            if (!campos[1].empty()) {
+                try {
+                    contP = stoi(campos[1]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
+            }
+            if (!campos[2].empty()) {
+                try {
+                    contC = stoi(campos[2]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
+            }
+            if (!campos[3].empty()) {
+                try {
+                    contE = stoi(campos[3]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
+            }
+            if (!campos[4].empty()) {
+                try {
+                    contD = stoi(campos[4]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
+            }
+            if (!campos[5].empty()) {
+                try {
+                    contA = stoi(campos[5]);
+                } catch (const std::exception& e) {
+                    msgAdvert("Error al parsear campo en linea \"" + linea + "\". Se omite el registro.");
+                    continue;
+                }
+            }
         }
     }
     archivo.clear();
     archivo.seekg(0);
     pita::payroll::loadPayrollCycleSections(archivo, cicloNominaFormal);
     archivo.close();
-    cout << "  >> Datos cargados correctamente desde '" << ARCHIVO_DATOS << "'.\n";
+
+    // Recalibracion de contadores recorriendo los nodos cargados en memoria
+    auto extraerNumeroCodigo = [](const string& codigo) -> int {
+        if (codigo.empty()) return 0;
+        size_t start = 0;
+        while (start < codigo.size() && !isdigit(static_cast<unsigned char>(codigo[start]))) {
+            start++;
+        }
+        if (start < codigo.size()) {
+            try {
+                return stoi(codigo.substr(start));
+            } catch (...) {
+                return 0;
+            }
+        }
+        return 0;
+    };
+
+    Facultad* rf = cabezaFacultades;
+    while (rf != nullptr) {
+        contF = max(contF, extraerNumeroCodigo(rf->codigo));
+        Programa* rp = rf->listaProgramas;
+        while (rp != nullptr) {
+            contP = max(contP, extraerNumeroCodigo(rp->codigo));
+            Curso* rc = rp->listaCursos;
+            while (rc != nullptr) {
+                contC = max(contC, extraerNumeroCodigo(rc->codigo));
+                rc = rc->sig;
+            }
+            Estudiante* re = rp->listaEstudiantes;
+            while (re != nullptr) {
+                contE = max(contE, extraerNumeroCodigo(re->codigo));
+                re = re->sig;
+            }
+            Profesor* rd = rp->listaProfesores;
+            while (rd != nullptr) {
+                contD = max(contD, extraerNumeroCodigo(rd->codigo));
+                rd = rd->sig;
+            }
+            rp = rp->sig;
+        }
+        rf = rf->sig;
+    }
+
+    Administrativo* ra = cabezaAdministrativos;
+    while (ra != nullptr) {
+        contA = max(contA, extraerNumeroCodigo(ra->codigo));
+        ra = ra->sig;
+    }
+
+    msgOk("Contadores recalibrados: F=" + to_string(contF)
+         + " P=" + to_string(contP)
+         + " C=" + to_string(contC)
+         + " E=" + to_string(contE)
+         + " D=" + to_string(contD)
+         + " A=" + to_string(contA));
+    if (warningCount > 0) {
+        msgAdvert("Se omitieron " + to_string(warningCount) + " registros por referencias de padre no encontradas. Revisa pita_datos.txt.");
+    }
+    msgOk("Datos cargados correctamente desde '" + ARCHIVO_DATOS + "'.");
+    } catch (...) {
+        if (archivo.is_open()) {
+            archivo.close();
+        }
+        msgError("CRITICO: La carga de datos fue interrumpida. Se liberara la memoria parcialmente cargada para evitar estado corrupto.");
+        liberarTodaLaMemoria();
+        cabezaFacultades = nullptr;
+        cabezaAdministrativos = nullptr;
+    }
 }
 
 // ======================================================================
@@ -2461,7 +3039,7 @@ void cargarDatosDeEjemplo() {
     a1->tipoContrato = "Planta"; a1->salarioBase = 2500000; a1->activo = true; a1->sig = nullptr;
     cabezaAdministrativos = a1;
 
-    cout << "  >> Datos de ejemplo cargados (incluye Medicina, Enfermeria y otras carreras del area de salud).\n";
+    msgOk("Datos de ejemplo cargados (incluye Medicina, Enfermeria y otras carreras del area de salud).");
 }
 
 // ======================================================================
@@ -2481,7 +3059,17 @@ void liberarTodaLaMemoria() {
     Administrativo* a = cabezaAdministrativos;
     while (a != nullptr) { Administrativo* tmp = a; a = a->sig; delete tmp; }
     cabezaAdministrativos = nullptr;
+
+    cicloNominaFormal.clear();
 }
+
+// ======================================================================
+// 21-B. FUNCIONES AUXILIARES DE MENSAJERIA
+// ======================================================================
+void msgError(const string& msg)    { cout << ">> ERROR: " << msg << "\n"; }
+void msgAdvert(const string& msg)   { cout << ">> ADVERTENCIA: " << msg << "\n"; }
+void msgOk(const string& msg)       { cout << ">> " << msg << "\n"; }
+void msgVacio(const string& entidad){ cout << "(No hay " << entidad << " registrados)\n"; }
 
 // ======================================================================
 // 22. MENUS
@@ -2512,7 +3100,7 @@ const pita::payroll::PayrollResult* buscarDetalleFormal(
 void listarPeriodosFormales() {
     titulo("NOMINA - PERIODOS");
     if (cicloNominaFormal.periods().empty()) {
-        cout << "  (No hay periodos registrados)\n";
+        msgVacio("periodos");
         return;
     }
     for (const auto& period : cicloNominaFormal.periods()) {
@@ -2588,9 +3176,9 @@ void crearPeriodoFormal() {
     const string endDate = leerLinea("Fecha final (YYYY-MM-DD): ");
     try {
         cicloNominaFormal.createPeriod(periodId, year, month, startDate, endDate, "console");
-        cout << "  >> Periodo creado correctamente.\n";
+        msgOk("Periodo creado correctamente.");
     } catch (const exception& error) {
-        cout << "  >> No se pudo crear el periodo: " << error.what() << "\n";
+        msgError("No se pudo crear el periodo: " + string(error.what()));
     }
 }
 
@@ -2598,15 +3186,15 @@ void calcularNominaFormal() {
     titulo("NOMINA - CALCULAR");
     const string periodId = leerLinea("Identificador del periodo: ");
     if (buscarPeriodoFormal(periodId) == nullptr) {
-        cout << "  >> El periodo no existe.\n";
+        msgError("El periodo no existe.");
         return;
     }
     try {
         const auto employees = empleadosFormales();
         const auto run = cicloNominaFormal.calculateRun(periodId, employees, pita::payroll::PayrollRules{}, "console");
-        cout << "  >> Liquidacion creada: " << run.runId << " (" << run.details.size() << " empleados).\n";
+        msgOk("Liquidacion creada: " + run.runId + " (" + to_string(run.details.size()) + " empleados).");
     } catch (const exception& error) {
-        cout << "  >> No se pudo calcular la nomina: " << error.what() << "\n";
+        msgError("No se pudo calcular la nomina: " + string(error.what()));
     }
 }
 
@@ -2616,7 +3204,7 @@ void consultarNominaFormal() {
     const auto* period = buscarPeriodoFormal(periodId);
     const auto* run = buscarRunFormal(periodId);
     if (period == nullptr || run == nullptr) {
-        cout << "  >> No existe una liquidacion para ese periodo.\n";
+        msgError("No existe una liquidacion para ese periodo.");
         return;
     }
     cout << "  Periodo: " << periodId << " | Estado: " << nombreEstadoPeriodo(period->status)
@@ -2636,13 +3224,13 @@ void consultarProfesorFormal() {
     const string employeeId = leerLinea("Codigo del profesor: ");
     Profesor* professor = buscarProfesorGlobal(employeeId, nullptr, nullptr);
     if (professor == nullptr) {
-        cout << "  >> No existe ese profesor.\n";
+        msgError("No existe ese profesor.");
         return;
     }
     const string periodId = leerLinea("Identificador del periodo: ");
     const auto* detail = buscarDetalleFormal(buscarRunFormal(periodId), employeeId);
     if (detail == nullptr) {
-        cout << "  >> El profesor no tiene liquidacion en ese periodo.\n";
+        msgError("El profesor no tiene liquidacion en ese periodo.");
         return;
     }
     cout << "  Profesor: " << professor->nombre << " [" << professor->codigo << "]\n";
@@ -2674,17 +3262,17 @@ void imprimirDesprendibleFormal(const string& periodId, const string& employeeId
     const auto* period = buscarPeriodoFormal(periodId);
     const auto* detail = buscarDetalleFormal(run, employeeId);
     if (run == nullptr || period == nullptr || detail == nullptr) {
-        cout << "  >> No existe una liquidacion oficial para ese empleado y periodo.\n";
+        msgError("No existe una liquidacion oficial para ese empleado y periodo.");
         return;
     }
     pita::payroll::PayrollEmployee employee;
     string name;
     if (!empleadoFormalPorId(employeeId, employee, name)) {
-        cout << "  >> El empleado no existe en las listas actuales.\n";
+        msgError("El empleado no existe en las listas actuales.");
         return;
     }
     const auto payslip = pita::payroll::generatePayslip(
-        employee, pita::payroll::PayrollPeriod{periodId, detail->daysWorked}, *detail,
+        employee, pita::payroll::PayrollPeriod{periodId, detail->daysWorked, period->year, period->month, period->startDate, period->endDate, "OPEN"}, *detail,
         pita::payroll::PayrollConfiguration{}, run->runId);
     cout << "\n  DESPRENDIBLE " << payslip.payslipId << "\n";
     cout << "  Empleado: " << name << " [" << employeeId << "]\n";
@@ -2706,7 +3294,7 @@ void generarDesprendibleFormal() {
     try {
         imprimirDesprendibleFormal(periodId, employeeId);
     } catch (const exception& error) {
-        cout << "  >> No se pudo generar el desprendible: " << error.what() << "\n";
+        msgError("No se pudo generar el desprendible: " + string(error.what()));
     }
 }
 
@@ -2715,7 +3303,7 @@ void listarDesprendiblesFormales() {
     const string periodId = leerLinea("Identificador del periodo: ");
     const auto* run = buscarRunFormal(periodId);
     if (run == nullptr) {
-        cout << "  >> No hay liquidacion para ese periodo.\n";
+        msgError("No hay liquidacion para ese periodo.");
         return;
     }
     for (const auto& detail : run->details)
@@ -2726,7 +3314,7 @@ void resumenFinancieroFormal() {
     titulo("NOMINA - RESUMEN FINANCIERO");
     const string periodId = leerLinea("Identificador del periodo: ");
     const auto* run = buscarRunFormal(periodId);
-    if (run == nullptr) { cout << "  >> No hay liquidacion para ese periodo.\n"; return; }
+    if (run == nullptr) { msgError("No hay liquidacion para ese periodo."); return; }
     cout << "  Total devengado: $ " << run->grossTotal << "\n";
     cout << "  Total deducciones: $ " << run->employeeDeductionTotal << "\n";
     cout << "  Total neto: $ " << run->netTotal << "\n";
@@ -2738,7 +3326,7 @@ void aportesPatronalesFormales() {
     titulo("NOMINA - APORTES PATRONALES");
     const string periodId = leerLinea("Identificador del periodo: ");
     const auto* run = buscarRunFormal(periodId);
-    if (run == nullptr) { cout << "  >> No hay liquidacion para ese periodo.\n"; return; }
+    if (run == nullptr) { msgError("No hay liquidacion para ese periodo."); return; }
     for (const auto& detail : run->details)
         cout << "  " << detail.employeeId << " | aportes patronales: $ " << detail.totalEmployerContributions << "\n";
 }
@@ -2747,7 +3335,7 @@ void prestacionesFormales() {
     titulo("NOMINA - PRESTACIONES");
     const string periodId = leerLinea("Identificador del periodo: ");
     const auto* run = buscarRunFormal(periodId);
-    if (run == nullptr) { cout << "  >> No hay liquidacion para ese periodo.\n"; return; }
+    if (run == nullptr) { msgError("No hay liquidacion para ese periodo."); return; }
     for (const auto& detail : run->details) {
         const auto total = detail.serviceBonusProvision + detail.severanceProvision + detail.severanceInterest +
             detail.christmasBonusProvision + detail.vacationProvision + detail.vacationBonusProvision;
@@ -2766,29 +3354,112 @@ void novedadesFormales() {
                  << " | valor: $ " << novelty.amount << " | estado: " << novelty.status << "\n";
         }
     }
-    if (!found) cout << "  (No hay novedades para ese periodo)\n";
+    if (!found) msgVacio("novedades");
+}
+
+void registrarNovedadFormal() {
+    titulo("NOMINA - REGISTRAR NOVEDAD");
+    const string employeeId = leerLinea("  Codigo del empleado: ");
+    pita::payroll::PayrollEmployee employee;
+    string name;
+    if (!empleadoFormalPorId(employeeId, employee, name)) {
+        msgError("No se encontro un empleado con ese codigo.");
+        return;
+    }
+
+    cout << "  Empleado seleccionado: " << name << " [" << employeeId << "]\n";
+    cout << "  Tipos de novedad disponibles:\n"
+         << "  1. Bonificacion (BONUS)\n"
+         << "  2. Descuento (DISCOUNT)\n"
+         << "  3. Incapacidad (INCAPACITY)\n"
+         << "  4. Licencia (LICENSE)\n"
+         << "  5. Vacaciones (VACATION)\n"
+         << "  6. Ausencia (ABSENCE)\n"
+         << "  7. Horas adicionales (ADDITIONAL_HOURS)\n"
+         << "  8. Embargo (GARNISHMENT)\n"
+         << "  9. Anticipo (ADVANCE)\n"
+         << "  10. Ajuste salarial (SALARY_ADJUSTMENT)\n"
+         << "  11. Ingreso (INCOME)\n"
+         << "  12. Terminacion / Retiro (TERMINATION)\n";
+    int tipoOp = leerEntero("  Opcion de tipo: ");
+    pita::payroll::NoveltyType tipoNovedad;
+    bool isSalary = true;
+    bool affectsIbc = true;
+    switch (tipoOp) {
+        case 1:  tipoNovedad = pita::payroll::NoveltyType::BONUS; isSalary = true; affectsIbc = true; break;
+        case 2:  tipoNovedad = pita::payroll::NoveltyType::DISCOUNT; isSalary = false; affectsIbc = false; break;
+        case 3:  tipoNovedad = pita::payroll::NoveltyType::INCAPACITY; isSalary = true; affectsIbc = false; break;
+        case 4:  tipoNovedad = pita::payroll::NoveltyType::LICENSE; isSalary = false; affectsIbc = false; break;
+        case 5:  tipoNovedad = pita::payroll::NoveltyType::VACATION; isSalary = true; affectsIbc = true; break;
+        case 6:  tipoNovedad = pita::payroll::NoveltyType::ABSENCE; isSalary = false; affectsIbc = false; break;
+        case 7:  tipoNovedad = pita::payroll::NoveltyType::ADDITIONAL_HOURS; isSalary = true; affectsIbc = true; break;
+        case 8:  tipoNovedad = pita::payroll::NoveltyType::GARNISHMENT; isSalary = false; affectsIbc = false; break;
+        case 9:  tipoNovedad = pita::payroll::NoveltyType::ADVANCE; isSalary = false; affectsIbc = false; break;
+        case 10: tipoNovedad = pita::payroll::NoveltyType::SALARY_ADJUSTMENT; isSalary = true; affectsIbc = true; break;
+        case 11: tipoNovedad = pita::payroll::NoveltyType::INCOME; isSalary = true; affectsIbc = true; break;
+        case 12: tipoNovedad = pita::payroll::NoveltyType::TERMINATION; isSalary = false; affectsIbc = false; break;
+        default:
+            msgError("Tipo de novedad invalido.");
+            return;
+    }
+
+    double valorNum = leerDouble("  Valor numerico de la novedad: ");
+
+    string periodId = "";
+    for (auto it = cicloNominaFormal.periods().rbegin(); it != cicloNominaFormal.periods().rend(); ++it) {
+        if (it->status == pita::payroll::PeriodStatus::OPEN) {
+            periodId = it->periodId;
+            break;
+        }
+    }
+    if (periodId.empty() && !cicloNominaFormal.periods().empty()) {
+        periodId = cicloNominaFormal.periods().back().periodId;
+    }
+    if (periodId.empty()) {
+        auto per = cicloNominaFormal.createPeriod("PER-ACTUAL", 2026, 9, "2026-09-01", "2026-09-30", "admin");
+        periodId = per.periodId;
+    }
+
+    pita::payroll::PayrollNoveltyRecord novedad;
+    novedad.noveltyId = "NOV-" + to_string(cicloNominaFormal.novelties().size() + 1);
+    novedad.periodId = periodId;
+    novedad.employeeId = employeeId;
+    novedad.type = tipoNovedad;
+    novedad.quantity = 1;
+    novedad.amount = static_cast<pita::payroll::Money>(valorNum);
+    novedad.isSalary = isSalary;
+    novedad.affectsIbc = affectsIbc;
+    novedad.status = "APPROVED";
+    novedad.createdBy = "admin";
+
+    try {
+        cicloNominaFormal.registerNovelty(novedad);
+        msgOk("Novedad registrada exitosamente para " + name + ".");
+    } catch (const exception& e) {
+        msgError("Error al registrar novedad: " + string(e.what()));
+    }
 }
 
 void aprobarNominaFormal() {
     titulo("NOMINA - APROBAR");
     const string periodId = leerLinea("Identificador del periodo: ");
     const auto* run = buscarRunFormal(periodId);
-    if (run == nullptr) { cout << "  >> No existe liquidacion para ese periodo.\n"; return; }
+    if (run == nullptr) { msgError("No existe liquidacion para ese periodo."); return; }
     try {
         cicloNominaFormal.approveRun(run->runId, "console");
-        cout << "  >> Nomina aprobada.\n";
-    } catch (const exception& error) { cout << "  >> No se pudo aprobar: " << error.what() << "\n"; }
+        msgOk("Nomina aprobada.");
+    } catch (const exception& error) { msgError("No se pudo aprobar: " + string(error.what())); }
 }
 
 void cerrarNominaFormal() {
     titulo("NOMINA - CERRAR");
     const string periodId = leerLinea("Identificador del periodo: ");
     const auto* run = buscarRunFormal(periodId);
-    if (run == nullptr) { cout << "  >> No existe liquidacion para ese periodo.\n"; return; }
+    if (run == nullptr) { msgError("No existe liquidacion para ese periodo."); return; }
     try {
         cicloNominaFormal.closeRun(run->runId, "console");
-        cout << "  >> Nomina cerrada.\n";
-    } catch (const exception& error) { cout << "  >> No se pudo cerrar: " << error.what() << "\n"; }
+        msgOk("Nomina cerrada.");
+    } catch (const exception& error) { msgError("No se pudo cerrar: " + string(error.what())); }
 }
 
 void historialNominaFormal() {
@@ -2796,7 +3467,7 @@ void historialNominaFormal() {
     for (const auto& audit : cicloNominaFormal.audits())
         cout << "  " << audit.timestamp << " | " << audit.action << " | "
              << audit.entityType << " | " << audit.entityId << "\n";
-    if (cicloNominaFormal.audits().empty()) cout << "  (No hay movimientos registrados)\n";
+    if (cicloNominaFormal.audits().empty()) msgVacio("movimientos");
 }
 
 void dashboardFinancieroFormal() {
@@ -2804,7 +3475,7 @@ void dashboardFinancieroFormal() {
     const string periodId = leerLinea("Identificador del periodo: ");
     const auto* run = buscarRunFormal(periodId);
     if (run == nullptr) {
-        cout << "  >> No existe un PayrollRun oficial para ese periodo.\n";
+        msgError("No existe un PayrollRun oficial para ese periodo.");
         return;
     }
 
@@ -2906,8 +3577,9 @@ void menuNominaFormal() {
         cout << "  1. Crear periodo\n  2. Consultar periodos\n  3. Calcular nomina\n"
              << "  4. Consultar nomina\n  5. Consultar profesor\n  6. Generar desprendible\n"
              << "  7. Listar desprendibles\n  8. Ver resumen financiero\n  9. Ver aportes patronales\n"
-             << "  10. Ver prestaciones\n  11. Ver novedades\n  12. Aprobar nomina\n"
-             << "  13. Cerrar nomina\n  14. Consultar historial\n  15. Dashboard financiero\n  0. Volver\n";
+             << "  10. Ver prestaciones\n  11. Ver novedades\n  12. Registrar novedad a empleado\n"
+             << "  13. Aprobar nomina\n  14. Cerrar nomina\n  15. Consultar historial\n"
+             << "  16. Dashboard financiero\n  0. Volver\n";
         op = leerEntero("  Opcion: ");
         switch (op) {
             case 1: crearPeriodoFormal(); break;
@@ -2921,12 +3593,13 @@ void menuNominaFormal() {
             case 9: aportesPatronalesFormales(); break;
             case 10: prestacionesFormales(); break;
             case 11: novedadesFormales(); break;
-            case 12: aprobarNominaFormal(); break;
-            case 13: cerrarNominaFormal(); break;
-            case 14: historialNominaFormal(); break;
-            case 15: dashboardFinancieroFormal(); break;
+            case 12: registrarNovedadFormal(); break;
+            case 13: aprobarNominaFormal(); break;
+            case 14: cerrarNominaFormal(); break;
+            case 15: historialNominaFormal(); break;
+            case 16: dashboardFinancieroFormal(); break;
             case 0: break;
-            default: cout << "  >> Opcion invalida.\n";
+            default: msgError("Opcion invalida.");
         }
         if (op != 0) pausar();
     } while (op != 0);
@@ -2950,8 +3623,9 @@ void menuFacultades() {
             case 4: desactivarFacultad(); break;
             case 5: eliminarFacultad(); break;
             case 0: break;
-            default: cout << "  >> Opcion invalida.\n";
+            default: msgError("Opcion invalida.");
         }
+        if (op != 0) pausar();
     } while (op != 0);
 }
 
@@ -2973,8 +3647,9 @@ void menuProgramas() {
             case 4: desactivarPrograma(); break;
             case 5: eliminarPrograma(); break;
             case 0: break;
-            default: cout << "  >> Opcion invalida.\n";
+            default: msgError("Opcion invalida.");
         }
+        if (op != 0) pausar();
     } while (op != 0);
 }
 
@@ -2994,8 +3669,9 @@ void menuCursos() {
             case 3: modificarCurso(); break;
             case 4: eliminarCurso(); break;
             case 0: break;
-            default: cout << "  >> Opcion invalida.\n";
+            default: msgError("Opcion invalida.");
         }
+        if (op != 0) pausar();
     } while (op != 0);
 }
 
@@ -3025,8 +3701,9 @@ void menuEstudiantes() {
             case 8: calificarCurso(); break;
             case 9: consultarPromedioEstudiante(); break;
             case 0: break;
-            default: cout << "  >> Opcion invalida.\n";
+            default: msgError("Opcion invalida.");
         }
+        if (op != 0) pausar();
     } while (op != 0);
 }
 
@@ -3048,8 +3725,9 @@ void menuProfesores() {
             case 4: desactivarProfesor(); break;
             case 5: eliminarProfesor(); break;
             case 0: break;
-            default: cout << "  >> Opcion invalida.\n";
+            default: msgError("Opcion invalida.");
         }
+        if (op != 0) pausar();
     } while (op != 0);
 }
 
@@ -3071,8 +3749,9 @@ void menuAdministrativos() {
             case 4: desactivarAdministrativo(); break;
             case 5: eliminarAdministrativo(); break;
             case 0: break;
-            default: cout << "  >> Opcion invalida.\n";
+            default: msgError("Opcion invalida.");
         }
+        if (op != 0) pausar();
     } while (op != 0);
 }
 
@@ -3114,8 +3793,9 @@ void menuReportesNomina() {
             case 14: reporteCensoGeneral(); break;
             case 15: generarDesprendibleProfesor(); break;
             case 0: break;
-            default: cout << "  >> Opcion invalida.\n";
+            default: msgError("Opcion invalida.");
         }
+        if (op != 0) pausar();
     } while (op != 0);
 }
 
@@ -3133,6 +3813,7 @@ void menuPrincipal() {
         cout << "  8. Reportes y Nomina (legacy)\n";
         cout << "  9. Guardar datos en archivo\n";
         cout << "  10. Cargar datos desde archivo\n";
+        cout << "  11. Cargar datos de ejemplo\n";
         cout << "  0. Salir\n";
         op = leerEntero("  Opcion: ");
         switch (op) {
@@ -3144,10 +3825,19 @@ void menuPrincipal() {
             case 6: menuAdministrativos(); break;
             case 7: menuNominaFormal(); break;
             case 8: menuReportesNomina(); break;
-            case 9: guardarDatos(); break;
-            case 10: cargarDatos(); break;
+            case 9: guardarDatos(); pausar(); break;
+            case 10: cargarDatos(); pausar(); break;
+            case 11: {
+                if (leerSiNo("  >> ADVERTENCIA: Esto borrará todos los datos actuales en memoria. ¿Desea continuar? (s/n): ")) {
+                    liberarTodaLaMemoria();
+                    cargarDatosDeEjemplo();
+                    msgOk("Datos de ejemplo cargados correctamente.");
+                }
+                pausar();
+                break;
+            }
             case 0: cout << "\n  Saliendo del menu principal...\n"; break;
-            default: cout << "  >> Opcion invalida.\n";
+            default: msgError("Opcion invalida."); pausar(); break;
         }
     } while (op != 0);
 }

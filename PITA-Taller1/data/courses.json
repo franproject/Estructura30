@@ -1,1 +1,2522 @@
-[]
+[
+  {
+    "course_id": 1001,
+    "name": "Fundamentos de Programación",
+    "program_id": 101,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 1,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      1,
+      105,
+      201,
+      305,
+      401,
+      505
+    ]
+  },
+  {
+    "course_id": 1002,
+    "name": "Programación Orientada a Objetos",
+    "program_id": 101,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 8,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      2,
+      202,
+      402
+    ]
+  },
+  {
+    "course_id": 1003,
+    "name": "Estructuras de Datos",
+    "program_id": 101,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 15,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      3,
+      203,
+      403
+    ]
+  },
+  {
+    "course_id": 1004,
+    "name": "Bases de Datos",
+    "program_id": 101,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 22,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      4,
+      204,
+      404
+    ]
+  },
+  {
+    "course_id": 1005,
+    "name": "Ingeniería de Software",
+    "program_id": 101,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 29,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      5,
+      101,
+      205,
+      301,
+      405,
+      501
+    ]
+  },
+  {
+    "course_id": 1006,
+    "name": "Redes de Computadores",
+    "program_id": 101,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 36,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      102,
+      302,
+      502
+    ]
+  },
+  {
+    "course_id": 1007,
+    "name": "Sistemas Operativos",
+    "program_id": 101,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 43,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      103,
+      303,
+      503
+    ]
+  },
+  {
+    "course_id": 1008,
+    "name": "Proyecto de Grado",
+    "program_id": 101,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 50,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      104,
+      304,
+      504
+    ]
+  },
+  {
+    "course_id": 1009,
+    "name": "Circuitos I",
+    "program_id": 102,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 57,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      109,
+      309,
+      509
+    ]
+  },
+  {
+    "course_id": 1010,
+    "name": "Circuitos II",
+    "program_id": 102,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 64,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      6,
+      110,
+      206,
+      310,
+      406,
+      510
+    ]
+  },
+  {
+    "course_id": 1011,
+    "name": "Electrónica Analógica",
+    "program_id": 102,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 71,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      7,
+      207,
+      407
+    ]
+  },
+  {
+    "course_id": 1012,
+    "name": "Electrónica Digital",
+    "program_id": 102,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 1,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      8,
+      208,
+      408
+    ]
+  },
+  {
+    "course_id": 1013,
+    "name": "Señales y Sistemas",
+    "program_id": 102,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 8,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      9,
+      209,
+      409
+    ]
+  },
+  {
+    "course_id": 1014,
+    "name": "Microcontroladores",
+    "program_id": 102,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 15,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      10,
+      106,
+      210,
+      306,
+      410,
+      506
+    ]
+  },
+  {
+    "course_id": 1015,
+    "name": "Control Automático",
+    "program_id": 102,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 22,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      107,
+      307,
+      507
+    ]
+  },
+  {
+    "course_id": 1016,
+    "name": "Proyecto de Ingeniería",
+    "program_id": 102,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 29,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      108,
+      308,
+      508
+    ]
+  },
+  {
+    "course_id": 1017,
+    "name": "Química Ambiental",
+    "program_id": 103,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 36,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      113,
+      313,
+      513
+    ]
+  },
+  {
+    "course_id": 1018,
+    "name": "Ecología",
+    "program_id": 103,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 43,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      114,
+      314,
+      514
+    ]
+  },
+  {
+    "course_id": 1019,
+    "name": "Hidrología",
+    "program_id": 103,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 50,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      11,
+      115,
+      211,
+      315,
+      411,
+      515
+    ]
+  },
+  {
+    "course_id": 1020,
+    "name": "Gestión Ambiental",
+    "program_id": 103,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 57,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      12,
+      212,
+      412
+    ]
+  },
+  {
+    "course_id": 1021,
+    "name": "Residuos Sólidos",
+    "program_id": 103,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 64,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      13,
+      213,
+      413
+    ]
+  },
+  {
+    "course_id": 1022,
+    "name": "Contaminación Ambiental",
+    "program_id": 103,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 71,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      14,
+      214,
+      414
+    ]
+  },
+  {
+    "course_id": 1023,
+    "name": "Saneamiento Básico",
+    "program_id": 103,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 1,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      15,
+      111,
+      215,
+      311,
+      415,
+      511
+    ]
+  },
+  {
+    "course_id": 1024,
+    "name": "Proyecto Ambiental",
+    "program_id": 103,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 8,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      112,
+      312,
+      512
+    ]
+  },
+  {
+    "course_id": 1025,
+    "name": "Química General",
+    "program_id": 104,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 15,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      117,
+      317,
+      517
+    ]
+  },
+  {
+    "course_id": 1026,
+    "name": "Balance de Materia",
+    "program_id": 104,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 22,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      118,
+      318,
+      518
+    ]
+  },
+  {
+    "course_id": 1027,
+    "name": "Operaciones Unitarias",
+    "program_id": 104,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 29,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      119,
+      319,
+      519
+    ]
+  },
+  {
+    "course_id": 1028,
+    "name": "Procesos Agroindustriales",
+    "program_id": 104,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 36,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      16,
+      120,
+      216,
+      320,
+      416,
+      520
+    ]
+  },
+  {
+    "course_id": 1029,
+    "name": "Biotecnología",
+    "program_id": 104,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 43,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      17,
+      217,
+      417
+    ]
+  },
+  {
+    "course_id": 1030,
+    "name": "Control de Calidad",
+    "program_id": 104,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 50,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      18,
+      218,
+      418
+    ]
+  },
+  {
+    "course_id": 1031,
+    "name": "Diseño de Plantas",
+    "program_id": 104,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 57,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      19,
+      219,
+      419
+    ]
+  },
+  {
+    "course_id": 1032,
+    "name": "Proyecto Agroindustrial",
+    "program_id": 104,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 64,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      20,
+      116,
+      220,
+      316,
+      420,
+      516
+    ]
+  },
+  {
+    "course_id": 1033,
+    "name": "Anatomía y Fisiología",
+    "program_id": 105,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 72,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      25,
+      121,
+      225,
+      321,
+      425,
+      521
+    ]
+  },
+  {
+    "course_id": 1034,
+    "name": "Fundamentos de Enfermería",
+    "program_id": 105,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 2,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      122,
+      322,
+      522
+    ]
+  },
+  {
+    "course_id": 1035,
+    "name": "Farmacología",
+    "program_id": 105,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 9,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      123,
+      323,
+      523
+    ]
+  },
+  {
+    "course_id": 1036,
+    "name": "Microbiología",
+    "program_id": 105,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 16,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      124,
+      324,
+      524
+    ]
+  },
+  {
+    "course_id": 1037,
+    "name": "Salud Pública",
+    "program_id": 105,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 23,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      21,
+      125,
+      221,
+      325,
+      421,
+      525
+    ]
+  },
+  {
+    "course_id": 1038,
+    "name": "Enfermería del Adulto",
+    "program_id": 105,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 30,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      22,
+      222,
+      422
+    ]
+  },
+  {
+    "course_id": 1039,
+    "name": "Enfermería Comunitaria",
+    "program_id": 105,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 37,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      23,
+      223,
+      423
+    ]
+  },
+  {
+    "course_id": 1040,
+    "name": "Práctica Profesional",
+    "program_id": 105,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 44,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      24,
+      224,
+      424
+    ]
+  },
+  {
+    "course_id": 1041,
+    "name": "Anatomía",
+    "program_id": 106,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 51,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      29,
+      229,
+      429
+    ]
+  },
+  {
+    "course_id": 1042,
+    "name": "Bioseguridad",
+    "program_id": 106,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 58,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      30,
+      126,
+      230,
+      326,
+      430,
+      526
+    ]
+  },
+  {
+    "course_id": 1043,
+    "name": "Instrumentación Básica",
+    "program_id": 106,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 65,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      127,
+      327,
+      527
+    ]
+  },
+  {
+    "course_id": 1044,
+    "name": "Microbiología",
+    "program_id": 106,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 72,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      128,
+      328,
+      528
+    ]
+  },
+  {
+    "course_id": 1045,
+    "name": "Farmacología",
+    "program_id": 106,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 2,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      129,
+      329,
+      529
+    ]
+  },
+  {
+    "course_id": 1046,
+    "name": "Técnicas Quirúrgicas",
+    "program_id": 106,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 9,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      26,
+      130,
+      226,
+      330,
+      426,
+      530
+    ]
+  },
+  {
+    "course_id": 1047,
+    "name": "Gestión Quirúrgica",
+    "program_id": 106,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 16,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      27,
+      227,
+      427
+    ]
+  },
+  {
+    "course_id": 1048,
+    "name": "Práctica Profesional",
+    "program_id": 106,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 23,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      28,
+      228,
+      428
+    ]
+  },
+  {
+    "course_id": 1049,
+    "name": "Biología Celular",
+    "program_id": 107,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 63,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      33,
+      233,
+      433
+    ]
+  },
+  {
+    "course_id": 1050,
+    "name": "Química",
+    "program_id": 107,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 70,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      34,
+      234,
+      434
+    ]
+  },
+  {
+    "course_id": 1051,
+    "name": "Bioquímica",
+    "program_id": 107,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 7,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      35,
+      131,
+      235,
+      331,
+      435,
+      531
+    ]
+  },
+  {
+    "course_id": 1052,
+    "name": "Microbiología General",
+    "program_id": 107,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 14,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      132,
+      332,
+      532
+    ]
+  },
+  {
+    "course_id": 1053,
+    "name": "Genética",
+    "program_id": 107,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 21,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      133,
+      333,
+      533
+    ]
+  },
+  {
+    "course_id": 1054,
+    "name": "Inmunología",
+    "program_id": 107,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 28,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      134,
+      334,
+      534
+    ]
+  },
+  {
+    "course_id": 1055,
+    "name": "Microbiología Industrial",
+    "program_id": 107,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 35,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      31,
+      135,
+      231,
+      335,
+      431,
+      535
+    ]
+  },
+  {
+    "course_id": 1056,
+    "name": "Proyecto de Investigación",
+    "program_id": 107,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 42,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      32,
+      232,
+      432
+    ]
+  },
+  {
+    "course_id": 1057,
+    "name": "Álgebra",
+    "program_id": 108,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 47,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      37,
+      237,
+      437
+    ]
+  },
+  {
+    "course_id": 1058,
+    "name": "Cálculo I",
+    "program_id": 108,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 54,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      38,
+      238,
+      438
+    ]
+  },
+  {
+    "course_id": 1059,
+    "name": "Cálculo II",
+    "program_id": 108,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 61,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      39,
+      239,
+      439
+    ]
+  },
+  {
+    "course_id": 1060,
+    "name": "Geometría",
+    "program_id": 108,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 68,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      40,
+      136,
+      240,
+      336,
+      440,
+      536
+    ]
+  },
+  {
+    "course_id": 1061,
+    "name": "Estadística",
+    "program_id": 108,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 5,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      137,
+      337,
+      537
+    ]
+  },
+  {
+    "course_id": 1062,
+    "name": "Didáctica de las Matemáticas",
+    "program_id": 108,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 12,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      138,
+      338,
+      538
+    ]
+  },
+  {
+    "course_id": 1063,
+    "name": "Evaluación Educativa",
+    "program_id": 108,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 19,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      139,
+      339,
+      539
+    ]
+  },
+  {
+    "course_id": 1064,
+    "name": "Práctica Pedagógica",
+    "program_id": 108,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 26,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      36,
+      140,
+      236,
+      340,
+      436,
+      540
+    ]
+  },
+  {
+    "course_id": 1065,
+    "name": "Biología",
+    "program_id": 109,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 33,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      41,
+      145,
+      241,
+      345,
+      441,
+      545
+    ]
+  },
+  {
+    "course_id": 1066,
+    "name": "Química",
+    "program_id": 109,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 40,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      42,
+      242,
+      442
+    ]
+  },
+  {
+    "course_id": 1067,
+    "name": "Física",
+    "program_id": 109,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 47,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      43,
+      243,
+      443
+    ]
+  },
+  {
+    "course_id": 1068,
+    "name": "Ecología",
+    "program_id": 109,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 54,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      44,
+      244,
+      444
+    ]
+  },
+  {
+    "course_id": 1069,
+    "name": "Educación Ambiental",
+    "program_id": 109,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 61,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      45,
+      141,
+      245,
+      341,
+      445,
+      541
+    ]
+  },
+  {
+    "course_id": 1070,
+    "name": "Didáctica de las Ciencias",
+    "program_id": 109,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 68,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      142,
+      342,
+      542
+    ]
+  },
+  {
+    "course_id": 1071,
+    "name": "Investigación Educativa",
+    "program_id": 109,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 5,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      143,
+      343,
+      543
+    ]
+  },
+  {
+    "course_id": 1072,
+    "name": "Práctica Pedagógica",
+    "program_id": 109,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 12,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      144,
+      344,
+      544
+    ]
+  },
+  {
+    "course_id": 1073,
+    "name": "Anatomía Funcional",
+    "program_id": 110,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 19,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      149,
+      349,
+      549
+    ]
+  },
+  {
+    "course_id": 1074,
+    "name": "Fundamentos del Deporte",
+    "program_id": 110,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 26,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      46,
+      150,
+      246,
+      350,
+      446,
+      550
+    ]
+  },
+  {
+    "course_id": 1075,
+    "name": "Recreación",
+    "program_id": 110,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 33,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      47,
+      247,
+      447
+    ]
+  },
+  {
+    "course_id": 1076,
+    "name": "Fisiología del Ejercicio",
+    "program_id": 110,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 40,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      48,
+      248,
+      448
+    ]
+  },
+  {
+    "course_id": 1077,
+    "name": "Atletismo",
+    "program_id": 110,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 47,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      49,
+      249,
+      449
+    ]
+  },
+  {
+    "course_id": 1078,
+    "name": "Pedagogía del Deporte",
+    "program_id": 110,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 54,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      50,
+      146,
+      250,
+      346,
+      450,
+      546
+    ]
+  },
+  {
+    "course_id": 1079,
+    "name": "Gestión Deportiva",
+    "program_id": 110,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 61,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      147,
+      347,
+      547
+    ]
+  },
+  {
+    "course_id": 1080,
+    "name": "Práctica Pedagógica",
+    "program_id": 110,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 68,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      148,
+      348,
+      548
+    ]
+  },
+  {
+    "course_id": 1081,
+    "name": "Lingüística",
+    "program_id": 111,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 5,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      153,
+      353,
+      553
+    ]
+  },
+  {
+    "course_id": 1082,
+    "name": "Gramática del Español",
+    "program_id": 111,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 12,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      154,
+      354,
+      554
+    ]
+  },
+  {
+    "course_id": 1083,
+    "name": "English I",
+    "program_id": 111,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 19,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      51,
+      155,
+      251,
+      355,
+      451,
+      555
+    ]
+  },
+  {
+    "course_id": 1084,
+    "name": "English II",
+    "program_id": 111,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 26,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      52,
+      252,
+      452
+    ]
+  },
+  {
+    "course_id": 1085,
+    "name": "Literatura Hispanoamericana",
+    "program_id": 111,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 33,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      53,
+      253,
+      453
+    ]
+  },
+  {
+    "course_id": 1086,
+    "name": "Didáctica de Lenguas",
+    "program_id": 111,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 40,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      54,
+      254,
+      454
+    ]
+  },
+  {
+    "course_id": 1087,
+    "name": "Literatura Inglesa",
+    "program_id": 111,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 47,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      55,
+      151,
+      255,
+      351,
+      455,
+      551
+    ]
+  },
+  {
+    "course_id": 1088,
+    "name": "Práctica Pedagógica",
+    "program_id": 111,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 54,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      152,
+      352,
+      552
+    ]
+  },
+  {
+    "course_id": 1089,
+    "name": "Teoría Literaria",
+    "program_id": 119,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 61,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      157,
+      357,
+      557
+    ]
+  },
+  {
+    "course_id": 1090,
+    "name": "Literatura Colombiana",
+    "program_id": 119,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 68,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      158,
+      358,
+      558
+    ]
+  },
+  {
+    "course_id": 1091,
+    "name": "Literatura Latinoamericana",
+    "program_id": 119,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 5,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      159,
+      359,
+      559
+    ]
+  },
+  {
+    "course_id": 1092,
+    "name": "Lingüística",
+    "program_id": 119,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 12,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      56,
+      160,
+      256,
+      360,
+      456,
+      560
+    ]
+  },
+  {
+    "course_id": 1093,
+    "name": "Gramática",
+    "program_id": 119,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 19,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      57,
+      257,
+      457
+    ]
+  },
+  {
+    "course_id": 1094,
+    "name": "Didáctica de la Lengua",
+    "program_id": 119,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 26,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      58,
+      258,
+      458
+    ]
+  },
+  {
+    "course_id": 1095,
+    "name": "Seminario de Investigación",
+    "program_id": 119,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 33,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      59,
+      259,
+      459
+    ]
+  },
+  {
+    "course_id": 1096,
+    "name": "Práctica Pedagógica",
+    "program_id": 119,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 40,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      60,
+      156,
+      260,
+      356,
+      460,
+      556
+    ]
+  },
+  {
+    "course_id": 1097,
+    "name": "Fundamentos de Administración",
+    "program_id": 112,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 45,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      65,
+      161,
+      265,
+      361,
+      465,
+      561
+    ]
+  },
+  {
+    "course_id": 1098,
+    "name": "Contabilidad",
+    "program_id": 112,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 52,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      162,
+      362,
+      562
+    ]
+  },
+  {
+    "course_id": 1099,
+    "name": "Economía",
+    "program_id": 112,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 59,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      163,
+      363,
+      563
+    ]
+  },
+  {
+    "course_id": 1100,
+    "name": "Mercadeo",
+    "program_id": 112,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 66,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      164,
+      364,
+      564
+    ]
+  },
+  {
+    "course_id": 1101,
+    "name": "Gestión Humana",
+    "program_id": 112,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 3,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      61,
+      165,
+      261,
+      365,
+      461,
+      565
+    ]
+  },
+  {
+    "course_id": 1102,
+    "name": "Finanzas",
+    "program_id": 112,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 10,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      62,
+      262,
+      462
+    ]
+  },
+  {
+    "course_id": 1103,
+    "name": "Planeación Estratégica",
+    "program_id": 112,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 17,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      63,
+      263,
+      463
+    ]
+  },
+  {
+    "course_id": 1104,
+    "name": "Proyecto Empresarial",
+    "program_id": 112,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 24,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      64,
+      264,
+      464
+    ]
+  },
+  {
+    "course_id": 1105,
+    "name": "Fundamentos Contables",
+    "program_id": 113,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 31,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      69,
+      269,
+      469
+    ]
+  },
+  {
+    "course_id": 1106,
+    "name": "Contabilidad Financiera",
+    "program_id": 113,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 38,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      70,
+      166,
+      270,
+      366,
+      470,
+      566
+    ]
+  },
+  {
+    "course_id": 1107,
+    "name": "Costos",
+    "program_id": 113,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 45,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      167,
+      367,
+      567
+    ]
+  },
+  {
+    "course_id": 1108,
+    "name": "Impuestos",
+    "program_id": 113,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 52,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      168,
+      368,
+      568
+    ]
+  },
+  {
+    "course_id": 1109,
+    "name": "Auditoría",
+    "program_id": 113,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 59,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      169,
+      369,
+      569
+    ]
+  },
+  {
+    "course_id": 1110,
+    "name": "Contabilidad Gerencial",
+    "program_id": 113,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 66,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      66,
+      170,
+      266,
+      370,
+      466,
+      570
+    ]
+  },
+  {
+    "course_id": 1111,
+    "name": "Revisoría Fiscal",
+    "program_id": 113,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 3,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      67,
+      267,
+      467
+    ]
+  },
+  {
+    "course_id": 1112,
+    "name": "Práctica Contable",
+    "program_id": 113,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 10,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      68,
+      268,
+      468
+    ]
+  },
+  {
+    "course_id": 1113,
+    "name": "Microeconomía",
+    "program_id": 114,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 17,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      73,
+      273,
+      473
+    ]
+  },
+  {
+    "course_id": 1114,
+    "name": "Macroeconomía",
+    "program_id": 114,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 24,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      74,
+      274,
+      474
+    ]
+  },
+  {
+    "course_id": 1115,
+    "name": "Econometría",
+    "program_id": 114,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 31,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      75,
+      171,
+      275,
+      371,
+      475,
+      571
+    ]
+  },
+  {
+    "course_id": 1116,
+    "name": "Matemáticas para Economistas",
+    "program_id": 114,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 38,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      172,
+      372,
+      572
+    ]
+  },
+  {
+    "course_id": 1117,
+    "name": "Estadística",
+    "program_id": 114,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 45,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      173,
+      373,
+      573
+    ]
+  },
+  {
+    "course_id": 1118,
+    "name": "Economía Colombiana",
+    "program_id": 114,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 52,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      174,
+      374,
+      574
+    ]
+  },
+  {
+    "course_id": 1119,
+    "name": "Política Económica",
+    "program_id": 114,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 59,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      71,
+      175,
+      271,
+      375,
+      471,
+      575
+    ]
+  },
+  {
+    "course_id": 1120,
+    "name": "Proyecto de Grado",
+    "program_id": 114,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 66,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      72,
+      272,
+      472
+    ]
+  },
+  {
+    "course_id": 1121,
+    "name": "Fundamentos de Comercio",
+    "program_id": 115,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 3,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      77,
+      277,
+      477
+    ]
+  },
+  {
+    "course_id": 1122,
+    "name": "Economía Internacional",
+    "program_id": 115,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 10,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      78,
+      278,
+      478
+    ]
+  },
+  {
+    "course_id": 1123,
+    "name": "Logística",
+    "program_id": 115,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 17,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      79,
+      279,
+      479
+    ]
+  },
+  {
+    "course_id": 1124,
+    "name": "Negocios Internacionales",
+    "program_id": 115,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 24,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      80,
+      176,
+      280,
+      376,
+      480,
+      576
+    ]
+  },
+  {
+    "course_id": 1125,
+    "name": "Régimen Aduanero",
+    "program_id": 115,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 31,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      177,
+      377,
+      577
+    ]
+  },
+  {
+    "course_id": 1126,
+    "name": "Mercadeo Internacional",
+    "program_id": 115,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 38,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      178,
+      378,
+      578
+    ]
+  },
+  {
+    "course_id": 1127,
+    "name": "Finanzas Internacionales",
+    "program_id": 115,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 45,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      179,
+      379,
+      579
+    ]
+  },
+  {
+    "course_id": 1128,
+    "name": "Proyecto Empresarial",
+    "program_id": 115,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 52,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      76,
+      180,
+      276,
+      380,
+      476,
+      580
+    ]
+  },
+  {
+    "course_id": 1129,
+    "name": "Introducción al Derecho",
+    "program_id": 116,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 60,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      81,
+      185,
+      281,
+      385,
+      481,
+      585
+    ]
+  },
+  {
+    "course_id": 1130,
+    "name": "Derecho Constitucional",
+    "program_id": 116,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 67,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      82,
+      282,
+      482
+    ]
+  },
+  {
+    "course_id": 1131,
+    "name": "Derecho Civil",
+    "program_id": 116,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 4,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      83,
+      283,
+      483
+    ]
+  },
+  {
+    "course_id": 1132,
+    "name": "Derecho Penal",
+    "program_id": 116,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 11,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      84,
+      284,
+      484
+    ]
+  },
+  {
+    "course_id": 1133,
+    "name": "Derecho Laboral",
+    "program_id": 116,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 18,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      85,
+      181,
+      285,
+      381,
+      485,
+      581
+    ]
+  },
+  {
+    "course_id": 1134,
+    "name": "Derecho Administrativo",
+    "program_id": 116,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 25,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      182,
+      382,
+      582
+    ]
+  },
+  {
+    "course_id": 1135,
+    "name": "Derecho Procesal",
+    "program_id": 116,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 32,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      183,
+      383,
+      583
+    ]
+  },
+  {
+    "course_id": 1136,
+    "name": "Consultorio Jurídico",
+    "program_id": 116,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 39,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      184,
+      384,
+      584
+    ]
+  },
+  {
+    "course_id": 1137,
+    "name": "Introducción a la Sociología",
+    "program_id": 117,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 46,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      189,
+      389,
+      589
+    ]
+  },
+  {
+    "course_id": 1138,
+    "name": "Teoría Sociológica",
+    "program_id": 117,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 53,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      86,
+      190,
+      286,
+      390,
+      486,
+      590
+    ]
+  },
+  {
+    "course_id": 1139,
+    "name": "Metodología de Investigación",
+    "program_id": 117,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 60,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      87,
+      287,
+      487
+    ]
+  },
+  {
+    "course_id": 1140,
+    "name": "Sociología Colombiana",
+    "program_id": 117,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 67,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      88,
+      288,
+      488
+    ]
+  },
+  {
+    "course_id": 1141,
+    "name": "Estadística Social",
+    "program_id": 117,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 4,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      89,
+      289,
+      489
+    ]
+  },
+  {
+    "course_id": 1142,
+    "name": "Sociología Urbana",
+    "program_id": 117,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 11,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      90,
+      186,
+      290,
+      386,
+      490,
+      586
+    ]
+  },
+  {
+    "course_id": 1143,
+    "name": "Políticas Públicas",
+    "program_id": 117,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 18,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      187,
+      387,
+      587
+    ]
+  },
+  {
+    "course_id": 1144,
+    "name": "Trabajo de Grado",
+    "program_id": 117,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 25,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      188,
+      388,
+      588
+    ]
+  },
+  {
+    "course_id": 1145,
+    "name": "Historia del Arte",
+    "program_id": 118,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 34,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      193,
+      393,
+      593
+    ]
+  },
+  {
+    "course_id": 1146,
+    "name": "Dibujo",
+    "program_id": 118,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 41,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      194,
+      394,
+      594
+    ]
+  },
+  {
+    "course_id": 1147,
+    "name": "Pintura",
+    "program_id": 118,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 48,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      91,
+      195,
+      291,
+      395,
+      491,
+      595
+    ]
+  },
+  {
+    "course_id": 1148,
+    "name": "Escultura",
+    "program_id": 118,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 55,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      92,
+      292,
+      492
+    ]
+  },
+  {
+    "course_id": 1149,
+    "name": "Estética",
+    "program_id": 118,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 62,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      93,
+      293,
+      493
+    ]
+  },
+  {
+    "course_id": 1150,
+    "name": "Arte Colombiano",
+    "program_id": 118,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 69,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      94,
+      294,
+      494
+    ]
+  },
+  {
+    "course_id": 1151,
+    "name": "Taller de Creación",
+    "program_id": 118,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 6,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      95,
+      191,
+      295,
+      391,
+      495,
+      591
+    ]
+  },
+  {
+    "course_id": 1152,
+    "name": "Proyecto Artístico",
+    "program_id": 118,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 13,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      192,
+      392,
+      592
+    ]
+  },
+  {
+    "course_id": 1153,
+    "name": "Teoría Musical",
+    "program_id": 120,
+    "credits": 3,
+    "curriculum_semester": 1,
+    "assigned_professor_id": 20,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      197,
+      397,
+      597
+    ]
+  },
+  {
+    "course_id": 1154,
+    "name": "Solfeo I",
+    "program_id": 120,
+    "credits": 3,
+    "curriculum_semester": 2,
+    "assigned_professor_id": 27,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      198,
+      398,
+      598
+    ]
+  },
+  {
+    "course_id": 1155,
+    "name": "Armonía",
+    "program_id": 120,
+    "credits": 3,
+    "curriculum_semester": 3,
+    "assigned_professor_id": 34,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      199,
+      399,
+      599
+    ]
+  },
+  {
+    "course_id": 1156,
+    "name": "Historia de la Música",
+    "program_id": 120,
+    "credits": 4,
+    "curriculum_semester": 4,
+    "assigned_professor_id": 41,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      96,
+      200,
+      296,
+      400,
+      496,
+      600
+    ]
+  },
+  {
+    "course_id": 1157,
+    "name": "Ensamble",
+    "program_id": 120,
+    "credits": 3,
+    "curriculum_semester": 5,
+    "assigned_professor_id": 48,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      97,
+      297,
+      497
+    ]
+  },
+  {
+    "course_id": 1158,
+    "name": "Instrumento I",
+    "program_id": 120,
+    "credits": 3,
+    "curriculum_semester": 6,
+    "assigned_professor_id": 55,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      98,
+      298,
+      498
+    ]
+  },
+  {
+    "course_id": 1159,
+    "name": "Dirección Musical",
+    "program_id": 120,
+    "credits": 3,
+    "curriculum_semester": 7,
+    "assigned_professor_id": 62,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      99,
+      299,
+      499
+    ]
+  },
+  {
+    "course_id": 1160,
+    "name": "Proyecto Musical",
+    "program_id": 120,
+    "credits": 4,
+    "curriculum_semester": 8,
+    "assigned_professor_id": 69,
+    "max_capacity": 35,
+    "active": true,
+    "enrollment_list": [
+      100,
+      196,
+      300,
+      396,
+      500,
+      596
+    ]
+  }
+]

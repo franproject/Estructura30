@@ -80,6 +80,13 @@ class EntityDialog(QDialog):
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
+        self.setStyleSheet(
+            """
+            QDialog { background-color: #FFFFFF; color: #0F172A; }
+            QLabel { color: #0F172A; background: transparent; }
+            """
+        )
+
     def values(self) -> dict:
         result = {}
         for name, _, kind in self._fields:

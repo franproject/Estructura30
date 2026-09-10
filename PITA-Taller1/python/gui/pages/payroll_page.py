@@ -3,21 +3,24 @@ from datetime import date
 from pathlib import Path
 from typing import cast
 
-from PySide6.QtCore import QDate
+from PySide6.QtCore import QDate, Qt
 from PySide6.QtWidgets import (
-    QHBoxLayout,
-    QHeaderView,
-    QLabel,
     QComboBox,
     QDateEdit,
     QDialog,
     QFileDialog,
+    QFormLayout,
+    QFrame,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QScrollArea,
+    QSizePolicy,
     QTableWidget,
     QTableWidgetItem,
-    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
@@ -36,6 +39,63 @@ class PayrollPage(QWidget):
     COLUMNS = (
         "Empleado", "Tipo", "Período", "Salario base", "Devengado",
         "Deducciones", "IBC", "Neto", "Costo empleador", "Estado",
+    )
+
+    DETAIL_SECTIONS = (
+        (
+            "Identificación",
+            (
+                ("employee_id", "ID empleado", "text"),
+                ("employee_type", "Tipo", "text"),
+                ("period", "Período", "text"),
+                ("days_worked", "Días trabajados", "text"),
+            ),
+        ),
+        (
+            "Devengados",
+            (
+                ("base_salary", "Salario base", "money"),
+                ("salary_adjustments", "Ajustes salariales", "money"),
+                ("gross_salary", "Total devengado", "money"),
+                ("non_salary_total", "Total no salarial", "money"),
+                ("service_bonus", "Prima de servicios pagada", "money"),
+                ("ibc", "IBC", "money"),
+                ("net_salary", "Neto a pagar", "money"),
+            ),
+        ),
+        (
+            "Deducciones del trabajador",
+            (
+                ("employee_health", "Salud", "money"),
+                ("employee_pension", "Pensión", "money"),
+                ("employee_other_deductions", "Otras deducciones", "money"),
+                ("total_employee_deductions", "Total deducciones", "money"),
+            ),
+        ),
+        (
+            "Aportes del empleador",
+            (
+                ("employer_health", "Salud patronal", "money"),
+                ("employer_pension", "Pensión patronal", "money"),
+                ("arl", "ARL", "money"),
+                ("compensation_fund", "Caja de compensación", "money"),
+                ("sena", "SENA", "money"),
+                ("icbf", "ICBF", "money"),
+                ("total_employer_contributions", "Total aportes", "money"),
+                ("total_employer_cost", "Costo total empleador", "money"),
+            ),
+        ),
+        (
+            "Provisiones",
+            (
+                ("service_bonus_provision", "Prima de servicios", "money"),
+                ("severance_provision", "Cesantías", "money"),
+                ("severance_interest", "Intereses cesantías", "money"),
+                ("christmas_bonus_provision", "Prima de navidad", "money"),
+                ("vacation_provision", "Vacaciones", "money"),
+                ("vacation_bonus_provision", "Prima de vacaciones", "money"),
+            ),
+        ),
     )
 
     def __init__(self, manager, parent=None):
@@ -146,6 +206,10 @@ class PayrollPage(QWidget):
         editor = QDateEdit(QDate.currentDate())
         editor.setCalendarPopup(True)
         editor.setDisplayFormat("yyyy-MM-dd")
+        editor.setMinimumWidth(148)
+        editor.setMinimumHeight(34)
+        # Estilos del popup vía app.qss; no forzar stylesheet aquí
+        # porque rompe el botón que abre el calendario en algunos estilos Qt.
         return editor
 
     @staticmethod
@@ -349,15 +413,158 @@ class PayrollPage(QWidget):
         if source_row < 0 or source_row >= len(self._details):
             return
         detail = self._details[source_row]
+        employee_id = str(detail.get("employee_id", ""))
+        employee = next(
+            (
+                item for item in self._employees()
+                if str(getattr(item, "professor_id", getattr(item, "administrative_id", ""))) == employee_id
+            ),
+            None,
+        )
+        employee_name = getattr(employee, "full_name", None) or employee_id
+
         dialog = QDialog(self)
-        dialog.setWindowTitle("Detalle de liquidación")
-        dialog.resize(620, 520)
-        dialog_layout = QVBoxLayout(dialog)
-        text = QTextEdit()
-        text.setReadOnly(True)
-        text.setPlainText("\n".join(f"{key.replace('_', ' ').title()}: {value}" for key, value in detail.items()))
-        dialog_layout.addWidget(text)
+        dialog.setWindowTitle(f"Detalle de liquidación · {employee_name}")
+        dialog.resize(640, 620)
+        dialog.setMinimumSize(520, 480)
+        dialog.setStyleSheet(
+            """
+            QDialog { background-color: #FFFFFF; color: #0F172A; }
+            QLabel#detailTitle { color: #0F172A; font-size: 16px; font-weight: 800; background: transparent; }
+            QLabel#detailSubtitle { color: #64748B; font-size: 12px; background: transparent; }
+            QLabel#detailSection { color: #14532D; font-size: 12px; font-weight: 800; background: transparent; }
+            QLabel#detailKey { color: #64748B; font-size: 12px; background: transparent; }
+            QLabel#detailValue { color: #0F172A; font-size: 12px; font-weight: 600; background: transparent; }
+            QFrame#detailPanel {
+                background-color: #F8FAFC;
+                border: 1px solid #E2E8F0;
+                border-radius: 10px;
+            }
+            QScrollArea { background-color: #FFFFFF; border: none; }
+            QTableWidget {
+                background-color: #FFFFFF;
+                color: #0F172A;
+                border: 1px solid #E2E8F0;
+                border-radius: 8px;
+                gridline-color: #F1F5F9;
+            }
+            QHeaderView::section {
+                background-color: #F8FAFC;
+                color: #64748B;
+                border: none;
+                border-bottom: 1px solid #E2E8F0;
+                padding: 6px 8px;
+                font-size: 10px;
+                font-weight: 700;
+            }
+            """
+        )
+
+        root = QVBoxLayout(dialog)
+        root.setContentsMargins(18, 18, 18, 18)
+        root.setSpacing(12)
+
+        title = QLabel(employee_name)
+        title.setObjectName("detailTitle")
+        subtitle = QLabel(
+            f"{detail.get('employee_type', 'Empleado')} · Período {detail.get('period', '-')} · "
+            f"{detail.get('days_worked', 0)} días"
+        )
+        subtitle.setObjectName("detailSubtitle")
+        root.addWidget(title)
+        root.addWidget(subtitle)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        content = QWidget()
+        content.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(0, 4, 12, 28)
+        content_layout.setSpacing(12)
+        content_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetMinimumSize)
+
+        for section_title, fields in self.DETAIL_SECTIONS:
+            content_layout.addWidget(self._detail_section(section_title, fields, detail))
+
+        salary_concepts = detail.get("salary_concepts") or []
+        non_salary_concepts = detail.get("non_salary_concepts") or []
+        if salary_concepts:
+            content_layout.addWidget(self._detail_concepts("Conceptos salariales", salary_concepts))
+        if non_salary_concepts:
+            content_layout.addWidget(self._detail_concepts("Conceptos no salariales", non_salary_concepts))
+
+        scroll.setWidget(content)
+        root.addWidget(scroll, stretch=1)
+
+        close_button = QPushButton("Cerrar")
+        close_button.setObjectName("primaryButton")
+        close_button.clicked.connect(dialog.accept)
+        root.addWidget(close_button, alignment=Qt.AlignmentFlag.AlignRight)
         dialog.exec()
+
+    def _detail_section(self, title, fields, detail):
+        panel = QFrame()
+        panel.setObjectName("detailPanel")
+        panel.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(14, 12, 14, 12)
+        layout.setSpacing(8)
+
+        heading = QLabel(title)
+        heading.setObjectName("detailSection")
+        layout.addWidget(heading)
+
+        form = QFormLayout()
+        form.setHorizontalSpacing(24)
+        form.setVerticalSpacing(6)
+        form.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
+        for key, label, kind in fields:
+            raw = detail.get(key, "-")
+            value = self._money(raw) if kind == "money" else str(raw)
+            key_label = QLabel(label)
+            key_label.setObjectName("detailKey")
+            value_label = QLabel(value)
+            value_label.setObjectName("detailValue")
+            value_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            form.addRow(key_label, value_label)
+        layout.addLayout(form)
+        return panel
+
+    def _detail_concepts(self, title, concepts):
+        panel = QFrame()
+        panel.setObjectName("detailPanel")
+        panel.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(14, 12, 14, 12)
+        layout.setSpacing(8)
+
+        heading = QLabel(title)
+        heading.setObjectName("detailSection")
+        layout.addWidget(heading)
+
+        # Filas simples en lugar de QTableWidget: evita scroll anidado
+        # que corta el contenido y no deja llegar al final del modal.
+        for concept in concepts:
+            amount = concept.get("amount", 0)
+            try:
+                amount_text = self._money(amount)
+            except (TypeError, ValueError):
+                amount_text = str(amount)
+            affects = "Sí" if concept.get("affects_ibc") else "No"
+            row = QHBoxLayout()
+            code_label = QLabel(str(concept.get("code", "")))
+            code_label.setObjectName("detailKey")
+            meta_label = QLabel(f"{amount_text}  ·  Afecta IBC: {affects}")
+            meta_label.setObjectName("detailValue")
+            meta_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            row.addWidget(code_label)
+            row.addStretch()
+            row.addWidget(meta_label)
+            layout.addLayout(row)
+        return panel
 
     def _individual_payslip(self):
         row = self.table.current_source_row()

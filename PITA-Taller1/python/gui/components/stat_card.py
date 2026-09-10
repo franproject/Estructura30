@@ -15,13 +15,13 @@ class StatCard(QFrame):
 
     clicked = Signal()
 
-    def __init__(self, title: str, value: str = "0", detail: str = "", delta: str = "", bg_color: str = "#DCFCE7", text_color: str = "#16A34A", parent=None):
+    def __init__(self, title: str, value: str = "0", detail: str = "", delta: str = "", bg_color: str = "#DCFCE7", text_color: str = "#16A34A", parent=None, icon_name: str | None = None):
         super().__init__(parent)
         self.setObjectName("statCard")
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._build_ui(title, value, detail, delta, bg_color, text_color)
+        self._build_ui(title, value, detail, delta, bg_color, text_color, icon_name)
 
-    def _build_ui(self, title: str, value: str, detail: str, delta: str, bg_color: str, text_color: str):
+    def _build_ui(self, title: str, value: str, detail: str, delta: str, bg_color: str, text_color: str, icon_name: str | None):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(6)
@@ -34,7 +34,7 @@ class StatCard(QFrame):
         self.lbl_icon = QLabel()
         self.lbl_icon.setFixedSize(36, 36)
         self.lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon_name = {
+        resolved_icon = icon_name or {
             "Facultades": "building",
             "Programas": "hat",
             "Cursos": "book",
@@ -44,7 +44,7 @@ class StatCard(QFrame):
             "Inscripciones activas": "clipboard",
             "Alertas EBRA": "bell",
         }.get(title, "chart")
-        self.lbl_icon.setPixmap(icon(icon_name, text_color, 20).pixmap(20, 20))
+        self.lbl_icon.setPixmap(icon(resolved_icon, text_color, 20).pixmap(20, 20))
         self.lbl_icon.setStyleSheet(
             f"background-color: {bg_color}; border-radius: 8px;"
         )

@@ -1,1 +1,5402 @@
-[]
+[
+  {
+    "enrollment_id": 1,
+    "student_id": 10001,
+    "course_id": 1001,
+    "academic_period": "2026-2",
+    "final_grade": 2.0,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 2,
+    "student_id": 10001,
+    "course_id": 1002,
+    "academic_period": "2026-2",
+    "final_grade": 2.1,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 3,
+    "student_id": 10001,
+    "course_id": 1003,
+    "academic_period": "2026-2",
+    "final_grade": 2.0,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 4,
+    "student_id": 10001,
+    "course_id": 1004,
+    "academic_period": "2026-2",
+    "final_grade": 2.1,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 5,
+    "student_id": 10001,
+    "course_id": 1005,
+    "academic_period": "2026-2",
+    "final_grade": 2.0,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 6,
+    "student_id": 10002,
+    "course_id": 1010,
+    "academic_period": "2026-2",
+    "final_grade": 2.15,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 7,
+    "student_id": 10002,
+    "course_id": 1011,
+    "academic_period": "2026-2",
+    "final_grade": 2.25,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 8,
+    "student_id": 10002,
+    "course_id": 1012,
+    "academic_period": "2026-2",
+    "final_grade": 2.15,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 9,
+    "student_id": 10002,
+    "course_id": 1013,
+    "academic_period": "2026-2",
+    "final_grade": 2.25,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 10,
+    "student_id": 10002,
+    "course_id": 1014,
+    "academic_period": "2026-2",
+    "final_grade": 2.15,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 11,
+    "student_id": 10003,
+    "course_id": 1019,
+    "academic_period": "2026-2",
+    "final_grade": 2.3,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 12,
+    "student_id": 10003,
+    "course_id": 1020,
+    "academic_period": "2026-2",
+    "final_grade": 2.4,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 13,
+    "student_id": 10003,
+    "course_id": 1021,
+    "academic_period": "2026-2",
+    "final_grade": 2.3,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 14,
+    "student_id": 10003,
+    "course_id": 1022,
+    "academic_period": "2026-2",
+    "final_grade": 2.4,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 15,
+    "student_id": 10003,
+    "course_id": 1023,
+    "academic_period": "2026-2",
+    "final_grade": 2.3,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 16,
+    "student_id": 10004,
+    "course_id": 1028,
+    "academic_period": "2026-2",
+    "final_grade": 2.45,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 17,
+    "student_id": 10004,
+    "course_id": 1029,
+    "academic_period": "2026-2",
+    "final_grade": 2.55,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 18,
+    "student_id": 10004,
+    "course_id": 1030,
+    "academic_period": "2026-2",
+    "final_grade": 2.45,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 19,
+    "student_id": 10004,
+    "course_id": 1031,
+    "academic_period": "2026-2",
+    "final_grade": 2.55,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 20,
+    "student_id": 10004,
+    "course_id": 1032,
+    "academic_period": "2026-2",
+    "final_grade": 2.45,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 21,
+    "student_id": 10005,
+    "course_id": 1037,
+    "academic_period": "2026-2",
+    "final_grade": 2.0,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 22,
+    "student_id": 10005,
+    "course_id": 1038,
+    "academic_period": "2026-2",
+    "final_grade": 2.1,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 23,
+    "student_id": 10005,
+    "course_id": 1039,
+    "academic_period": "2026-2",
+    "final_grade": 2.0,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 24,
+    "student_id": 10005,
+    "course_id": 1040,
+    "academic_period": "2026-2",
+    "final_grade": 2.1,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 25,
+    "student_id": 10005,
+    "course_id": 1033,
+    "academic_period": "2026-2",
+    "final_grade": 2.0,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 26,
+    "student_id": 10006,
+    "course_id": 1046,
+    "academic_period": "2026-2",
+    "final_grade": 2.15,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 27,
+    "student_id": 10006,
+    "course_id": 1047,
+    "academic_period": "2026-2",
+    "final_grade": 2.25,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 28,
+    "student_id": 10006,
+    "course_id": 1048,
+    "academic_period": "2026-2",
+    "final_grade": 2.15,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 29,
+    "student_id": 10006,
+    "course_id": 1041,
+    "academic_period": "2026-2",
+    "final_grade": 2.25,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 30,
+    "student_id": 10006,
+    "course_id": 1042,
+    "academic_period": "2026-2",
+    "final_grade": 2.15,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 31,
+    "student_id": 10007,
+    "course_id": 1055,
+    "academic_period": "2026-2",
+    "final_grade": 2.3,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 32,
+    "student_id": 10007,
+    "course_id": 1056,
+    "academic_period": "2026-2",
+    "final_grade": 2.4,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 33,
+    "student_id": 10007,
+    "course_id": 1049,
+    "academic_period": "2026-2",
+    "final_grade": 2.3,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 34,
+    "student_id": 10007,
+    "course_id": 1050,
+    "academic_period": "2026-2",
+    "final_grade": 2.4,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 35,
+    "student_id": 10007,
+    "course_id": 1051,
+    "academic_period": "2026-2",
+    "final_grade": 2.3,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 36,
+    "student_id": 10008,
+    "course_id": 1064,
+    "academic_period": "2026-2",
+    "final_grade": 2.45,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 37,
+    "student_id": 10008,
+    "course_id": 1057,
+    "academic_period": "2026-2",
+    "final_grade": 2.55,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 38,
+    "student_id": 10008,
+    "course_id": 1058,
+    "academic_period": "2026-2",
+    "final_grade": 2.45,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 39,
+    "student_id": 10008,
+    "course_id": 1059,
+    "academic_period": "2026-2",
+    "final_grade": 2.55,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 40,
+    "student_id": 10008,
+    "course_id": 1060,
+    "academic_period": "2026-2",
+    "final_grade": 2.45,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 41,
+    "student_id": 10009,
+    "course_id": 1065,
+    "academic_period": "2026-2",
+    "final_grade": 2.0,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 42,
+    "student_id": 10009,
+    "course_id": 1066,
+    "academic_period": "2026-2",
+    "final_grade": 2.1,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 43,
+    "student_id": 10009,
+    "course_id": 1067,
+    "academic_period": "2026-2",
+    "final_grade": 2.0,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 44,
+    "student_id": 10009,
+    "course_id": 1068,
+    "academic_period": "2026-2",
+    "final_grade": 2.1,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 45,
+    "student_id": 10009,
+    "course_id": 1069,
+    "academic_period": "2026-2",
+    "final_grade": 2.0,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 46,
+    "student_id": 10010,
+    "course_id": 1074,
+    "academic_period": "2026-2",
+    "final_grade": 2.15,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 47,
+    "student_id": 10010,
+    "course_id": 1075,
+    "academic_period": "2026-2",
+    "final_grade": 2.25,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 48,
+    "student_id": 10010,
+    "course_id": 1076,
+    "academic_period": "2026-2",
+    "final_grade": 2.15,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 49,
+    "student_id": 10010,
+    "course_id": 1077,
+    "academic_period": "2026-2",
+    "final_grade": 2.25,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 50,
+    "student_id": 10010,
+    "course_id": 1078,
+    "academic_period": "2026-2",
+    "final_grade": 2.15,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 51,
+    "student_id": 10011,
+    "course_id": 1083,
+    "academic_period": "2026-2",
+    "final_grade": 2.3,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 52,
+    "student_id": 10011,
+    "course_id": 1084,
+    "academic_period": "2026-2",
+    "final_grade": 2.4,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 53,
+    "student_id": 10011,
+    "course_id": 1085,
+    "academic_period": "2026-2",
+    "final_grade": 2.3,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 54,
+    "student_id": 10011,
+    "course_id": 1086,
+    "academic_period": "2026-2",
+    "final_grade": 2.4,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 55,
+    "student_id": 10011,
+    "course_id": 1087,
+    "academic_period": "2026-2",
+    "final_grade": 2.3,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 56,
+    "student_id": 10012,
+    "course_id": 1092,
+    "academic_period": "2026-2",
+    "final_grade": 2.45,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 57,
+    "student_id": 10012,
+    "course_id": 1093,
+    "academic_period": "2026-2",
+    "final_grade": 2.55,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 58,
+    "student_id": 10012,
+    "course_id": 1094,
+    "academic_period": "2026-2",
+    "final_grade": 2.45,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 59,
+    "student_id": 10012,
+    "course_id": 1095,
+    "academic_period": "2026-2",
+    "final_grade": 2.55,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 60,
+    "student_id": 10012,
+    "course_id": 1096,
+    "academic_period": "2026-2",
+    "final_grade": 2.45,
+    "status": "Reprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 61,
+    "student_id": 10013,
+    "course_id": 1101,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 62,
+    "student_id": 10013,
+    "course_id": 1102,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 63,
+    "student_id": 10013,
+    "course_id": 1103,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 64,
+    "student_id": 10013,
+    "course_id": 1104,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 65,
+    "student_id": 10013,
+    "course_id": 1097,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 66,
+    "student_id": 10014,
+    "course_id": 1110,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 67,
+    "student_id": 10014,
+    "course_id": 1111,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 68,
+    "student_id": 10014,
+    "course_id": 1112,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 69,
+    "student_id": 10014,
+    "course_id": 1105,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 70,
+    "student_id": 10014,
+    "course_id": 1106,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 71,
+    "student_id": 10015,
+    "course_id": 1119,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 72,
+    "student_id": 10015,
+    "course_id": 1120,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 73,
+    "student_id": 10015,
+    "course_id": 1113,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 74,
+    "student_id": 10015,
+    "course_id": 1114,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 75,
+    "student_id": 10015,
+    "course_id": 1115,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 76,
+    "student_id": 10016,
+    "course_id": 1128,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 77,
+    "student_id": 10016,
+    "course_id": 1121,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 78,
+    "student_id": 10016,
+    "course_id": 1122,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 79,
+    "student_id": 10016,
+    "course_id": 1123,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 80,
+    "student_id": 10016,
+    "course_id": 1124,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 81,
+    "student_id": 10017,
+    "course_id": 1129,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 82,
+    "student_id": 10017,
+    "course_id": 1130,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 83,
+    "student_id": 10017,
+    "course_id": 1131,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 84,
+    "student_id": 10017,
+    "course_id": 1132,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 85,
+    "student_id": 10017,
+    "course_id": 1133,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 86,
+    "student_id": 10018,
+    "course_id": 1138,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 87,
+    "student_id": 10018,
+    "course_id": 1139,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 88,
+    "student_id": 10018,
+    "course_id": 1140,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 89,
+    "student_id": 10018,
+    "course_id": 1141,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 90,
+    "student_id": 10018,
+    "course_id": 1142,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 91,
+    "student_id": 10019,
+    "course_id": 1147,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 92,
+    "student_id": 10019,
+    "course_id": 1148,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 93,
+    "student_id": 10019,
+    "course_id": 1149,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 94,
+    "student_id": 10019,
+    "course_id": 1150,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 95,
+    "student_id": 10019,
+    "course_id": 1151,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 96,
+    "student_id": 10020,
+    "course_id": 1156,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 97,
+    "student_id": 10020,
+    "course_id": 1157,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 98,
+    "student_id": 10020,
+    "course_id": 1158,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 99,
+    "student_id": 10020,
+    "course_id": 1159,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 100,
+    "student_id": 10020,
+    "course_id": 1160,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 101,
+    "student_id": 10021,
+    "course_id": 1005,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 102,
+    "student_id": 10021,
+    "course_id": 1006,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 103,
+    "student_id": 10021,
+    "course_id": 1007,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 104,
+    "student_id": 10021,
+    "course_id": 1008,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 105,
+    "student_id": 10021,
+    "course_id": 1001,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 106,
+    "student_id": 10022,
+    "course_id": 1014,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 107,
+    "student_id": 10022,
+    "course_id": 1015,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 108,
+    "student_id": 10022,
+    "course_id": 1016,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 109,
+    "student_id": 10022,
+    "course_id": 1009,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 110,
+    "student_id": 10022,
+    "course_id": 1010,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 111,
+    "student_id": 10023,
+    "course_id": 1023,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 112,
+    "student_id": 10023,
+    "course_id": 1024,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 113,
+    "student_id": 10023,
+    "course_id": 1017,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 114,
+    "student_id": 10023,
+    "course_id": 1018,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 115,
+    "student_id": 10023,
+    "course_id": 1019,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 116,
+    "student_id": 10024,
+    "course_id": 1032,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 117,
+    "student_id": 10024,
+    "course_id": 1025,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 118,
+    "student_id": 10024,
+    "course_id": 1026,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 119,
+    "student_id": 10024,
+    "course_id": 1027,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 120,
+    "student_id": 10024,
+    "course_id": 1028,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 121,
+    "student_id": 10025,
+    "course_id": 1033,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 122,
+    "student_id": 10025,
+    "course_id": 1034,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 123,
+    "student_id": 10025,
+    "course_id": 1035,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 124,
+    "student_id": 10025,
+    "course_id": 1036,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 125,
+    "student_id": 10025,
+    "course_id": 1037,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 126,
+    "student_id": 10026,
+    "course_id": 1042,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 127,
+    "student_id": 10026,
+    "course_id": 1043,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 128,
+    "student_id": 10026,
+    "course_id": 1044,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 129,
+    "student_id": 10026,
+    "course_id": 1045,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 130,
+    "student_id": 10026,
+    "course_id": 1046,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 131,
+    "student_id": 10027,
+    "course_id": 1051,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 132,
+    "student_id": 10027,
+    "course_id": 1052,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 133,
+    "student_id": 10027,
+    "course_id": 1053,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 134,
+    "student_id": 10027,
+    "course_id": 1054,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 135,
+    "student_id": 10027,
+    "course_id": 1055,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 136,
+    "student_id": 10028,
+    "course_id": 1060,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 137,
+    "student_id": 10028,
+    "course_id": 1061,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 138,
+    "student_id": 10028,
+    "course_id": 1062,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 139,
+    "student_id": 10028,
+    "course_id": 1063,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 140,
+    "student_id": 10028,
+    "course_id": 1064,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 141,
+    "student_id": 10029,
+    "course_id": 1069,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 142,
+    "student_id": 10029,
+    "course_id": 1070,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 143,
+    "student_id": 10029,
+    "course_id": 1071,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 144,
+    "student_id": 10029,
+    "course_id": 1072,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 145,
+    "student_id": 10029,
+    "course_id": 1065,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 146,
+    "student_id": 10030,
+    "course_id": 1078,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 147,
+    "student_id": 10030,
+    "course_id": 1079,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 148,
+    "student_id": 10030,
+    "course_id": 1080,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 149,
+    "student_id": 10030,
+    "course_id": 1073,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 150,
+    "student_id": 10030,
+    "course_id": 1074,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 151,
+    "student_id": 10031,
+    "course_id": 1087,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 152,
+    "student_id": 10031,
+    "course_id": 1088,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 153,
+    "student_id": 10031,
+    "course_id": 1081,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 154,
+    "student_id": 10031,
+    "course_id": 1082,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 155,
+    "student_id": 10031,
+    "course_id": 1083,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 156,
+    "student_id": 10032,
+    "course_id": 1096,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 157,
+    "student_id": 10032,
+    "course_id": 1089,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 158,
+    "student_id": 10032,
+    "course_id": 1090,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 159,
+    "student_id": 10032,
+    "course_id": 1091,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 160,
+    "student_id": 10032,
+    "course_id": 1092,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 161,
+    "student_id": 10033,
+    "course_id": 1097,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 162,
+    "student_id": 10033,
+    "course_id": 1098,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 163,
+    "student_id": 10033,
+    "course_id": 1099,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 164,
+    "student_id": 10033,
+    "course_id": 1100,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 165,
+    "student_id": 10033,
+    "course_id": 1101,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 166,
+    "student_id": 10034,
+    "course_id": 1106,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 167,
+    "student_id": 10034,
+    "course_id": 1107,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 168,
+    "student_id": 10034,
+    "course_id": 1108,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 169,
+    "student_id": 10034,
+    "course_id": 1109,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 170,
+    "student_id": 10034,
+    "course_id": 1110,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 171,
+    "student_id": 10035,
+    "course_id": 1115,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 172,
+    "student_id": 10035,
+    "course_id": 1116,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 173,
+    "student_id": 10035,
+    "course_id": 1117,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 174,
+    "student_id": 10035,
+    "course_id": 1118,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 175,
+    "student_id": 10035,
+    "course_id": 1119,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 176,
+    "student_id": 10036,
+    "course_id": 1124,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 177,
+    "student_id": 10036,
+    "course_id": 1125,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 178,
+    "student_id": 10036,
+    "course_id": 1126,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 179,
+    "student_id": 10036,
+    "course_id": 1127,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 180,
+    "student_id": 10036,
+    "course_id": 1128,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 181,
+    "student_id": 10037,
+    "course_id": 1133,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 182,
+    "student_id": 10037,
+    "course_id": 1134,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 183,
+    "student_id": 10037,
+    "course_id": 1135,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 184,
+    "student_id": 10037,
+    "course_id": 1136,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 185,
+    "student_id": 10037,
+    "course_id": 1129,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 186,
+    "student_id": 10038,
+    "course_id": 1142,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 187,
+    "student_id": 10038,
+    "course_id": 1143,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 188,
+    "student_id": 10038,
+    "course_id": 1144,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 189,
+    "student_id": 10038,
+    "course_id": 1137,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 190,
+    "student_id": 10038,
+    "course_id": 1138,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 191,
+    "student_id": 10039,
+    "course_id": 1151,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 192,
+    "student_id": 10039,
+    "course_id": 1152,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 193,
+    "student_id": 10039,
+    "course_id": 1145,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 194,
+    "student_id": 10039,
+    "course_id": 1146,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 195,
+    "student_id": 10039,
+    "course_id": 1147,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 196,
+    "student_id": 10040,
+    "course_id": 1160,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 197,
+    "student_id": 10040,
+    "course_id": 1153,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 198,
+    "student_id": 10040,
+    "course_id": 1154,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 199,
+    "student_id": 10040,
+    "course_id": 1155,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 200,
+    "student_id": 10040,
+    "course_id": 1156,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 201,
+    "student_id": 10041,
+    "course_id": 1001,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 202,
+    "student_id": 10041,
+    "course_id": 1002,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 203,
+    "student_id": 10041,
+    "course_id": 1003,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 204,
+    "student_id": 10041,
+    "course_id": 1004,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 205,
+    "student_id": 10041,
+    "course_id": 1005,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 206,
+    "student_id": 10042,
+    "course_id": 1010,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 207,
+    "student_id": 10042,
+    "course_id": 1011,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 208,
+    "student_id": 10042,
+    "course_id": 1012,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 209,
+    "student_id": 10042,
+    "course_id": 1013,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 210,
+    "student_id": 10042,
+    "course_id": 1014,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 211,
+    "student_id": 10043,
+    "course_id": 1019,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 212,
+    "student_id": 10043,
+    "course_id": 1020,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 213,
+    "student_id": 10043,
+    "course_id": 1021,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 214,
+    "student_id": 10043,
+    "course_id": 1022,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 215,
+    "student_id": 10043,
+    "course_id": 1023,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 216,
+    "student_id": 10044,
+    "course_id": 1028,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 217,
+    "student_id": 10044,
+    "course_id": 1029,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 218,
+    "student_id": 10044,
+    "course_id": 1030,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 219,
+    "student_id": 10044,
+    "course_id": 1031,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 220,
+    "student_id": 10044,
+    "course_id": 1032,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 221,
+    "student_id": 10045,
+    "course_id": 1037,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 222,
+    "student_id": 10045,
+    "course_id": 1038,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 223,
+    "student_id": 10045,
+    "course_id": 1039,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 224,
+    "student_id": 10045,
+    "course_id": 1040,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 225,
+    "student_id": 10045,
+    "course_id": 1033,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 226,
+    "student_id": 10046,
+    "course_id": 1046,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 227,
+    "student_id": 10046,
+    "course_id": 1047,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 228,
+    "student_id": 10046,
+    "course_id": 1048,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 229,
+    "student_id": 10046,
+    "course_id": 1041,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 230,
+    "student_id": 10046,
+    "course_id": 1042,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 231,
+    "student_id": 10047,
+    "course_id": 1055,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 232,
+    "student_id": 10047,
+    "course_id": 1056,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 233,
+    "student_id": 10047,
+    "course_id": 1049,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 234,
+    "student_id": 10047,
+    "course_id": 1050,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 235,
+    "student_id": 10047,
+    "course_id": 1051,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 236,
+    "student_id": 10048,
+    "course_id": 1064,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 237,
+    "student_id": 10048,
+    "course_id": 1057,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 238,
+    "student_id": 10048,
+    "course_id": 1058,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 239,
+    "student_id": 10048,
+    "course_id": 1059,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 240,
+    "student_id": 10048,
+    "course_id": 1060,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 241,
+    "student_id": 10049,
+    "course_id": 1065,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 242,
+    "student_id": 10049,
+    "course_id": 1066,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 243,
+    "student_id": 10049,
+    "course_id": 1067,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 244,
+    "student_id": 10049,
+    "course_id": 1068,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 245,
+    "student_id": 10049,
+    "course_id": 1069,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 246,
+    "student_id": 10050,
+    "course_id": 1074,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 247,
+    "student_id": 10050,
+    "course_id": 1075,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 248,
+    "student_id": 10050,
+    "course_id": 1076,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 249,
+    "student_id": 10050,
+    "course_id": 1077,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 250,
+    "student_id": 10050,
+    "course_id": 1078,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 251,
+    "student_id": 10051,
+    "course_id": 1083,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 252,
+    "student_id": 10051,
+    "course_id": 1084,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 253,
+    "student_id": 10051,
+    "course_id": 1085,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 254,
+    "student_id": 10051,
+    "course_id": 1086,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 255,
+    "student_id": 10051,
+    "course_id": 1087,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 256,
+    "student_id": 10052,
+    "course_id": 1092,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 257,
+    "student_id": 10052,
+    "course_id": 1093,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 258,
+    "student_id": 10052,
+    "course_id": 1094,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 259,
+    "student_id": 10052,
+    "course_id": 1095,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 260,
+    "student_id": 10052,
+    "course_id": 1096,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 261,
+    "student_id": 10053,
+    "course_id": 1101,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 262,
+    "student_id": 10053,
+    "course_id": 1102,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 263,
+    "student_id": 10053,
+    "course_id": 1103,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 264,
+    "student_id": 10053,
+    "course_id": 1104,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 265,
+    "student_id": 10053,
+    "course_id": 1097,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 266,
+    "student_id": 10054,
+    "course_id": 1110,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 267,
+    "student_id": 10054,
+    "course_id": 1111,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 268,
+    "student_id": 10054,
+    "course_id": 1112,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 269,
+    "student_id": 10054,
+    "course_id": 1105,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 270,
+    "student_id": 10054,
+    "course_id": 1106,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 271,
+    "student_id": 10055,
+    "course_id": 1119,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 272,
+    "student_id": 10055,
+    "course_id": 1120,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 273,
+    "student_id": 10055,
+    "course_id": 1113,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 274,
+    "student_id": 10055,
+    "course_id": 1114,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 275,
+    "student_id": 10055,
+    "course_id": 1115,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 276,
+    "student_id": 10056,
+    "course_id": 1128,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 277,
+    "student_id": 10056,
+    "course_id": 1121,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 278,
+    "student_id": 10056,
+    "course_id": 1122,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 279,
+    "student_id": 10056,
+    "course_id": 1123,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 280,
+    "student_id": 10056,
+    "course_id": 1124,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 281,
+    "student_id": 10057,
+    "course_id": 1129,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 282,
+    "student_id": 10057,
+    "course_id": 1130,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 283,
+    "student_id": 10057,
+    "course_id": 1131,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 284,
+    "student_id": 10057,
+    "course_id": 1132,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 285,
+    "student_id": 10057,
+    "course_id": 1133,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 286,
+    "student_id": 10058,
+    "course_id": 1138,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 287,
+    "student_id": 10058,
+    "course_id": 1139,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 288,
+    "student_id": 10058,
+    "course_id": 1140,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 289,
+    "student_id": 10058,
+    "course_id": 1141,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 290,
+    "student_id": 10058,
+    "course_id": 1142,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 291,
+    "student_id": 10059,
+    "course_id": 1147,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 292,
+    "student_id": 10059,
+    "course_id": 1148,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 293,
+    "student_id": 10059,
+    "course_id": 1149,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 294,
+    "student_id": 10059,
+    "course_id": 1150,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 295,
+    "student_id": 10059,
+    "course_id": 1151,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 296,
+    "student_id": 10060,
+    "course_id": 1156,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 297,
+    "student_id": 10060,
+    "course_id": 1157,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 298,
+    "student_id": 10060,
+    "course_id": 1158,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 299,
+    "student_id": 10060,
+    "course_id": 1159,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 300,
+    "student_id": 10060,
+    "course_id": 1160,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 301,
+    "student_id": 10061,
+    "course_id": 1005,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 302,
+    "student_id": 10061,
+    "course_id": 1006,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 303,
+    "student_id": 10061,
+    "course_id": 1007,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 304,
+    "student_id": 10061,
+    "course_id": 1008,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 305,
+    "student_id": 10061,
+    "course_id": 1001,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 306,
+    "student_id": 10062,
+    "course_id": 1014,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 307,
+    "student_id": 10062,
+    "course_id": 1015,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 308,
+    "student_id": 10062,
+    "course_id": 1016,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 309,
+    "student_id": 10062,
+    "course_id": 1009,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 310,
+    "student_id": 10062,
+    "course_id": 1010,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 311,
+    "student_id": 10063,
+    "course_id": 1023,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 312,
+    "student_id": 10063,
+    "course_id": 1024,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 313,
+    "student_id": 10063,
+    "course_id": 1017,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 314,
+    "student_id": 10063,
+    "course_id": 1018,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 315,
+    "student_id": 10063,
+    "course_id": 1019,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 316,
+    "student_id": 10064,
+    "course_id": 1032,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 317,
+    "student_id": 10064,
+    "course_id": 1025,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 318,
+    "student_id": 10064,
+    "course_id": 1026,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 319,
+    "student_id": 10064,
+    "course_id": 1027,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 320,
+    "student_id": 10064,
+    "course_id": 1028,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 321,
+    "student_id": 10065,
+    "course_id": 1033,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 322,
+    "student_id": 10065,
+    "course_id": 1034,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 323,
+    "student_id": 10065,
+    "course_id": 1035,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 324,
+    "student_id": 10065,
+    "course_id": 1036,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 325,
+    "student_id": 10065,
+    "course_id": 1037,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 326,
+    "student_id": 10066,
+    "course_id": 1042,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 327,
+    "student_id": 10066,
+    "course_id": 1043,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 328,
+    "student_id": 10066,
+    "course_id": 1044,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 329,
+    "student_id": 10066,
+    "course_id": 1045,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 330,
+    "student_id": 10066,
+    "course_id": 1046,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 331,
+    "student_id": 10067,
+    "course_id": 1051,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 332,
+    "student_id": 10067,
+    "course_id": 1052,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 333,
+    "student_id": 10067,
+    "course_id": 1053,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 334,
+    "student_id": 10067,
+    "course_id": 1054,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 335,
+    "student_id": 10067,
+    "course_id": 1055,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 336,
+    "student_id": 10068,
+    "course_id": 1060,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 337,
+    "student_id": 10068,
+    "course_id": 1061,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 338,
+    "student_id": 10068,
+    "course_id": 1062,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 339,
+    "student_id": 10068,
+    "course_id": 1063,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 340,
+    "student_id": 10068,
+    "course_id": 1064,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 341,
+    "student_id": 10069,
+    "course_id": 1069,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 342,
+    "student_id": 10069,
+    "course_id": 1070,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 343,
+    "student_id": 10069,
+    "course_id": 1071,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 344,
+    "student_id": 10069,
+    "course_id": 1072,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 345,
+    "student_id": 10069,
+    "course_id": 1065,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 346,
+    "student_id": 10070,
+    "course_id": 1078,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 347,
+    "student_id": 10070,
+    "course_id": 1079,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 348,
+    "student_id": 10070,
+    "course_id": 1080,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 349,
+    "student_id": 10070,
+    "course_id": 1073,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 350,
+    "student_id": 10070,
+    "course_id": 1074,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 351,
+    "student_id": 10071,
+    "course_id": 1087,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 352,
+    "student_id": 10071,
+    "course_id": 1088,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 353,
+    "student_id": 10071,
+    "course_id": 1081,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 354,
+    "student_id": 10071,
+    "course_id": 1082,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 355,
+    "student_id": 10071,
+    "course_id": 1083,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 356,
+    "student_id": 10072,
+    "course_id": 1096,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 357,
+    "student_id": 10072,
+    "course_id": 1089,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 358,
+    "student_id": 10072,
+    "course_id": 1090,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 359,
+    "student_id": 10072,
+    "course_id": 1091,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 360,
+    "student_id": 10072,
+    "course_id": 1092,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 361,
+    "student_id": 10073,
+    "course_id": 1097,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 362,
+    "student_id": 10073,
+    "course_id": 1098,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 363,
+    "student_id": 10073,
+    "course_id": 1099,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 364,
+    "student_id": 10073,
+    "course_id": 1100,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 365,
+    "student_id": 10073,
+    "course_id": 1101,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 366,
+    "student_id": 10074,
+    "course_id": 1106,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 367,
+    "student_id": 10074,
+    "course_id": 1107,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 368,
+    "student_id": 10074,
+    "course_id": 1108,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 369,
+    "student_id": 10074,
+    "course_id": 1109,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 370,
+    "student_id": 10074,
+    "course_id": 1110,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 371,
+    "student_id": 10075,
+    "course_id": 1115,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 372,
+    "student_id": 10075,
+    "course_id": 1116,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 373,
+    "student_id": 10075,
+    "course_id": 1117,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 374,
+    "student_id": 10075,
+    "course_id": 1118,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 375,
+    "student_id": 10075,
+    "course_id": 1119,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 376,
+    "student_id": 10076,
+    "course_id": 1124,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 377,
+    "student_id": 10076,
+    "course_id": 1125,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 378,
+    "student_id": 10076,
+    "course_id": 1126,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 379,
+    "student_id": 10076,
+    "course_id": 1127,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 380,
+    "student_id": 10076,
+    "course_id": 1128,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 381,
+    "student_id": 10077,
+    "course_id": 1133,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 382,
+    "student_id": 10077,
+    "course_id": 1134,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 383,
+    "student_id": 10077,
+    "course_id": 1135,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 384,
+    "student_id": 10077,
+    "course_id": 1136,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 385,
+    "student_id": 10077,
+    "course_id": 1129,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 386,
+    "student_id": 10078,
+    "course_id": 1142,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 387,
+    "student_id": 10078,
+    "course_id": 1143,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 388,
+    "student_id": 10078,
+    "course_id": 1144,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 389,
+    "student_id": 10078,
+    "course_id": 1137,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 390,
+    "student_id": 10078,
+    "course_id": 1138,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 391,
+    "student_id": 10079,
+    "course_id": 1151,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 392,
+    "student_id": 10079,
+    "course_id": 1152,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 393,
+    "student_id": 10079,
+    "course_id": 1145,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 394,
+    "student_id": 10079,
+    "course_id": 1146,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 395,
+    "student_id": 10079,
+    "course_id": 1147,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 396,
+    "student_id": 10080,
+    "course_id": 1160,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 397,
+    "student_id": 10080,
+    "course_id": 1153,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 398,
+    "student_id": 10080,
+    "course_id": 1154,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 399,
+    "student_id": 10080,
+    "course_id": 1155,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 400,
+    "student_id": 10080,
+    "course_id": 1156,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 401,
+    "student_id": 10081,
+    "course_id": 1001,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 402,
+    "student_id": 10081,
+    "course_id": 1002,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 403,
+    "student_id": 10081,
+    "course_id": 1003,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 404,
+    "student_id": 10081,
+    "course_id": 1004,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 405,
+    "student_id": 10081,
+    "course_id": 1005,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 406,
+    "student_id": 10082,
+    "course_id": 1010,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 407,
+    "student_id": 10082,
+    "course_id": 1011,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 408,
+    "student_id": 10082,
+    "course_id": 1012,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 409,
+    "student_id": 10082,
+    "course_id": 1013,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 410,
+    "student_id": 10082,
+    "course_id": 1014,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 411,
+    "student_id": 10083,
+    "course_id": 1019,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 412,
+    "student_id": 10083,
+    "course_id": 1020,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 413,
+    "student_id": 10083,
+    "course_id": 1021,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 414,
+    "student_id": 10083,
+    "course_id": 1022,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 415,
+    "student_id": 10083,
+    "course_id": 1023,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 416,
+    "student_id": 10084,
+    "course_id": 1028,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 417,
+    "student_id": 10084,
+    "course_id": 1029,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 418,
+    "student_id": 10084,
+    "course_id": 1030,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 419,
+    "student_id": 10084,
+    "course_id": 1031,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 420,
+    "student_id": 10084,
+    "course_id": 1032,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 421,
+    "student_id": 10085,
+    "course_id": 1037,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 422,
+    "student_id": 10085,
+    "course_id": 1038,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 423,
+    "student_id": 10085,
+    "course_id": 1039,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 424,
+    "student_id": 10085,
+    "course_id": 1040,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 425,
+    "student_id": 10085,
+    "course_id": 1033,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 426,
+    "student_id": 10086,
+    "course_id": 1046,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 427,
+    "student_id": 10086,
+    "course_id": 1047,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 428,
+    "student_id": 10086,
+    "course_id": 1048,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 429,
+    "student_id": 10086,
+    "course_id": 1041,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 430,
+    "student_id": 10086,
+    "course_id": 1042,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 431,
+    "student_id": 10087,
+    "course_id": 1055,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 432,
+    "student_id": 10087,
+    "course_id": 1056,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 433,
+    "student_id": 10087,
+    "course_id": 1049,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 434,
+    "student_id": 10087,
+    "course_id": 1050,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 435,
+    "student_id": 10087,
+    "course_id": 1051,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 436,
+    "student_id": 10088,
+    "course_id": 1064,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 437,
+    "student_id": 10088,
+    "course_id": 1057,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 438,
+    "student_id": 10088,
+    "course_id": 1058,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 439,
+    "student_id": 10088,
+    "course_id": 1059,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 440,
+    "student_id": 10088,
+    "course_id": 1060,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 441,
+    "student_id": 10089,
+    "course_id": 1065,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 442,
+    "student_id": 10089,
+    "course_id": 1066,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 443,
+    "student_id": 10089,
+    "course_id": 1067,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 444,
+    "student_id": 10089,
+    "course_id": 1068,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 445,
+    "student_id": 10089,
+    "course_id": 1069,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 446,
+    "student_id": 10090,
+    "course_id": 1074,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 447,
+    "student_id": 10090,
+    "course_id": 1075,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 448,
+    "student_id": 10090,
+    "course_id": 1076,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 449,
+    "student_id": 10090,
+    "course_id": 1077,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 450,
+    "student_id": 10090,
+    "course_id": 1078,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 451,
+    "student_id": 10091,
+    "course_id": 1083,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 452,
+    "student_id": 10091,
+    "course_id": 1084,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 453,
+    "student_id": 10091,
+    "course_id": 1085,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 454,
+    "student_id": 10091,
+    "course_id": 1086,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 455,
+    "student_id": 10091,
+    "course_id": 1087,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 456,
+    "student_id": 10092,
+    "course_id": 1092,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 457,
+    "student_id": 10092,
+    "course_id": 1093,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 458,
+    "student_id": 10092,
+    "course_id": 1094,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 459,
+    "student_id": 10092,
+    "course_id": 1095,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 460,
+    "student_id": 10092,
+    "course_id": 1096,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 461,
+    "student_id": 10093,
+    "course_id": 1101,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 462,
+    "student_id": 10093,
+    "course_id": 1102,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 463,
+    "student_id": 10093,
+    "course_id": 1103,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 464,
+    "student_id": 10093,
+    "course_id": 1104,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 465,
+    "student_id": 10093,
+    "course_id": 1097,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 466,
+    "student_id": 10094,
+    "course_id": 1110,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 467,
+    "student_id": 10094,
+    "course_id": 1111,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 468,
+    "student_id": 10094,
+    "course_id": 1112,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 469,
+    "student_id": 10094,
+    "course_id": 1105,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 470,
+    "student_id": 10094,
+    "course_id": 1106,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 471,
+    "student_id": 10095,
+    "course_id": 1119,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 472,
+    "student_id": 10095,
+    "course_id": 1120,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 473,
+    "student_id": 10095,
+    "course_id": 1113,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 474,
+    "student_id": 10095,
+    "course_id": 1114,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 475,
+    "student_id": 10095,
+    "course_id": 1115,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 476,
+    "student_id": 10096,
+    "course_id": 1128,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 477,
+    "student_id": 10096,
+    "course_id": 1121,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 478,
+    "student_id": 10096,
+    "course_id": 1122,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 479,
+    "student_id": 10096,
+    "course_id": 1123,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 480,
+    "student_id": 10096,
+    "course_id": 1124,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 481,
+    "student_id": 10097,
+    "course_id": 1129,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 482,
+    "student_id": 10097,
+    "course_id": 1130,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 483,
+    "student_id": 10097,
+    "course_id": 1131,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 484,
+    "student_id": 10097,
+    "course_id": 1132,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 485,
+    "student_id": 10097,
+    "course_id": 1133,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 486,
+    "student_id": 10098,
+    "course_id": 1138,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 487,
+    "student_id": 10098,
+    "course_id": 1139,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 488,
+    "student_id": 10098,
+    "course_id": 1140,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 489,
+    "student_id": 10098,
+    "course_id": 1141,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 490,
+    "student_id": 10098,
+    "course_id": 1142,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 491,
+    "student_id": 10099,
+    "course_id": 1147,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 492,
+    "student_id": 10099,
+    "course_id": 1148,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 493,
+    "student_id": 10099,
+    "course_id": 1149,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 494,
+    "student_id": 10099,
+    "course_id": 1150,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 495,
+    "student_id": 10099,
+    "course_id": 1151,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 496,
+    "student_id": 10100,
+    "course_id": 1156,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 497,
+    "student_id": 10100,
+    "course_id": 1157,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 498,
+    "student_id": 10100,
+    "course_id": 1158,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 499,
+    "student_id": 10100,
+    "course_id": 1159,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 500,
+    "student_id": 10100,
+    "course_id": 1160,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 501,
+    "student_id": 10101,
+    "course_id": 1005,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 502,
+    "student_id": 10101,
+    "course_id": 1006,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 503,
+    "student_id": 10101,
+    "course_id": 1007,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 504,
+    "student_id": 10101,
+    "course_id": 1008,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 505,
+    "student_id": 10101,
+    "course_id": 1001,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 506,
+    "student_id": 10102,
+    "course_id": 1014,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 507,
+    "student_id": 10102,
+    "course_id": 1015,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 508,
+    "student_id": 10102,
+    "course_id": 1016,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 509,
+    "student_id": 10102,
+    "course_id": 1009,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 510,
+    "student_id": 10102,
+    "course_id": 1010,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 511,
+    "student_id": 10103,
+    "course_id": 1023,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 512,
+    "student_id": 10103,
+    "course_id": 1024,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 513,
+    "student_id": 10103,
+    "course_id": 1017,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 514,
+    "student_id": 10103,
+    "course_id": 1018,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 515,
+    "student_id": 10103,
+    "course_id": 1019,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 516,
+    "student_id": 10104,
+    "course_id": 1032,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 517,
+    "student_id": 10104,
+    "course_id": 1025,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 518,
+    "student_id": 10104,
+    "course_id": 1026,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 519,
+    "student_id": 10104,
+    "course_id": 1027,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 520,
+    "student_id": 10104,
+    "course_id": 1028,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 521,
+    "student_id": 10105,
+    "course_id": 1033,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 522,
+    "student_id": 10105,
+    "course_id": 1034,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 523,
+    "student_id": 10105,
+    "course_id": 1035,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 524,
+    "student_id": 10105,
+    "course_id": 1036,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 525,
+    "student_id": 10105,
+    "course_id": 1037,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 526,
+    "student_id": 10106,
+    "course_id": 1042,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 527,
+    "student_id": 10106,
+    "course_id": 1043,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 528,
+    "student_id": 10106,
+    "course_id": 1044,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 529,
+    "student_id": 10106,
+    "course_id": 1045,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 530,
+    "student_id": 10106,
+    "course_id": 1046,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 531,
+    "student_id": 10107,
+    "course_id": 1051,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 532,
+    "student_id": 10107,
+    "course_id": 1052,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 533,
+    "student_id": 10107,
+    "course_id": 1053,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 534,
+    "student_id": 10107,
+    "course_id": 1054,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 535,
+    "student_id": 10107,
+    "course_id": 1055,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 536,
+    "student_id": 10108,
+    "course_id": 1060,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 537,
+    "student_id": 10108,
+    "course_id": 1061,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 538,
+    "student_id": 10108,
+    "course_id": 1062,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 539,
+    "student_id": 10108,
+    "course_id": 1063,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 540,
+    "student_id": 10108,
+    "course_id": 1064,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 541,
+    "student_id": 10109,
+    "course_id": 1069,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 542,
+    "student_id": 10109,
+    "course_id": 1070,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 543,
+    "student_id": 10109,
+    "course_id": 1071,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 544,
+    "student_id": 10109,
+    "course_id": 1072,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 545,
+    "student_id": 10109,
+    "course_id": 1065,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 546,
+    "student_id": 10110,
+    "course_id": 1078,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 547,
+    "student_id": 10110,
+    "course_id": 1079,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 548,
+    "student_id": 10110,
+    "course_id": 1080,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 549,
+    "student_id": 10110,
+    "course_id": 1073,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 550,
+    "student_id": 10110,
+    "course_id": 1074,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 551,
+    "student_id": 10111,
+    "course_id": 1087,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 552,
+    "student_id": 10111,
+    "course_id": 1088,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 553,
+    "student_id": 10111,
+    "course_id": 1081,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 554,
+    "student_id": 10111,
+    "course_id": 1082,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 555,
+    "student_id": 10111,
+    "course_id": 1083,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 556,
+    "student_id": 10112,
+    "course_id": 1096,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 557,
+    "student_id": 10112,
+    "course_id": 1089,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 558,
+    "student_id": 10112,
+    "course_id": 1090,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 559,
+    "student_id": 10112,
+    "course_id": 1091,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 560,
+    "student_id": 10112,
+    "course_id": 1092,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 561,
+    "student_id": 10113,
+    "course_id": 1097,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 562,
+    "student_id": 10113,
+    "course_id": 1098,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 563,
+    "student_id": 10113,
+    "course_id": 1099,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 564,
+    "student_id": 10113,
+    "course_id": 1100,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 565,
+    "student_id": 10113,
+    "course_id": 1101,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 566,
+    "student_id": 10114,
+    "course_id": 1106,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 567,
+    "student_id": 10114,
+    "course_id": 1107,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 568,
+    "student_id": 10114,
+    "course_id": 1108,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 569,
+    "student_id": 10114,
+    "course_id": 1109,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 570,
+    "student_id": 10114,
+    "course_id": 1110,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 571,
+    "student_id": 10115,
+    "course_id": 1115,
+    "academic_period": "2026-2",
+    "final_grade": 3.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 572,
+    "student_id": 10115,
+    "course_id": 1116,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 573,
+    "student_id": 10115,
+    "course_id": 1117,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 574,
+    "student_id": 10115,
+    "course_id": 1118,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 575,
+    "student_id": 10115,
+    "course_id": 1119,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 576,
+    "student_id": 10116,
+    "course_id": 1124,
+    "academic_period": "2026-2",
+    "final_grade": 4.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 577,
+    "student_id": 10116,
+    "course_id": 1125,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 578,
+    "student_id": 10116,
+    "course_id": 1126,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 579,
+    "student_id": 10116,
+    "course_id": 1127,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 580,
+    "student_id": 10116,
+    "course_id": 1128,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 581,
+    "student_id": 10117,
+    "course_id": 1133,
+    "academic_period": "2026-2",
+    "final_grade": 3.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 582,
+    "student_id": 10117,
+    "course_id": 1134,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 583,
+    "student_id": 10117,
+    "course_id": 1135,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 584,
+    "student_id": 10117,
+    "course_id": 1136,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 585,
+    "student_id": 10117,
+    "course_id": 1129,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 586,
+    "student_id": 10118,
+    "course_id": 1142,
+    "academic_period": "2026-2",
+    "final_grade": 3.9,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 587,
+    "student_id": 10118,
+    "course_id": 1143,
+    "academic_period": "2026-2",
+    "final_grade": 4.2,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 588,
+    "student_id": 10118,
+    "course_id": 1144,
+    "academic_period": "2026-2",
+    "final_grade": 4.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 589,
+    "student_id": 10118,
+    "course_id": 1137,
+    "academic_period": "2026-2",
+    "final_grade": 3.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 590,
+    "student_id": 10118,
+    "course_id": 1138,
+    "academic_period": "2026-2",
+    "final_grade": 3.3,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 591,
+    "student_id": 10119,
+    "course_id": 1151,
+    "academic_period": "2026-2",
+    "final_grade": 4.6,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 592,
+    "student_id": 10119,
+    "course_id": 1152,
+    "academic_period": "2026-2",
+    "final_grade": 3.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 593,
+    "student_id": 10119,
+    "course_id": 1145,
+    "academic_period": "2026-2",
+    "final_grade": 3.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 594,
+    "student_id": 10119,
+    "course_id": 1146,
+    "academic_period": "2026-2",
+    "final_grade": 3.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 595,
+    "student_id": 10119,
+    "course_id": 1147,
+    "academic_period": "2026-2",
+    "final_grade": 4.0,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 596,
+    "student_id": 10120,
+    "course_id": 1160,
+    "academic_period": "2026-2",
+    "final_grade": 3.5,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 597,
+    "student_id": 10120,
+    "course_id": 1153,
+    "academic_period": "2026-2",
+    "final_grade": 3.8,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 598,
+    "student_id": 10120,
+    "course_id": 1154,
+    "academic_period": "2026-2",
+    "final_grade": 4.1,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 599,
+    "student_id": 10120,
+    "course_id": 1155,
+    "academic_period": "2026-2",
+    "final_grade": 4.4,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  },
+  {
+    "enrollment_id": 600,
+    "student_id": 10120,
+    "course_id": 1156,
+    "academic_period": "2026-2",
+    "final_grade": 4.7,
+    "status": "Aprobado",
+    "enrollment_date": "2026-08-18"
+  }
+]

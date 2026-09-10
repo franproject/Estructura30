@@ -15,6 +15,12 @@ class ConfirmDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.setMinimumWidth(380)
+        self.setStyleSheet(
+            """
+            QDialog { background-color: #FFFFFF; color: #0F172A; }
+            QLabel { color: #0F172A; background: transparent; }
+            """
+        )
         self._build_ui(message)
 
     def _build_ui(self, message: str):

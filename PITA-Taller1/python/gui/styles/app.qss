@@ -256,8 +256,71 @@ QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QDateEdit {
     font-size: 12px;
 }
 
+QDateEdit {
+    min-width: 140px;
+    min-height: 32px;
+    padding-right: 4px;
+}
+
 QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus, QDateEdit:focus {
     border: 1.5px solid #16A34A;
+}
+
+/* Calendar popup (QDateEdit) — no estilizar ::drop-down o se rompe el popup */
+QCalendarWidget {
+    background-color: #FFFFFF;
+    color: #0F172A;
+    border: 1px solid #E2E8F0;
+}
+
+QCalendarWidget QWidget#qt_calendar_navigationbar {
+    background-color: #F8FAFC;
+    border-bottom: 1px solid #E2E8F0;
+    color: #0F172A;
+}
+
+QCalendarWidget QToolButton {
+    background-color: transparent;
+    color: #0F172A;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-weight: 600;
+}
+
+QCalendarWidget QToolButton:hover {
+    background-color: #DCFCE7;
+    color: #14532D;
+}
+
+QCalendarWidget QSpinBox {
+    background-color: #FFFFFF;
+    color: #0F172A;
+    border: 1px solid #CBD5E1;
+    border-radius: 6px;
+}
+
+QCalendarWidget QAbstractItemView {
+    background-color: #FFFFFF;
+    color: #0F172A;
+    selection-background-color: #16A34A;
+    selection-color: #FFFFFF;
+    outline: none;
+}
+
+QCalendarWidget QAbstractItemView:enabled {
+    color: #0F172A;
+    background-color: #FFFFFF;
+}
+
+QCalendarWidget QAbstractItemView:disabled {
+    color: #94A3B8;
+}
+
+QCalendarWidget QMenu {
+    background-color: #FFFFFF;
+    color: #0F172A;
+    border: 1px solid #E2E8F0;
 }
 
 /* Tables */
@@ -283,9 +346,44 @@ QHeaderView::section {
     letter-spacing: 0.5px;
 }
 
-/* Dialogs & Scrollbars */
-QDialog {
+/* Dialogs, text areas & scrollbars */
+QDialog, QMessageBox {
     background-color: #FFFFFF;
+    color: #0F172A;
+}
+
+QDialog QWidget, QMessageBox QLabel, QMessageBox QWidget {
+    background-color: transparent;
+    color: #0F172A;
+}
+
+QTextEdit, QPlainTextEdit {
+    background-color: #FFFFFF;
+    color: #0F172A;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 12px;
+    selection-background-color: #DCFCE7;
+    selection-color: #14532D;
+}
+
+QScrollArea {
+    background-color: #F8FAFC;
+    border: none;
+}
+
+QScrollArea > QWidget > QWidget {
+    background-color: #F8FAFC;
+}
+
+QAbstractScrollArea::viewport {
+    background-color: #FFFFFF;
+}
+
+QChartView {
+    background-color: #FFFFFF;
+    border: none;
 }
 
 QScrollBar:vertical {

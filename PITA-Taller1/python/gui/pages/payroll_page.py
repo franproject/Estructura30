@@ -30,6 +30,7 @@ from services.payroll_engine import PayrollRules
 from services.payslip_service import PayslipService
 from ..components.data_table import DataTable
 from ..components.page_header import PageHeader
+from ..components.pagination_bar import PaginationBar
 from .payroll_dashboard import PayrollDashboardDialog
 
 
@@ -136,18 +137,79 @@ class PayrollPage(QWidget):
         layout.addLayout(controls)
 
         actions = QHBoxLayout()
+        actions.setSpacing(8)
         self.calculate_button = self._action_button("Calcular nómina", self._calculate)
         self.recalculate_button = self._action_button("Recalcular", self._recalculate, "secondaryButton")
         self.approve_button = self._action_button("Aprobar", self._approve)
         self.close_button = self._action_button("Cerrar", self._close)
+
+        self.view_detail_button = self._action_button("👁 Ver detalle", self._show_selected_detail, "secondaryButton")
+        self.view_detail_button.setToolTip("Ver detalle de liquidación del empleado seleccionado (o doble clic)")
         self.single_slip_button = self._action_button("Desprendible individual", self._individual_payslip, "secondaryButton")
+        self.single_slip_button.setToolTip("Generar PDF de desprendible para el empleado seleccionado")
+
         self.all_slips_button = self._action_button("Generar todos los desprendibles", self._all_payslips, "secondaryButton")
         self.dashboard_button = self._action_button("Dashboard financiero", self._open_dashboard, "secondaryButton")
-        for button in (self.calculate_button, self.recalculate_button, self.approve_button,
-                   self.close_button, self.single_slip_button, self.all_slips_button, self.dashboard_button):
-            actions.addWidget(button)
+
+        self.view_detail_button.setEnabled(False)
+        self.single_slip_button.setEnabled(False)
+
+        actions.addWidget(self.calculate_button)
+        actions.addWidget(self.recalculate_button)
+        actions.addWidget(self.approve_button)
+        actions.addWidget(self.close_button)
+        actions.addSpacing(12)
+        actions.addWidget(self.view_detail_button)
+        actions.addWidget(self.single_slip_button)
+        actions.addSpacing(12)
+        actions.addWidget(self.all_slips_button)
+        actions.addWidget(self.dashboard_button)
         actions.addStretch()
         layout.addLayout(actions)
+
+        # Banner de advertencia de ARL Clase I por defecto
+        self.arl_warning_banner = QFrame()
+        self.arl_warning_banner.setObjectName("arlWarningBanner")
+        self.arl_warning_banner.setStyleSheet(
+            """
+            #arlWarningBanner {
+                background-color: #FEF3C7;
+                border: 1px solid #F59E0B;
+                border-radius: 8px;
+            }
+            """
+        )
+        banner_layout = QHBoxLayout(self.arl_warning_banner)
+        banner_layout.setContentsMargins(14, 8, 14, 8)
+        banner_layout.setSpacing(10)
+        self.arl_warning_icon = QLabel("⚠️")
+        self.arl_warning_icon.setStyleSheet("font-size: 16px; background: transparent;")
+        self.arl_warning_text = QLabel("Atención: Existen empleados activos asignados a ARL Clase 'I' (Riesgo Mínimo).")
+        self.arl_warning_text.setStyleSheet("color: #92400E; font-weight: 600; font-size: 12px; background: transparent;")
+        self.arl_review_button = QPushButton("Revisar empleados")
+        self.arl_review_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.arl_review_button.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #D97706;
+                color: #FFFFFF;
+                border: none;
+                border-radius: 4px;
+                padding: 4px 12px;
+                font-weight: 600;
+                font-size: 11px;
+            }
+            QPushButton:hover {
+                background-color: #B45309;
+            }
+            """
+        )
+        self.arl_review_button.clicked.connect(self._show_default_arl_dialog)
+        banner_layout.addWidget(self.arl_warning_icon)
+        banner_layout.addWidget(self.arl_warning_text, stretch=1)
+        banner_layout.addWidget(self.arl_review_button)
+        self.arl_warning_banner.hide()
+        layout.addWidget(self.arl_warning_banner)
 
         filters = QHBoxLayout()
         self.search = QLineEdit()
@@ -186,9 +248,13 @@ class PayrollPage(QWidget):
 
         self.table = DataTable(headers=self.COLUMNS)
         self.table.setMinimumHeight(260)
-        self.table.itemSelectionChanged.connect(self._show_selected_detail)
+        self.table.itemSelectionChanged.connect(self._on_table_selection_changed)
+        self.table.itemDoubleClicked.connect(lambda *_: self._show_selected_detail())
         layout.addWidget(self.table)
-        self.pagination = self._build_pagination()
+        self.pagination = PaginationBar(parent=self)
+        self.pagination.connect_table(self.table)
+        self.page_info = self.pagination.page_info
+        self.page_buttons = self.pagination.page_buttons
         layout.addWidget(self.pagination)
 
         history_title = QLabel("Historial de liquidaciones")
@@ -220,17 +286,8 @@ class PayrollPage(QWidget):
         return button
 
     def _build_pagination(self):
-        footer = QWidget()
-        footer_layout = QHBoxLayout(footer)
-        footer_layout.setContentsMargins(4, 0, 4, 0)
-        self.page_info = QLabel()
-        self.page_info.setStyleSheet("color: #94A3B8; font-size: 11px;")
-        footer_layout.addWidget(self.page_info)
-        footer_layout.addStretch()
-        self.page_buttons = QHBoxLayout()
-        footer_layout.addLayout(self.page_buttons)
-        self.table.page_changed.connect(lambda *_: self._update_pagination())
-        return footer
+        """Retorna el componente de paginación."""
+        return self.pagination
 
     def _employees(self):
         return list(self.manager.professors) + list(self.manager.administrative_staff)
@@ -338,7 +395,12 @@ class PayrollPage(QWidget):
 
     @staticmethod
     def _money(value):
-        return f"$ {int(value):,}".replace(",", ".")
+        if value is None or value in ("-", ""):
+            return "$ 0"
+        try:
+            return f"$ {int(float(value)):,}".replace(",", ".")
+        except (ValueError, TypeError):
+            return str(value)
 
     def _render_run(self):
         run = self._run_for(self._selected_period())
@@ -386,31 +448,29 @@ class PayrollPage(QWidget):
         self.recalculate_button.setEnabled(status == "CALCULATED")
         self.approve_button.setEnabled(status == "CALCULATED")
         self.close_button.setEnabled(status == "APPROVED")
-        self.single_slip_button.setEnabled(bool(run))
         self.all_slips_button.setEnabled(bool(run))
+        self._on_table_selection_changed()
+
+    def _on_table_selection_changed(self):
+        """Actualiza el estado de los botones contextuales de forma pasiva sin abrir diálogos."""
+        source_row = self.table.current_source_row()
+        has_selection = 0 <= source_row < len(self._details)
+        run = self._run_for(self._selected_period())
+        self.view_detail_button.setEnabled(has_selection)
+        self.single_slip_button.setEnabled(has_selection and bool(run))
 
     def _update_pagination(self):
-        total = self.table.total_rows
-        start = 0 if total == 0 else (self.table.page - 1) * self.table.page_size + 1
-        end = min(self.table.page * self.table.page_size, total)
-        self.page_info.setText(f"Mostrando {start}-{end} de {total} registros")
-        while self.page_buttons.count():
-            item = self.page_buttons.takeAt(0)
-            if item is None:
-                continue
-            widget = item.widget()
-            if widget is not None:
-                widget.deleteLater()
-        for page in range(1, self.table.page_count + 1):
-            button = QPushButton(str(page))
-            button.setFixedSize(27, 27)
-            button.clicked.connect(lambda checked=False, target=page: self.table.set_page(target))
-            self.page_buttons.addWidget(button)
-        self.pagination.setVisible(total > self.table.page_size)
+        self.pagination.update_pagination(
+            current_page=self.table.page,
+            total_pages=self.table.page_count,
+            total_rows=self.table.total_rows,
+            page_size=self.table.page_size,
+        )
 
     def _show_selected_detail(self):
         source_row = self.table.current_source_row()
         if source_row < 0 or source_row >= len(self._details):
+            self._notice("Detalle de liquidación", "Selecciona un empleado de la tabla para ver su detalle.")
             return
         detail = self._details[source_row]
         employee_id = str(detail.get("employee_id", ""))
@@ -454,7 +514,7 @@ class PayrollPage(QWidget):
                 border: none;
                 border-bottom: 1px solid #E2E8F0;
                 padding: 6px 8px;
-                font-size: 10px;
+                font-size: 11px;
                 font-weight: 700;
             }
             """
@@ -625,8 +685,90 @@ class PayrollPage(QWidget):
             for column, value in enumerate(values):
                 self.history_table.setItem(row, column, QTableWidgetItem(value))
 
+    def _get_default_arl_employees(self):
+        default_employees = []
+        for emp in self._employees():
+            if getattr(emp, "active", True):
+                risk_class = getattr(emp, "arl_risk_class", "I")
+                if risk_class == "I":
+                    default_employees.append(emp)
+        return default_employees
+
+    def _update_arl_warning(self):
+        default_emps = self._get_default_arl_employees()
+        if default_emps:
+            count = len(default_emps)
+            self.arl_warning_text.setText(
+                f"Atención: {count} empleado(s) activo(s) tienen asignada ARL Clase 'I' (Riesgo Mínimo - 0.522%). "
+                "Verifique si desempeñan labores de mayor riesgo (laboratorios, talleres, etc.)."
+            )
+            self.arl_warning_banner.show()
+        else:
+            self.arl_warning_banner.hide()
+
+    def _show_default_arl_dialog(self):
+        default_emps = self._get_default_arl_employees()
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Empleados con ARL Clase I (Riesgo Mínimo)")
+        dialog.resize(600, 420)
+        dialog.setMinimumSize(500, 360)
+        dialog.setStyleSheet(
+            """
+            QDialog { background-color: #FFFFFF; color: #0F172A; }
+            QLabel#dialogTitle { color: #0F172A; font-size: 15px; font-weight: 800; background: transparent; }
+            QLabel#dialogSubtitle { color: #64748B; font-size: 12px; background: transparent; }
+            """
+        )
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(14)
+
+        title = QLabel("Empleados activos con ARL Clase I por defecto")
+        title.setObjectName("dialogTitle")
+        layout.addWidget(title)
+
+        subtitle = QLabel(
+            "Los siguientes empleados activos tienen configurada la Clase I (0.522%).\n"
+            "Si algún empleado realiza labores con mayor exposición a riesgos laborales\n"
+            "(laboratorios químicos, talleres mecánicos, trabajo de campo, etc.),\n"
+            "actualice su clase en la sección de Profesores o Administrativos."
+        )
+        subtitle.setObjectName("dialogSubtitle")
+        layout.addWidget(subtitle)
+
+        table = QTableWidget(len(default_emps), 4)
+        table.setHorizontalHeaderLabels(("ID", "Nombre", "Tipo", "Clase ARL"))
+        table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        table.horizontalHeader().setStretchLastSection(True)
+
+        for row, emp in enumerate(default_emps):
+            is_prof = hasattr(emp, "professor_id")
+            emp_id = str(getattr(emp, "professor_id" if is_prof else "administrative_id", ""))
+            emp_type = "Profesor" if is_prof else "Administrativo"
+            name = getattr(emp, "full_name", "")
+            risk = getattr(emp, "arl_risk_class", "I")
+
+            table.setItem(row, 0, QTableWidgetItem(emp_id))
+            table.setItem(row, 1, QTableWidgetItem(name))
+            table.setItem(row, 2, QTableWidgetItem(emp_type))
+            table.setItem(row, 3, QTableWidgetItem(f"Clase {risk} (0.522%)"))
+
+        layout.addWidget(table)
+
+        btn_box = QHBoxLayout()
+        btn_box.addStretch()
+        close_btn = QPushButton("Cerrar")
+        close_btn.setObjectName("primaryButton")
+        close_btn.clicked.connect(dialog.accept)
+        btn_box.addWidget(close_btn)
+        layout.addLayout(btn_box)
+
+        dialog.exec()
+
     def refresh(self):
         self._load_periods()
+        self._update_arl_warning()
         self._render_run()
         self._render_history()
 

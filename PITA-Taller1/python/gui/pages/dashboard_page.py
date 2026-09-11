@@ -204,10 +204,16 @@ class DashboardPage(QWidget):
         try:
             mgr = self.manager
 
+            active_statuses = {
+                "ACTIVE", "ACTIVO", "COMPLETED", "APROBADO", "REPROBADO",
+                "APPROVED", "FAILED", "PASSED", "FINALIZADO", "MATRICULADO", "ENROLLED"
+            }
             active_enrollments = sum(
-                1 for item in mgr.enrollments if str(getattr(item, "status", "")).upper() in {"ACTIVE", "COMPLETED"}
+                1 for item in mgr.enrollments
+                if str(getattr(item, "status", "")).upper() in active_statuses
+                and str(getattr(item, "status", "")).upper() not in {"CANCELLED", "CANCELADO", "INACTIVE", "INACTIVO"}
             )
-            ebra_count = sum(
+            ebra_count = mgr.count_ebra_students() if hasattr(mgr, "count_ebra_students") else sum(
                 1 for s in mgr.students if mgr.evaluate_ebra_status(s.student_id).get("status") == "EBRA"
             )
 

@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QScrollArea,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
@@ -25,6 +26,7 @@ class Sidebar(QFrame):
         self.setObjectName("sidebar")
         self.setFixedWidth(220)
         self._buttons = {}
+        self._active_page = None
         self._build_ui()
 
     def _build_ui(self):
@@ -34,24 +36,24 @@ class Sidebar(QFrame):
 
         # Brand Box
         brand_frame = QFrame()
-        brand_frame.setMinimumHeight(104)
+        brand_frame.setMinimumHeight(76)
         brand_frame.setStyleSheet("border-bottom: 1px solid rgba(255,255,255,0.08);")
         brand_layout = QHBoxLayout(brand_frame)
-        brand_layout.setContentsMargins(18, 16, 14, 14)
+        brand_layout.setContentsMargins(16, 12, 12, 10)
         brand_layout.setSpacing(10)
 
         logo = QLabel()
-        logo.setFixedSize(38, 38)
+        logo.setFixedSize(36, 36)
         logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
         logo.setStyleSheet("background: rgba(255,255,255,0.15); border-radius: 10px;")
-        logo.setPixmap(icon("building", "#FFFFFF", 22).pixmap(22, 22))
+        logo.setPixmap(icon("building", "#FFFFFF", 20).pixmap(20, 20))
 
         brand_text = QVBoxLayout()
         brand_text.setContentsMargins(0, 0, 0, 0)
         brand_text.setSpacing(2)
         title = QLabel("NexoCampus")
         title.setObjectName("brandName")
-        title.setMinimumHeight(22)
+        title.setMinimumHeight(20)
         sub = QLabel("Programa Integrado de\nTransacciones Académicas")
         sub.setObjectName("brandSub")
         sub.setWordWrap(True)
@@ -62,35 +64,53 @@ class Sidebar(QFrame):
         brand_layout.addLayout(brand_text, stretch=1)
         layout.addWidget(brand_frame)
 
+        # Área de navegación con scroll adaptable (evita ocultar botones de acción en resoluciones bajas)
+        nav_scroll = QScrollArea()
+        nav_scroll.setObjectName("sidebarNavScroll")
+        nav_scroll.setWidgetResizable(True)
+        nav_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        nav_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        nav_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        nav_scroll.setStyleSheet("background: transparent; border: none;")
+
+        nav_widget = QWidget()
+        nav_widget.setObjectName("sidebarNavWidget")
+        nav_widget.setStyleSheet("background: transparent;")
+        nav_layout = QVBoxLayout(nav_widget)
+        nav_layout.setContentsMargins(0, 4, 0, 4)
+        nav_layout.setSpacing(2)
+
         # Secciones de Navegación
-        layout.addWidget(self._create_section_label("NAVEGACIÓN"))
-        self._add_nav_button(layout, "Dashboard", "Inicio", is_sub=False)
+        nav_layout.addWidget(self._create_section_label("NAVEGACIÓN"))
+        self._add_nav_button(nav_layout, "Dashboard", "Inicio", is_sub=False)
 
-        layout.addWidget(self._create_section_label("ACADÉMICO"))
-        self._add_nav_button(layout, "Facultades", "Facultades", is_sub=True)
-        self._add_nav_button(layout, "Programas", "Programas", is_sub=True)
-        self._add_nav_button(layout, "Cursos", "Cursos", is_sub=True)
+        nav_layout.addWidget(self._create_section_label("ACADÉMICO"))
+        self._add_nav_button(nav_layout, "Facultades", "Facultades", is_sub=True)
+        self._add_nav_button(nav_layout, "Programas", "Programas", is_sub=True)
+        self._add_nav_button(nav_layout, "Cursos", "Cursos", is_sub=True)
 
-        layout.addWidget(self._create_section_label("PERSONAS"))
-        self._add_nav_button(layout, "Estudiantes", "Estudiantes", is_sub=True)
-        self._add_nav_button(layout, "Profesores", "Profesores", is_sub=True)
-        self._add_nav_button(layout, "Administrativos", "Administrativos", is_sub=True)
+        nav_layout.addWidget(self._create_section_label("PERSONAS"))
+        self._add_nav_button(nav_layout, "Estudiantes", "Estudiantes", is_sub=True)
+        self._add_nav_button(nav_layout, "Profesores", "Profesores", is_sub=True)
+        self._add_nav_button(nav_layout, "Administrativos", "Administrativos", is_sub=True)
 
-        layout.addWidget(self._create_section_label("GESTIÓN"))
-        self._add_nav_button(layout, "Inscripciones", "Inscripciones", is_sub=True)
-        self._add_nav_button(layout, "Nómina", "Nómina", is_sub=True)
+        nav_layout.addWidget(self._create_section_label("GESTIÓN"))
+        self._add_nav_button(nav_layout, "Inscripciones", "Inscripciones", is_sub=True)
+        self._add_nav_button(nav_layout, "Nómina", "Nómina", is_sub=True)
 
-        layout.addWidget(self._create_section_label("HERRAMIENTAS"))
-        self._add_nav_button(layout, "Reportes", "Reportes", is_sub=False)
+        nav_layout.addWidget(self._create_section_label("HERRAMIENTAS"))
+        self._add_nav_button(nav_layout, "Reportes", "Reportes", is_sub=False)
 
-        layout.addStretch()
+        nav_layout.addStretch()
+        nav_scroll.setWidget(nav_widget)
+        layout.addWidget(nav_scroll, stretch=1)
 
         # Footer con Guardar y Cargar datos
         footer_frame = QFrame()
         footer_frame.setStyleSheet("border-top: 1px solid rgba(255,255,255,0.08);")
         footer_layout = QVBoxLayout(footer_frame)
-        footer_layout.setContentsMargins(12, 10, 12, 16)
-        footer_layout.setSpacing(8)
+        footer_layout.setContentsMargins(12, 8, 12, 10)
+        footer_layout.setSpacing(6)
 
         save_btn = QPushButton("Guardar Datos")
         save_btn.setIcon(icon("save", "#FFFFFF", 16))
@@ -133,7 +153,7 @@ class Sidebar(QFrame):
         btn.setIconSize(QSize(16, 16))
         btn.setObjectName("subNavButton" if is_sub else "navButton")
         btn.setCheckable(True)
-        btn.clicked.connect(lambda: self.set_active_page(page_name))
+        btn.clicked.connect(lambda checked=False, p=page_name: self._on_button_clicked(p))
         self._buttons[page_name] = btn
         
         # Wrapper margin
@@ -143,10 +163,17 @@ class Sidebar(QFrame):
         c_layout.addWidget(btn)
         layout.addWidget(container)
 
-    def set_active_page(self, page_name: str):
+    def _on_button_clicked(self, page_name: str):
+        self.set_active_page(page_name, emit_signal=False)
+        self.navigate_requested.emit(page_name)
+
+    def set_active_page(self, page_name: str, emit_signal: bool = False):
+        self._active_page = page_name
         for name, btn in self._buttons.items():
             is_active = (name == page_name)
+            btn.setChecked(is_active)
             btn.setProperty("active", "true" if is_active else "false")
             btn.style().unpolish(btn)
             btn.style().polish(btn)
-        self.navigate_requested.emit(page_name)
+        if emit_signal:
+            self.navigate_requested.emit(page_name)

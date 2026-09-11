@@ -125,8 +125,18 @@ class ExhaustivePayrollTests(unittest.TestCase):
         self.assertEqual(result.vacation_bonus_provision, D("4633"))
 
     def test_19_bonificacion_por_servicios(self):
+        # In regular months (e.g. September), cash service bonus is 0
         result = calculate_payroll(self.employee(continuous_service_days=360), PERIOD, self.rules(service_bonus_top=2000000))
-        self.assertEqual(result.service_bonus, D("500000"))
+        self.assertEqual(result.service_bonus, D("0"))
+
+        # In June and December, cash service bonus is liquidated
+        period_june = PayrollPeriod("2026-06", date(2026, 6, 1), date(2026, 6, 30), 30)
+        result_june = calculate_payroll(self.employee(continuous_service_days=360), period_june, self.rules(service_bonus_top=2000000))
+        self.assertEqual(result_june.service_bonus, D("500000"))
+
+        period_dec = PayrollPeriod("2026-12", date(2026, 12, 1), date(2026, 12, 31), 30)
+        result_dec = calculate_payroll(self.employee(continuous_service_days=360), period_dec, self.rules(service_bonus_top=2000000))
+        self.assertEqual(result_dec.service_bonus, D("500000"))
 
     def test_20_pension_patronal(self):
         result = calculate_payroll(self.employee(), PERIOD, self.rules())

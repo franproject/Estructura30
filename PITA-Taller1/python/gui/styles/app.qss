@@ -2,6 +2,9 @@
 
 * {
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+QWidget, QLabel, QFrame, QDialog, QMessageBox, QTableWidget, QTextEdit, QPlainTextEdit, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QDateEdit {
     color: #0F172A;
 }
 
@@ -23,19 +26,19 @@ QLabel#brandName {
 }
 
 QLabel#brandSub {
-    font-size: 9px;
-    color: rgba(255, 255, 255, 0.55);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.65);
 }
 
 QLabel#navSectionLabel {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 1.4px;
-    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.45);
     text-transform: uppercase;
     padding-left: 18px;
-    padding-top: 14px;
-    padding-bottom: 4px;
+    padding-top: 10px;
+    padding-bottom: 2px;
 }
 
 QPushButton#navButton {
@@ -77,8 +80,10 @@ QPushButton#subNavButton:hover {
 }
 
 QPushButton#subNavButton[active="true"] {
+    background-color: rgba(255, 255, 255, 0.14);
     color: #86EFAC;
-    font-weight: 600;
+    font-weight: 700;
+    border-left: 3px solid #86EFAC;
 }
 
 /* Header */
@@ -97,7 +102,7 @@ QLabel#headerLogo {
 }
 
 QLabel#headerSub {
-    font-size: 9px;
+    font-size: 11px;
     color: #94A3B8;
 }
 
@@ -139,7 +144,7 @@ QLabel#statLabel {
 }
 
 QLabel#statSub {
-    font-size: 10px;
+    font-size: 11px;
     color: #94A3B8;
 }
 
@@ -246,6 +251,27 @@ QPushButton#activePageButton {
     font-weight: 700;
 }
 
+QPushButton#pageNavButton {
+    background-color: #F1F5F9;
+    color: #475569;
+    border: 1px solid #E2E8F0;
+    border-radius: 7px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+QPushButton#pageNavButton:hover {
+    background-color: #E2E8F0;
+    color: #0F172A;
+}
+
+QPushButton#pageNavButton:disabled {
+    background-color: transparent;
+    color: #CBD5E1;
+    border-color: #F1F5F9;
+}
+
 /* Inputs & Forms */
 QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QDateEdit {
     background-color: #FFFFFF;
@@ -340,7 +366,7 @@ QHeaderView::section {
     border: none;
     border-bottom: 1px solid #E2E8F0;
     padding: 8px 12px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -400,3 +426,52 @@ QScrollBar::handle:vertical {
 QScrollBar::handle:vertical:hover {
     background: #94A3B8;
 }
+
+QScrollBar:horizontal {
+    background: transparent;
+    height: 6px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #CBD5E1;
+    border-radius: 3px;
+    min-width: 20px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: #94A3B8;
+}
+
+/* QTabWidget y QTabBar institucional */
+QTabWidget#reportsTabWidget::pane {
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    background-color: #FFFFFF;
+    top: -1px;
+}
+
+QTabBar::tab {
+    background-color: #F1F5F9;
+    color: #64748B;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border: 1px solid #E2E8F0;
+    border-bottom: none;
+    margin-right: 4px;
+}
+
+QTabBar::tab:hover {
+    background-color: #E2E8F0;
+    color: #0F172A;
+}
+
+QTabBar::tab:selected {
+    background-color: #FFFFFF;
+    color: #16A34A;
+    font-weight: 700;
+    border-bottom: 3px solid #16A34A;
+}
+

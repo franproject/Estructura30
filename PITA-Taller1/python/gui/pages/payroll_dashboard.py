@@ -94,7 +94,7 @@ class PayrollDashboardDialog(QDialog):
                 border: 1px solid #E2E8F0;
                 border-radius: 7px;
             }
-            QLabel#payrollMetricLabel { color: #64748B; font-size: 10px; font-weight: 600; background: transparent; }
+            QLabel#payrollMetricLabel { color: #64748B; font-size: 11px; font-weight: 600; background: transparent; }
             QLabel#payrollMetricValue { color: #0F172A; font-size: 13px; font-weight: 800; background: transparent; }
             QTableWidget {
                 background-color: #FFFFFF;
@@ -111,7 +111,7 @@ class PayrollDashboardDialog(QDialog):
                 border: none;
                 border-bottom: 1px solid #E2E8F0;
                 padding: 6px 8px;
-                font-size: 10px;
+                font-size: 11px;
                 font-weight: 700;
             }
             QChartView {

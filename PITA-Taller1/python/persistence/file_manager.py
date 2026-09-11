@@ -18,7 +18,6 @@ from models.course import Course
 from models.enrollment import Enrollment
 from models.faculty import Faculty
 from models.linked_list import LinkedList
-from models.payroll import Payroll
 from models.payroll_audit import PayrollAudit
 from models.payroll_novelty import PayrollNovelty
 from models.payroll_period import PayrollPeriod
@@ -63,17 +62,17 @@ _LABOR_DEFAULTS = {
 
 
 def _labor_kwargs(data, entity_name):
-    """Returns compatible labor data and warns when loading legacy JSON."""
+    """Returns compatible labor data and records issues when loading legacy JSON."""
     missing = [field for field in _LABOR_DEFAULTS if field not in data]
     if missing:
-        warnings.warn(
-            f"{entity_name} JSON lacks labor fields; explicit defaults applied: {', '.join(missing)}",
-            RuntimeWarning,
-            stacklevel=2,
+        emp_name = (
+            data.get("full_name")
+            or data.get("name")
+            or f"ID #{data.get('professor_id') or data.get('administrative_id', 'Desconocido')}"
         )
         _LOAD_ISSUES.append(
-            f"{entity_name}: se aplicaron valores de nómina por defecto para campos faltantes "
-            f"({', '.join(missing)}). Verifica que sean correctos."
+            f"[{entity_name}] {emp_name}: se completaron campos laborales con valores por defecto "
+            f"({', '.join(missing)}). Requiere revisión de ARL/Seguridad Social."
         )
     values = {}
     for field, default in _LABOR_DEFAULTS.items():
@@ -185,6 +184,12 @@ def _save_json(file_path, payload):
             json.dump(payload, file, indent=2, ensure_ascii=False)
             file.flush()
             os.fsync(file.fileno())
+        if file_path.exists() and file_path.is_file():
+            backup_path = file_path.with_name(f"{file_path.name}.bak")
+            try:
+                shutil.copy2(file_path, backup_path)
+            except OSError:
+                pass
         os.replace(tmp_path, file_path)
         tmp_path = None
         return True
@@ -250,6 +255,30 @@ def _load_json(file_path):
     return []
 
 
+def _extract_id_list(collection, id_field_name):
+    """Extracts a clean list of integer IDs from a collection of either objects or IDs."""
+    if collection is None:
+        return []
+    result = []
+    for item in _as_list(collection):
+        if isinstance(item, int):
+            result.append(item)
+        elif hasattr(item, id_field_name):
+            val = getattr(item, id_field_name)
+            if isinstance(val, int):
+                result.append(val)
+            elif str(val).isdigit():
+                result.append(int(val))
+            else:
+                result.append(val)
+        elif isinstance(item, dict) and id_field_name in item:
+            val = item[id_field_name]
+            result.append(int(val) if str(val).isdigit() else val)
+        elif isinstance(item, str) and item.isdigit():
+            result.append(int(item))
+    return result
+
+
 def _faculty_to_dict(faculty):
     return {
         "faculty_id": getattr(faculty, "faculty_id", 0),
@@ -257,7 +286,7 @@ def _faculty_to_dict(faculty):
         "dean": getattr(faculty, "dean", ""),
         "creation_date": getattr(faculty, "creation_date", ""),
         "active": getattr(faculty, "active", False),
-        "program_list": _to_serializable(getattr(faculty, "program_list", None)),
+        "program_list": _extract_id_list(getattr(faculty, "program_list", None), "program_id"),
     }
 
 
@@ -282,8 +311,8 @@ def _program_to_dict(program):
         "modality": getattr(program, "modality", ""),
         "program_type": getattr(program, "program_type", "Otro"),
         "active": getattr(program, "active", False),
-        "course_list": _to_serializable(getattr(program, "course_list", None)),
-        "student_list": _to_serializable(getattr(program, "student_list", None)),
+        "course_list": _extract_id_list(getattr(program, "course_list", None), "course_id"),
+        "student_list": _extract_id_list(getattr(program, "student_list", None), "student_id"),
     }
 
 
@@ -312,7 +341,7 @@ def _course_to_dict(course):
         "assigned_professor_id": getattr(course, "assigned_professor_id", 0),
         "max_capacity": getattr(course, "max_capacity", 0),
         "active": getattr(course, "active", False),
-        "enrollment_list": _to_serializable(getattr(course, "enrollment_list", None)),
+        "enrollment_list": _extract_id_list(getattr(course, "enrollment_list", None), "enrollment_id"),
     }
 
 
@@ -344,7 +373,7 @@ def _student_to_dict(student):
         "status": getattr(student, "status", ""),
         "cumulative_average": getattr(student, "cumulative_average", 0.0),
         "active": getattr(student, "active", False),
-        "enrollment_list": _to_serializable(getattr(student, "enrollment_list", None)),
+        "enrollment_list": _extract_id_list(getattr(student, "enrollment_list", None), "enrollment_id"),
     }
 
 
@@ -508,16 +537,6 @@ def _administrative_from_dict(data):
     )
 
 
-def _payroll_to_dict(payroll):
-    return {
-        "description": getattr(payroll, "description", ""),
-    }
-
-
-def _payroll_from_dict(data):
-    return Payroll(description=data.get("description", ""))
-
-
 def _enrollment_to_dict(enrollment):
     return {
         "enrollment_id": getattr(enrollment, "enrollment_id", 0),
@@ -542,6 +561,71 @@ def _enrollment_from_dict(data):
     )
 
 
+def _record_identifier(item, idx):
+    if isinstance(item, dict):
+        for id_key in (
+            "student_id",
+            "professor_id",
+            "administrative_id",
+            "faculty_id",
+            "program_id",
+            "course_id",
+            "enrollment_id",
+            "period_id",
+            "run_id",
+            "novelty_id",
+            "audit_id",
+            "id",
+        ):
+            if id_key in item:
+                val = item[id_key]
+                if val is not None and str(val).strip():
+                    return f"registro #{idx} ({id_key}={val})"
+                return f"registro #{idx} ({id_key}=null)"
+        for name_key in ("full_name", "name", "description"):
+            if name_key in item and item[name_key]:
+                return f"registro #{idx} ({name_key}='{item[name_key]}')"
+    return f"registro #{idx}"
+
+
+def _log_record_issue(file_path, idx, item, reason):
+    file_name = Path(file_path).name
+    ident = _record_identifier(item, idx)
+    _LOAD_ISSUES.append(
+        f"{file_name} [{ident}]: {reason}. Se omite este registro."
+    )
+
+
+def _load_collection(file_path, parser_func):
+    file_path = Path(file_path)
+    try:
+        raw_items = _load_json(file_path)
+    except OSError as exc:
+        _LOAD_ISSUES.append(f"No se pudo acceder a {file_path.name}: {exc}")
+        return []
+
+    result = []
+    for idx, item in enumerate(raw_items):
+        if not isinstance(item, dict):
+            _log_record_issue(
+                file_path,
+                idx,
+                item,
+                f"tipo de dato inválido ({type(item).__name__}), se esperaba un objeto JSON (dict)",
+            )
+            continue
+        try:
+            result.append(parser_func(item))
+        except Exception as exc:
+            _log_record_issue(
+                file_path,
+                idx,
+                item,
+                f"error al deserializar ({exc})",
+            )
+    return result
+
+
 def save_faculties(faculties, file_path=DATA_DIRECTORY / "faculties.json"):
     """Guardará las facultades en formato JSON."""
     try:
@@ -553,13 +637,8 @@ def save_faculties(faculties, file_path=DATA_DIRECTORY / "faculties.json"):
 def load_faculties(file_path=DATA_DIRECTORY / "faculties.json"):
     """Cargará las facultades desde un archivo JSON."""
     try:
-        faculties = []
-        for item in _load_json(file_path):
-            if not isinstance(item, dict):
-                continue
-            faculties.append(_faculty_from_dict(item))
-        return faculties
-    except (TypeError, ValueError, OSError):
+        return _load_collection(file_path, _faculty_from_dict)
+    except Exception:
         return []
 
 
@@ -574,13 +653,8 @@ def save_programs(programs, file_path=DATA_DIRECTORY / "programs.json"):
 def load_programs(file_path=DATA_DIRECTORY / "programs.json"):
     """Cargará los programas desde un archivo JSON."""
     try:
-        programs = []
-        for item in _load_json(file_path):
-            if not isinstance(item, dict):
-                continue
-            programs.append(_program_from_dict(item))
-        return programs
-    except (TypeError, ValueError, OSError):
+        return _load_collection(file_path, _program_from_dict)
+    except Exception:
         return []
 
 
@@ -595,13 +669,8 @@ def save_courses(courses, file_path=DATA_DIRECTORY / "courses.json"):
 def load_courses(file_path=DATA_DIRECTORY / "courses.json"):
     """Cargará los cursos desde un archivo JSON."""
     try:
-        courses = []
-        for item in _load_json(file_path):
-            if not isinstance(item, dict):
-                continue
-            courses.append(_course_from_dict(item))
-        return courses
-    except (TypeError, ValueError, OSError):
+        return _load_collection(file_path, _course_from_dict)
+    except Exception:
         return []
 
 
@@ -616,13 +685,8 @@ def save_students(students, file_path=DATA_DIRECTORY / "students.json"):
 def load_students(file_path=DATA_DIRECTORY / "students.json"):
     """Cargará los estudiantes desde un archivo JSON."""
     try:
-        students = []
-        for item in _load_json(file_path):
-            if not isinstance(item, dict):
-                continue
-            students.append(_student_from_dict(item))
-        return students
-    except (TypeError, ValueError, OSError):
+        return _load_collection(file_path, _student_from_dict)
+    except Exception:
         return []
 
 
@@ -637,13 +701,8 @@ def save_professors(professors, file_path=DATA_DIRECTORY / "professors.json"):
 def load_professors(file_path=DATA_DIRECTORY / "professors.json"):
     """Cargará los profesores desde un archivo JSON."""
     try:
-        professors = []
-        for item in _load_json(file_path):
-            if not isinstance(item, dict):
-                continue
-            professors.append(_professor_from_dict(item))
-        return professors
-    except (TypeError, ValueError, OSError):
+        return _load_collection(file_path, _professor_from_dict)
+    except Exception:
         return []
 
 
@@ -658,34 +717,8 @@ def save_administrative_staff(staff, file_path=DATA_DIRECTORY / "administrative_
 def load_administrative_staff(file_path=DATA_DIRECTORY / "administrative_staff.json"):
     """Cargará el personal administrativo desde un archivo JSON."""
     try:
-        staff = []
-        for item in _load_json(file_path):
-            if not isinstance(item, dict):
-                continue
-            staff.append(_administrative_from_dict(item))
-        return staff
-    except (TypeError, ValueError, OSError):
-        return []
-
-
-def save_payroll(payroll, file_path=DATA_DIRECTORY / "payroll.json"):
-    """Guardará la nómina en formato JSON."""
-    try:
-        return _save_json(file_path, [_payroll_to_dict(item) for item in _as_list(payroll)])
-    except (TypeError, ValueError, OSError):
-        return False
-
-
-def load_payroll(file_path=DATA_DIRECTORY / "payroll.json"):
-    """Cargará la nómina desde un archivo JSON."""
-    try:
-        payroll = []
-        for item in _load_json(file_path):
-            if not isinstance(item, dict):
-                continue
-            payroll.append(_payroll_from_dict(item))
-        return payroll
-    except (TypeError, ValueError, OSError):
+        return _load_collection(file_path, _administrative_from_dict)
+    except Exception:
         return []
 
 
@@ -700,13 +733,8 @@ def save_enrollments(enrollments, file_path=DATA_DIRECTORY / "enrollments.json")
 def load_enrollments(file_path=DATA_DIRECTORY / "enrollments.json"):
     """Cargará las matrículas desde un archivo JSON."""
     try:
-        enrollments = []
-        for item in _load_json(file_path):
-            if not isinstance(item, dict):
-                continue
-            enrollments.append(_enrollment_from_dict(item))
-        return enrollments
-    except (TypeError, ValueError, OSError):
+        return _load_collection(file_path, _enrollment_from_dict)
+    except Exception:
         return []
 
 
@@ -715,11 +743,7 @@ def _save_payroll_collection(values, file_path):
 
 
 def _load_payroll_collection(file_path, model_cls):
-    result = []
-    for item in _load_json(file_path):
-        if isinstance(item, dict):
-            result.append(model_cls.from_dict(item))
-    return result
+    return _load_collection(file_path, model_cls.from_dict)
 
 
 def save_payroll_periods(periods, file_path=DATA_DIRECTORY / "payroll_periods.json"):
@@ -732,7 +756,7 @@ def save_payroll_periods(periods, file_path=DATA_DIRECTORY / "payroll_periods.js
 def load_payroll_periods(file_path=DATA_DIRECTORY / "payroll_periods.json"):
     try:
         return _load_payroll_collection(file_path, PayrollPeriod)
-    except (TypeError, ValueError, OSError):
+    except Exception:
         return []
 
 
@@ -746,21 +770,7 @@ def save_payroll_runs(runs, file_path=DATA_DIRECTORY / "payroll_runs.json"):
 def load_payroll_runs(file_path=DATA_DIRECTORY / "payroll_runs.json"):
     try:
         return _load_payroll_collection(file_path, PayrollRun)
-    except (TypeError, ValueError, OSError):
-        return []
-
-
-def save_payroll_details(details, file_path=DATA_DIRECTORY / "payroll_details.json"):
-    try:
-        return _save_json(file_path, [_to_serializable(item) for item in _as_list(details)])
-    except (TypeError, ValueError, OSError):
-        return False
-
-
-def load_payroll_details(file_path=DATA_DIRECTORY / "payroll_details.json"):
-    try:
-        return _load_json(file_path)
-    except (TypeError, ValueError, OSError):
+    except Exception:
         return []
 
 
@@ -774,7 +784,7 @@ def save_payroll_novelties(novelties, file_path=DATA_DIRECTORY / "payroll_novelt
 def load_payroll_novelties(file_path=DATA_DIRECTORY / "payroll_novelties.json"):
     try:
         return _load_payroll_collection(file_path, PayrollNovelty)
-    except (TypeError, ValueError, OSError):
+    except Exception:
         return []
 
 
@@ -788,11 +798,132 @@ def save_payroll_audit(audits, file_path=DATA_DIRECTORY / "payroll_audit.json"):
 def load_payroll_audit(file_path=DATA_DIRECTORY / "payroll_audit.json"):
     try:
         return _load_payroll_collection(file_path, PayrollAudit)
-    except (TypeError, ValueError, OSError):
+    except Exception:
         return []
 
 
-def ask_load_existing_data():
-    """Pregunta si se deben cargar los archivos existentes al iniciar."""
-    answer = input("Do you want to load existing data? (y/n): ")
-    return answer.strip().lower() in {"y", "yes"}
+def link_hierarchical_entities(faculties, programs, courses, students, enrollments):
+    """Enlaza y resuelve referencias jerárquicas bidireccionalmente.
+
+    Reemplaza identificadores escalares en las listas dependientes por referencias a objetos
+    de dominio cuando existen, y reconcilia relaciones de pertenencia sin duplicados.
+    """
+    prog_map = {p.program_id: p for p in _as_list(programs) if hasattr(p, "program_id")}
+    course_map = {c.course_id: c for c in _as_list(courses) if hasattr(c, "course_id")}
+    student_map = {s.student_id: s for s in _as_list(students) if hasattr(s, "student_id")}
+    enrollment_map = {e.enrollment_id: e for e in _as_list(enrollments) if hasattr(e, "enrollment_id")}
+
+    # Faculty.program_list
+    for f in _as_list(faculties):
+        if hasattr(f, "program_list") and f.program_list is not None:
+            new_list = LinkedList()
+            seen = set()
+            for item in _as_list(f.program_list):
+                pid = getattr(item, "program_id", item)
+                prog_obj = prog_map.get(pid, item)
+                obj_id = getattr(prog_obj, "program_id", prog_obj)
+                if obj_id not in seen:
+                    seen.add(obj_id)
+                    new_list.insert(prog_obj)
+            for p in _as_list(programs):
+                if getattr(p, "faculty_id", None) == f.faculty_id and p.program_id not in seen:
+                    seen.add(p.program_id)
+                    new_list.insert(p)
+            f.program_list = new_list
+
+    # Program.course_list & Program.student_list
+    for p in _as_list(programs):
+        if hasattr(p, "course_list") and p.course_list is not None:
+            new_courses = LinkedList()
+            seen_c = set()
+            for item in _as_list(p.course_list):
+                cid = getattr(item, "course_id", item)
+                c_obj = course_map.get(cid, item)
+                obj_id = getattr(c_obj, "course_id", c_obj)
+                if obj_id not in seen_c:
+                    seen_c.add(obj_id)
+                    new_courses.insert(c_obj)
+            for c in _as_list(courses):
+                if getattr(c, "program_id", None) == p.program_id and c.course_id not in seen_c:
+                    seen_c.add(c.course_id)
+                    new_courses.insert(c)
+            p.course_list = new_courses
+
+        if hasattr(p, "student_list") and p.student_list is not None:
+            new_students = LinkedList()
+            seen_s = set()
+            for item in _as_list(p.student_list):
+                sid = getattr(item, "student_id", item)
+                s_obj = student_map.get(sid, item)
+                obj_id = getattr(s_obj, "student_id", s_obj)
+                if obj_id not in seen_s:
+                    seen_s.add(obj_id)
+                    new_students.insert(s_obj)
+            for s in _as_list(students):
+                if getattr(s, "program_id", None) == p.program_id and s.student_id not in seen_s:
+                    seen_s.add(s.student_id)
+                    new_students.insert(s)
+            p.student_list = new_students
+
+    # Course.enrollment_list
+    for c in _as_list(courses):
+        if hasattr(c, "enrollment_list") and c.enrollment_list is not None:
+            new_enr = LinkedList()
+            seen_e = set()
+            for item in _as_list(c.enrollment_list):
+                eid = getattr(item, "enrollment_id", item)
+                e_obj = enrollment_map.get(eid, item)
+                obj_id = getattr(e_obj, "enrollment_id", e_obj)
+                if obj_id not in seen_e:
+                    seen_e.add(obj_id)
+                    new_enr.insert(e_obj)
+            for e in _as_list(enrollments):
+                if getattr(e, "course_id", None) == c.course_id and e.enrollment_id not in seen_e:
+                    seen_e.add(e.enrollment_id)
+                    new_enr.insert(e)
+            c.enrollment_list = new_enr
+
+    # Student.enrollment_list
+    for s in _as_list(students):
+        if hasattr(s, "enrollment_list") and s.enrollment_list is not None:
+            new_enr = LinkedList()
+            seen_e = set()
+            for item in _as_list(s.enrollment_list):
+                eid = getattr(item, "enrollment_id", item)
+                e_obj = enrollment_map.get(eid, item)
+                obj_id = getattr(e_obj, "enrollment_id", e_obj)
+                if obj_id not in seen_e:
+                    seen_e.add(obj_id)
+                    new_enr.insert(e_obj)
+            for e in _as_list(enrollments):
+                if getattr(e, "student_id", None) == s.student_id and e.enrollment_id not in seen_e:
+                    seen_e.add(e.enrollment_id)
+                    new_enr.insert(e)
+            s.enrollment_list = new_enr
+
+
+def load_all_entities(data_directory=None):
+    """Carga todas las entidades académicas desde disco y resuelve sus referencias jerárquicas."""
+    dir_path = Path(data_directory) if data_directory else DATA_DIRECTORY
+    faculties = LinkedList(load_faculties(dir_path / "faculties.json"))
+    programs = LinkedList(load_programs(dir_path / "programs.json"))
+    courses = LinkedList(load_courses(dir_path / "courses.json"))
+    students = LinkedList(load_students(dir_path / "students.json"))
+    professors = LinkedList(load_professors(dir_path / "professors.json"))
+    administrative_staff = LinkedList(load_administrative_staff(dir_path / "administrative_staff.json"))
+    enrollments = LinkedList(load_enrollments(dir_path / "enrollments.json"))
+
+    link_hierarchical_entities(faculties, programs, courses, students, enrollments)
+
+    return {
+        "faculties": faculties,
+        "programs": programs,
+        "courses": courses,
+        "students": students,
+        "professors": professors,
+        "administrative_staff": administrative_staff,
+        "enrollments": enrollments,
+    }
+
+
+from .transactional_save import TransactionalSave, batch_save_state

@@ -54,6 +54,16 @@ class Faculty:
             raise TypeError("program_list must be a LinkedList")
         return True
 
+    def __eq__(self, other):
+        if isinstance(other, Faculty):
+            return self.faculty_id == other.faculty_id
+        if isinstance(other, int):
+            return self.faculty_id == other
+        return False
+
+    def __hash__(self):
+        return hash(self.faculty_id)
+
     def to_dict(self):
         return {
             "faculty_id": self.faculty_id,

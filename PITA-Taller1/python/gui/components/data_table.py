@@ -39,11 +39,21 @@ class DataTable(QTableWidget):
         self.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.setAlternatingRowColors(True)
 
-    def populate(self, rows_data: list):
-        """Guarda todas las filas y muestra solo la página actual."""
+    def populate(self, rows_data: list, keep_page: bool = False):
+        """Guarda todas las filas y muestra la página correspondiente.
+        
+        Args:
+            rows_data: Lista con los datos de todas las filas.
+            keep_page: Si es True, preserva la página actual ajustándola al nuevo rango válido.
+                       Si es False (por defecto), reinicia a la página 1.
+        """
         self._rows_data = list(rows_data)
-        self._page = 1
+        if keep_page:
+            self._page = max(1, min(self._page, self.page_count))
+        else:
+            self._page = 1
         self._render_page()
+        self.page_changed.emit(self._page, self.page_count)
 
     @property
     def page_size(self):

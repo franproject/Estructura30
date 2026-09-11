@@ -7,12 +7,10 @@ from models.administrative import Administrative
 from models.payroll_novelty import PayrollNovelty, PayrollNoveltyStatus, PayrollNoveltyType
 from persistence.file_manager import (
     load_payroll_audit,
-    load_payroll_details,
     load_payroll_novelties,
     load_payroll_periods,
     load_payroll_runs,
     save_payroll_audit,
-    save_payroll_details,
     save_payroll_novelties,
     save_payroll_periods,
     save_payroll_runs,
@@ -47,16 +45,15 @@ class PayrollCycleTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as directory:
             paths = {name: os.path.join(directory, name) for name in (
-                "periods.json", "runs.json", "details.json", "novelties.json", "audit.json"
+                "periods.json", "runs.json", "novelties.json", "audit.json"
             )}
             self.assertTrue(save_payroll_periods([period], paths["periods.json"]))
             self.assertTrue(save_payroll_runs([run], paths["runs.json"]))
-            self.assertTrue(save_payroll_details(run.details, paths["details.json"]))
             self.assertTrue(save_payroll_novelties([novelty], paths["novelties.json"]))
             self.assertTrue(save_payroll_audit(service.audits, paths["audit.json"]))
             self.assertEqual(load_payroll_periods(paths["periods.json"])[0].status.value, "CLOSED")
             self.assertEqual(load_payroll_runs(paths["runs.json"])[0].run_id, run.run_id)
-            self.assertEqual(load_payroll_details(paths["details.json"])[0]["employee_id"], "7")
+            self.assertEqual(load_payroll_runs(paths["runs.json"])[0].details[0]["employee_id"], "7")
             self.assertEqual(load_payroll_novelties(paths["novelties.json"])[0].novelty_id, "N-1")
             self.assertGreaterEqual(len(load_payroll_audit(paths["audit.json"])), 4)
 

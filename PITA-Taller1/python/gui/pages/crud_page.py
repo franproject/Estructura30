@@ -1,5 +1,6 @@
 """Página genérica CRUD profesional para NexoCampus."""
 import logging
+import unicodedata
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import (
     QHBoxLayout,
@@ -16,7 +17,16 @@ from ..components.data_table import DataTable
 from ..components.empty_state import EmptyState
 from ..components.entity_dialog import EntityDialog
 from ..components.page_header import PageHeader
+from ..components.pagination_bar import PaginationBar
 from ..components.search_bar import SearchBar
+
+
+def _normalize_text(text: str) -> str:
+    """Normaliza texto eliminando acentos y diacríticos y convirtiendo a minúsculas."""
+    if not text:
+        return ""
+    normalized = unicodedata.normalize("NFKD", str(text))
+    return normalized.encode("ascii", "ignore").decode("ascii").lower().strip()
 
 
 class CrudPage(QWidget):
@@ -72,6 +82,7 @@ class CrudPage(QWidget):
         # Toolbar (Buscador + Acciones)
         toolbar = QHBoxLayout()
         self.search_bar = SearchBar(placeholder=f"Buscar en {self.title.lower()}...")
+        self.search_input = self.search_bar
         self.search_bar.search_changed.connect(self.filter_data)
         toolbar.addWidget(self.search_bar)
 
@@ -96,7 +107,10 @@ class CrudPage(QWidget):
         self.table.edit_requested.connect(self._edit_source_item)
         self.table.delete_requested.connect(self._delete_source_item)
         layout.addWidget(self.table)
-        self.pagination = self._build_pagination()
+        self.pagination = PaginationBar(parent=self)
+        self.pagination.connect_table(self.table)
+        self.page_info = self.pagination.page_info
+        self.page_buttons = self.pagination.page_buttons
         layout.addWidget(self.pagination)
 
         # Estado Vacío (se alterna dinámicamente)
@@ -112,9 +126,9 @@ class CrudPage(QWidget):
     def _collection(self):
         return getattr(self.manager, self.collection_name, [])
 
-    def refresh(self):
+    def refresh(self, keep_page: bool = False):
         try:
-            self.filter_data(self.search_bar.text())
+            self.filter_data(self.search_bar.text(), keep_page=keep_page)
         except Exception as exc:
             logging.getLogger(__name__).exception(
                 "Error al refrescar %s", self.__class__.__name__
@@ -127,16 +141,16 @@ class CrudPage(QWidget):
             )
             self.empty_state.show()
 
-    def filter_data(self, query: str = ""):
-        query = query.lower().strip()
+    def filter_data(self, query: str = "", keep_page: bool = False):
+        norm_query = _normalize_text(query)
         items_all = list(self._collection())
 
-        if not query:
+        if not norm_query:
             self._items = items_all
         else:
             self._items = [
                 item for item in items_all
-                if query in str(self.row_builder(item)).lower()
+                if norm_query in _normalize_text(str(self.row_builder(item)))
             ]
 
         if not items_all:
@@ -145,7 +159,7 @@ class CrudPage(QWidget):
             )
             self.table.hide()
             self.empty_state.show()
-            self.table.populate([])
+            self.table.populate([], keep_page=False)
             self._update_pagination()
         elif not self._items:
             self.empty_state.set_content(
@@ -155,7 +169,7 @@ class CrudPage(QWidget):
             )
             self.table.hide()
             self.empty_state.show()
-            self.table.populate([])
+            self.table.populate([], keep_page=False)
             self._update_pagination()
         else:
             self.empty_state.set_content(
@@ -164,7 +178,7 @@ class CrudPage(QWidget):
             self.empty_state.hide()
             self.table.show()
             rows_formatted = [self.row_builder(item) for item in self._items]
-            self.table.populate(rows_formatted)
+            self.table.populate(rows_formatted, keep_page=keep_page)
             self._update_pagination()
 
     def _selected_item(self):
@@ -182,39 +196,25 @@ class CrudPage(QWidget):
         self.delete_item()
 
     def _build_pagination(self):
-        footer = QWidget()
-        layout = QHBoxLayout(footer)
-        layout.setContentsMargins(4, 4, 4, 0)
-        self.page_info = QLabel()
-        self.page_info.setStyleSheet("color: #94A3B8; font-size: 11px;")
-        layout.addWidget(self.page_info)
-        layout.addStretch()
-        self.page_buttons = QHBoxLayout()
-        self.page_buttons.setSpacing(4)
-        layout.addLayout(self.page_buttons)
-        self.table.page_changed.connect(lambda *_: self._update_pagination())
-        return footer
+        """Retorna el componente de paginación."""
+        return self.pagination
 
     def _update_pagination(self):
-        total = self.table.total_rows
-        start = 0 if total == 0 else (self.table.page - 1) * self.table.page_size + 1
-        end = min(self.table.page * self.table.page_size, total)
-        self.page_info.setText(f"Mostrando {start}\u2013{end} de {total} registros")
-        while self.page_buttons.count():
-            item = self.page_buttons.takeAt(0)
-            widget = item.widget() if item is not None else None
-            if widget is not None:
-                widget.deleteLater()
-        for page in range(1, self.table.page_count + 1):
-            button = QPushButton(str(page))
-            button.setFixedSize(27, 27)
-            button.setObjectName("activePageButton" if page == self.table.page else "pageButton")
-            button.clicked.connect(lambda checked=False, target=page: self.table.set_page(target))
-            self.page_buttons.addWidget(button)
-        self.pagination.setVisible(total > self.table.page_size)
+        """Actualiza la barra de paginación compacta con elipsis."""
+        self.pagination.update_pagination(
+            current_page=self.table.page,
+            total_pages=self.table.page_count,
+            total_rows=self.table.total_rows,
+            page_size=self.table.page_size,
+        )
 
     def create_item(self):
-        dialog = EntityDialog(f"Nuevo Registro - {self.title}", self.fields, parent=self)
+        dialog = EntityDialog(
+            f"Nuevo Registro - {self.title}",
+            self.fields,
+            parent=self,
+            primary_key=self.id_field,
+        )
         if dialog.exec() != EntityDialog.DialogCode.Accepted:
             return
 
@@ -237,7 +237,13 @@ class CrudPage(QWidget):
             QMessageBox.information(self, "Selección requerida", "Por favor selecciona un registro de la tabla para editar.")
             return
 
-        dialog = EntityDialog(f"Editar Registro - {self.title}", self.fields, entity=item, parent=self)
+        dialog = EntityDialog(
+            f"Editar Registro - {self.title}",
+            self.fields,
+            entity=item,
+            parent=self,
+            primary_key=self.id_field,
+        )
         if dialog.exec() != EntityDialog.DialogCode.Accepted:
             return
 
@@ -256,7 +262,7 @@ class CrudPage(QWidget):
             if not updated:
                 raise ValueError("La actualización fue rechazada por las reglas de negocio.")
 
-            self._after_change("Registro actualizado correctamente.")
+            self._after_change("Registro actualizado correctamente.", keep_page=True)
         except Exception as exc:
             QMessageBox.critical(self, "Error al editar", str(exc))
 
@@ -280,13 +286,32 @@ class CrudPage(QWidget):
             method = getattr(self.manager, method_name, None)
 
             if method and not method(identifier):
+                if self.operation_name == "professor" and hasattr(self.manager, "get_courses_by_professor"):
+                    active_courses = self.manager.get_courses_by_professor(identifier, active_only=True)
+                    if active_courses:
+                        prof_name = getattr(item, "full_name", f"Profesor #{identifier}")
+                        course_lines = [
+                            f"  • [ID {c.course_id}] {c.name} — Semestre {c.curriculum_semester} ({c.credits} créditos)"
+                            for c in active_courses
+                        ]
+                        courses_list = "\n".join(course_lines)
+                        msg = (
+                            f"No es posible eliminar al docente '{prof_name}' (ID: {identifier}) "
+                            f"porque tiene {len(active_courses)} asignatura(s) activa(s) a su cargo:\n\n"
+                            f"{courses_list}\n\n"
+                            "Por favor, reasigna estos cursos a otro docente en el módulo de Cursos "
+                            "o desactívalos antes de proceder con la eliminación."
+                        )
+                        QMessageBox.warning(self, "Eliminación no permitida: Cursos activos asignados", msg)
+                        return
+
                 raise ValueError("No se pudo eliminar el registro. Puede tener relaciones activas o no existir.")
 
-            self._after_change("Registro eliminado correctamente.")
+            self._after_change("Registro eliminado correctamente.", keep_page=True)
         except Exception as exc:
             QMessageBox.warning(self, "Error al eliminar", str(exc))
 
-    def _after_change(self, message: str):
-        self.refresh()
+    def _after_change(self, message: str, keep_page: bool = False):
+        self.refresh(keep_page=keep_page)
         self.changed.emit()
         QMessageBox.information(self, "NexoCampus", message)

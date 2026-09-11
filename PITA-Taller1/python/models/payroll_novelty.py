@@ -89,8 +89,8 @@ class PayrollNovelty:
 
     def to_dict(self):
         result = self.__dict__.copy()
-        result["novelty_type"] = self.novelty_type.value
-        result["status"] = self.status.value
+        result["novelty_type"] = self.novelty_type.value if hasattr(self.novelty_type, "value") else str(self.novelty_type)
+        result["status"] = self.status.value if hasattr(self.status, "value") else str(self.status)
         return result
 
     @classmethod

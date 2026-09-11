@@ -147,6 +147,53 @@ class EntityManager:
             raise ValueError(f"{action} cannot be used on an inactive entity")
         return True
 
+    @staticmethod
+    def _remove_from_linked_list(target_list, entity_or_id, id_field_name=None):
+        """Removes an item from target_list matching either by direct equality,
+        model equality (via __eq__), or by identifier.
+        """
+        if target_list is None:
+            return False
+        if target_list.remove(entity_or_id):
+            return True
+
+        target_id = entity_or_id
+        if id_field_name and hasattr(entity_or_id, id_field_name):
+            target_id = getattr(entity_or_id, id_field_name)
+
+        if id_field_name and target_list.remove_by(id_field_name, target_id):
+            return True
+
+        if target_id != entity_or_id and target_list.remove(target_id):
+            return True
+
+        current = target_list.head
+        previous = None
+        while current is not None:
+            item = current.data
+            match = False
+            if item == entity_or_id or item == target_id:
+                match = True
+            elif id_field_name and hasattr(item, id_field_name):
+                if getattr(item, id_field_name) == target_id:
+                    match = True
+            elif isinstance(item, dict) and id_field_name and id_field_name in item:
+                if item[id_field_name] == target_id:
+                    match = True
+            elif isinstance(item, str) and str(target_id) == item:
+                match = True
+
+            if match:
+                if previous is None:
+                    target_list.head = current.next
+                else:
+                    previous.next = current.next
+                target_list.size -= 1
+                return True
+            previous = current
+            current = current.next
+        return False
+
     # ------------------------------------------------------------------
     # Faculty
     # ------------------------------------------------------------------
@@ -183,9 +230,16 @@ class EntityManager:
         faculty = self.get_faculty(faculty_id)
         if faculty is None:
             return False
-        if faculty.program_list.count_elements() > 0:
+        active_programs = 0
+        curr = faculty.program_list.head
+        while curr is not None:
+            pid = getattr(curr.data, "program_id", curr.data)
+            if self.get_program(pid) is not None:
+                active_programs += 1
+            curr = curr.next
+        if active_programs > 0:
             return False
-        return self.faculties.remove(faculty)
+        return self._remove_from_linked_list(self.faculties, faculty, "faculty_id")
 
     def deactivate_faculty(self, faculty_id):
         faculty = self.get_faculty(faculty_id)
@@ -247,12 +301,29 @@ class EntityManager:
         program = self.get_program(program_id)
         if program is None:
             return False
-        if program.course_list.count_elements() > 0 or program.student_list.count_elements() > 0:
+        active_courses = 0
+        curr = program.course_list.head
+        while curr is not None:
+            cid = getattr(curr.data, "course_id", curr.data)
+            if self.get_course(cid) is not None:
+                active_courses += 1
+            curr = curr.next
+
+        active_students = 0
+        curr = program.student_list.head
+        while curr is not None:
+            sid = getattr(curr.data, "student_id", curr.data)
+            if self.get_student(sid) is not None:
+                active_students += 1
+            curr = curr.next
+
+        if active_courses > 0 or active_students > 0:
             return False
+
         faculty = self.get_faculty(program.faculty_id)
         if faculty is not None:
-            faculty.program_list.remove(program)
-        return self.programs.remove(program)
+            self._remove_from_linked_list(faculty.program_list, program, "program_id")
+        return self._remove_from_linked_list(self.programs, program, "program_id")
 
     def deactivate_program(self, program_id):
         program = self.get_program(program_id)
@@ -322,12 +393,19 @@ class EntityManager:
         course = self.get_course(course_id)
         if course is None:
             return False
-        if course.enrollment_list.count_elements() > 0:
+        active_enrollments = 0
+        curr = course.enrollment_list.head
+        while curr is not None:
+            eid = getattr(curr.data, "enrollment_id", curr.data)
+            if self.get_enrollment(eid) is not None:
+                active_enrollments += 1
+            curr = curr.next
+        if active_enrollments > 0:
             return False
         program = self.get_program(course.program_id)
         if program is not None:
-            program.course_list.remove(course)
-        return self.courses.remove(course)
+            self._remove_from_linked_list(program.course_list, course, "course_id")
+        return self._remove_from_linked_list(self.courses, course, "course_id")
 
     def deactivate_course(self, course_id):
         course = self.get_course(course_id)
@@ -392,12 +470,19 @@ class EntityManager:
         student = self.get_student(student_id)
         if student is None:
             return False
-        if student.enrollment_list.count_elements() > 0:
+        active_enrollments = 0
+        curr = student.enrollment_list.head
+        while curr is not None:
+            eid = getattr(curr.data, "enrollment_id", curr.data)
+            if self.get_enrollment(eid) is not None:
+                active_enrollments += 1
+            curr = curr.next
+        if active_enrollments > 0:
             return False
         program = self.get_program(student.program_id)
         if program is not None:
-            program.student_list.remove(student)
-        return self.students.remove(student)
+            self._remove_from_linked_list(program.student_list, student, "student_id")
+        return self._remove_from_linked_list(self.students, student, "student_id")
 
     def deactivate_student(self, student_id):
         student = self.get_student(student_id)
@@ -457,11 +542,40 @@ class EntityManager:
         professor.validate()
         return True
 
+    def get_courses_by_professor(self, professor_id, active_only=False):
+        """Retorna la lista de cursos asignados al profesor especificado.
+
+        Args:
+            professor_id: ID del profesor.
+            active_only: Si es True, solo retorna cursos con active == True.
+        """
+        courses = []
+        curr = self.courses.head
+        while curr is not None:
+            course = curr.data
+            if getattr(course, "assigned_professor_id", 0) == professor_id:
+                if not active_only or getattr(course, "active", False):
+                    courses.append(course)
+            curr = curr.next
+        return courses
+
     def delete_professor(self, professor_id):
         professor = self.get_professor(professor_id)
         if professor is None:
             return False
-        return self.professors.remove(professor)
+
+        # 1. Verificar si existen cursos activos asignados al profesor
+        active_courses = self.get_courses_by_professor(professor_id, active_only=True)
+        if active_courses:
+            return False
+
+        # 2. Si solo tiene cursos inactivos o históricos asignados, limpiar las referencias
+        historical_courses = self.get_courses_by_professor(professor_id, active_only=False)
+        for course in historical_courses:
+            course.assigned_professor_id = 0
+            course.validate()
+
+        return self._remove_from_linked_list(self.professors, professor, "professor_id")
 
     def deactivate_professor(self, professor_id):
         professor = self.get_professor(professor_id)
@@ -516,11 +630,18 @@ class EntityManager:
         administrative.validate()
         return True
 
+    def get_administrative_dependencies(self, administrative_id):
+        """Audita si existen entidades dependientes activas del administrativo."""
+        return []
+
     def delete_administrative(self, administrative_id):
         administrative = self.get_administrative(administrative_id)
         if administrative is None:
             return False
-        return self.administrative_staff.remove(administrative)
+        dependencies = self.get_administrative_dependencies(administrative_id)
+        if dependencies:
+            return False
+        return self._remove_from_linked_list(self.administrative_staff, administrative, "administrative_id")
 
     def deactivate_administrative(self, administrative_id):
         administrative = self.get_administrative(administrative_id)
@@ -623,10 +744,10 @@ class EntityManager:
         student = self.get_student(enrollment.student_id)
         course = self.get_course(enrollment.course_id)
         if student is not None:
-            student.enrollment_list.remove(enrollment)
+            self._remove_from_linked_list(student.enrollment_list, enrollment, "enrollment_id")
         if course is not None:
-            course.enrollment_list.remove(enrollment)
-        return self.enrollments.remove(enrollment)
+            self._remove_from_linked_list(course.enrollment_list, enrollment, "enrollment_id")
+        return self._remove_from_linked_list(self.enrollments, enrollment, "enrollment_id")
 
     def deactivate_enrollment(self, enrollment_id):
         enrollment = self.get_enrollment(enrollment_id)
@@ -666,45 +787,98 @@ class EntityManager:
         enrollment.validate()
         return True
 
-    def calculate_student_average(self, student_id):
-        """Returns the weighted average by course credits for the student."""
+    def calculate_student_average(self, student_id, enr_map=None, course_map=None):
+        """Returns the weighted average by course credits for the student.
+
+        Supports both resolved Enrollment instances and scalar integer/string IDs.
+        Evaluates real academic grades for all completed/active statuses.
+        """
         student = self.get_student(student_id)
         if student is None:
             return 0.0
+
+        valid_statuses = {
+            "ACTIVE", "ACTIVO", "COMPLETED", "APROBADO", "REPROBADO",
+            "APPROVED", "FAILED", "PASSED", "FINALIZADO", "MATRICULADO", "ENROLLED"
+        }
 
         weighted_total = 0.0
         credit_total = 0.0
         current = student.enrollment_list.head
         while current is not None:
-            enrollment = current.data
-            if not isinstance(enrollment, Enrollment):
+            item = current.data
+            if isinstance(item, Enrollment):
+                enrollment = item
+            elif isinstance(item, int):
+                enrollment = enr_map.get(item) if enr_map is not None else self.get_enrollment(item)
+            elif isinstance(item, str) and item.isdigit():
+                enrollment = enr_map.get(int(item)) if enr_map is not None else self.get_enrollment(int(item))
+            elif isinstance(item, dict):
+                eid = item.get("enrollment_id")
+                enrollment = enr_map.get(eid) if enr_map is not None else self.get_enrollment(eid)
+            else:
                 current = current.next
                 continue
-            if self._safe_status(enrollment.status) not in {"ACTIVE", "COMPLETED"}:
+
+            if enrollment is None:
                 current = current.next
                 continue
-            if not isinstance(enrollment.final_grade, (int, float)):
+
+            status = self._safe_status(getattr(enrollment, "status", None))
+            if status in {"CANCELLED", "CANCELADO", "INACTIVE", "INACTIVO"}:
                 current = current.next
                 continue
-            course = self.get_course(enrollment.course_id)
+            if status not in valid_statuses:
+                current = current.next
+                continue
+
+            grade = getattr(enrollment, "final_grade", None)
+            if not isinstance(grade, (int, float)):
+                current = current.next
+                continue
+
+            cid = getattr(enrollment, "course_id", None)
+            course = course_map.get(cid) if course_map is not None else self.get_course(cid)
             if course is None:
                 current = current.next
                 continue
-            weighted_total += float(enrollment.final_grade) * float(course.credits)
-            credit_total += float(course.credits)
+
+            credits = float(getattr(course, "credits", 0))
+            if credits <= 0:
+                current = current.next
+                continue
+
+            weighted_total += float(grade) * credits
+            credit_total += credits
             current = current.next
 
         if credit_total == 0:
-            return 0.0
+            return float(getattr(student, "cumulative_average", 0.0))
         return weighted_total / credit_total
 
-    def evaluate_ebra_status(self, student_id):
+    def evaluate_ebra_status(self, student_id, enr_map=None, course_map=None):
         """Current EBRA rule: weighted_average < configured_threshold."""
         student = self.get_student(student_id)
         if student is None:
-            return {"student_id": student_id, "average": 0.0, "threshold": self.ebra_threshold, "status": "NO_DATA", "rule": self.ebra_rule}
+            return {
+                "student_id": student_id,
+                "average": 0.0,
+                "threshold": self.ebra_threshold,
+                "status": "NO_DATA",
+                "rule": self.ebra_rule,
+            }
 
-        average = self.calculate_student_average(student_id)
+        average = self.calculate_student_average(student_id, enr_map=enr_map, course_map=course_map)
+        has_enrollments = student.enrollment_list is not None and student.enrollment_list.count_elements() > 0
+        if average == 0.0 and not has_enrollments:
+            return {
+                "student_id": student_id,
+                "average": 0.0,
+                "threshold": self.ebra_threshold,
+                "status": "NO_DATA",
+                "rule": self.ebra_rule,
+            }
+
         status = "EBRA" if average < self.ebra_threshold else "OK"
         return {
             "student_id": student_id,
@@ -713,3 +887,58 @@ class EntityManager:
             "status": status,
             "rule": self.ebra_rule,
         }
+
+    def get_ebra_students(self):
+        """Returns a list of all students currently evaluated under EBRA alert."""
+        enr_map = {e.enrollment_id: e for e in self.enrollments if hasattr(e, "enrollment_id")}
+        course_map = {c.course_id: c for c in self.courses if hasattr(c, "course_id")}
+        ebra_list = []
+        for student in self.students:
+            res = self.evaluate_ebra_status(student.student_id, enr_map=enr_map, course_map=course_map)
+            if res.get("status") == "EBRA":
+                ebra_list.append(student)
+        return ebra_list
+
+    def count_ebra_students(self):
+        """Returns the count of students currently evaluated under EBRA alert."""
+        return len(self.get_ebra_students())
+
+    def link_hierarchical_references(self):
+        """Links and resolves hierarchical references across loaded entities."""
+        from persistence.file_manager import link_hierarchical_entities
+        link_hierarchical_entities(
+            self.faculties,
+            self.programs,
+            self.courses,
+            self.students,
+            self.enrollments,
+        )
+
+    def load_from_directory(self, data_directory=None):
+        """Loads all entities from disk and resolves hierarchical references."""
+        from pathlib import Path
+        from persistence.file_manager import (
+            DATA_DIRECTORY,
+            load_all_entities,
+            load_payroll_audit,
+            load_payroll_novelties,
+            load_payroll_periods,
+            load_payroll_runs,
+        )
+        dir_path = Path(data_directory) if data_directory else DATA_DIRECTORY
+
+        entities = load_all_entities(dir_path)
+        self.faculties = entities["faculties"]
+        self.programs = entities["programs"]
+        self.courses = entities["courses"]
+        self.students = entities["students"]
+        self.professors = entities["professors"]
+        self.administrative_staff = entities["administrative_staff"]
+        self.enrollments = entities["enrollments"]
+
+        cycle = self.payroll_cycle_service
+        cycle.periods = load_payroll_periods(dir_path / "payroll_periods.json")
+        cycle.runs = load_payroll_runs(dir_path / "payroll_runs.json")
+        cycle.novelties = load_payroll_novelties(dir_path / "payroll_novelties.json")
+        cycle.audits = load_payroll_audit(dir_path / "payroll_audit.json")
+        return True

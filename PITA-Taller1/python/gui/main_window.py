@@ -41,7 +41,7 @@ from persistence.file_manager import (
 )
 from services.entity_manager import EntityManager
 
-from typing import Optional
+from typing import Any, Optional
 
 from .components.header import TopHeader
 from .components.sidebar import Sidebar
@@ -459,7 +459,7 @@ class MainWindow(QMainWindow):
 
         # Si el widget actual ya es CrudPage y contiene coincidencias, filtrar allí
         current_widget = self.stack.currentWidget()
-        if hasattr(current_widget, "filter_data") and hasattr(current_widget, "search_input"):
+        if isinstance(current_widget, CrudPage):
             items = getattr(current_widget, "data", [])
             row_builder = getattr(current_widget, "row_builder", str)
             current_matches = sum(
@@ -520,7 +520,7 @@ class MainWindow(QMainWindow):
     def _load_state(self):
         clear_load_issues()
         try:
-            loaded_state = {
+            loaded_state: dict[str, Any] = {
                 "faculties": LinkedList(load_faculties()),
                 "programs": LinkedList(load_programs()),
                 "courses": LinkedList(load_courses()),

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(PITA LANGUAGES CXX)
 
+enable_testing()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -40,4 +42,11 @@ add_executable(payroll_exhaustive_tests
     payroll_cycle.cpp
     payroll_exhaustive_tests.cpp
 )
+
+add_test(NAME payroll_engine_tests COMMAND payroll_engine_tests)
+add_test(NAME payroll_cycle_tests COMMAND payroll_cycle_tests)
+add_test(NAME payroll_exhaustive_tests COMMAND payroll_exhaustive_tests)
+add_test(NAME payroll_parity_probe COMMAND payroll_parity_probe)
+
+configure_file(pita_datos.txt ${CMAKE_CURRENT_BINARY_DIR}/pita_datos.txt COPYONLY)
 

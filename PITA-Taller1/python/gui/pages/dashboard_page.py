@@ -1,4 +1,5 @@
 """Dashboard principal de NexoCampus basado en datos reales del EntityManager."""
+import logging
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
@@ -6,6 +7,7 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
+    QMessageBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -199,39 +201,45 @@ class DashboardPage(QWidget):
 
     def refresh(self):
         """Actualiza todos los contadores a partir de EntityManager real."""
-        mgr = self.manager
+        try:
+            mgr = self.manager
 
-        active_enrollments = sum(
-            1 for item in mgr.enrollments if str(getattr(item, "status", "")).upper() in {"ACTIVE", "COMPLETED"}
-        )
-        ebra_count = sum(
-            1 for s in mgr.students if mgr.evaluate_ebra_status(s.student_id).get("status") == "EBRA"
-        )
+            active_enrollments = sum(
+                1 for item in mgr.enrollments if str(getattr(item, "status", "")).upper() in {"ACTIVE", "COMPLETED"}
+            )
+            ebra_count = sum(
+                1 for s in mgr.students if mgr.evaluate_ebra_status(s.student_id).get("status") == "EBRA"
+            )
 
-        counts = {
-            "Facultades": len(mgr.faculties),
-            "Programas": len(mgr.programs),
-            "Cursos": len(mgr.courses),
-            "Estudiantes": len(mgr.students),
-            "Profesores": len(mgr.professors),
-            "Administrativos": len(mgr.administrative_staff),
-            "Inscripciones activas": active_enrollments,
-            "Alertas EBRA": ebra_count,
-        }
+            counts = {
+                "Facultades": len(mgr.faculties),
+                "Programas": len(mgr.programs),
+                "Cursos": len(mgr.courses),
+                "Estudiantes": len(mgr.students),
+                "Profesores": len(mgr.professors),
+                "Administrativos": len(mgr.administrative_staff),
+                "Inscripciones activas": active_enrollments,
+                "Alertas EBRA": ebra_count,
+            }
 
-        for label, val in counts.items():
-            if label in self.cards:
-                self.cards[label].set_value(val)
+            for label, val in counts.items():
+                if label in self.cards:
+                    self.cards[label].set_value(val)
 
-        # Actualizar gráfico donut de programas
-        self.pie_series.clear()
-        prog_counts = {}
-        for s in mgr.students:
-            prog = mgr.get_program(s.program_id)
-            name = prog.name if prog else "Sin programa"
-            prog_counts[name] = prog_counts.get(name, 0) + 1
+            # Actualizar gráfico donut de programas
+            self.pie_series.clear()
+            prog_counts = {}
+            for s in mgr.students:
+                prog = mgr.get_program(s.program_id)
+                name = prog.name if prog else "Sin programa"
+                prog_counts[name] = prog_counts.get(name, 0) + 1
 
-        for name, count in prog_counts.items():
-            self.pie_series.append(name, count)
+            for name, count in prog_counts.items():
+                self.pie_series.append(name, count)
 
-        self.chart.legend().setVisible(bool(prog_counts))
+            self.chart.legend().setVisible(bool(prog_counts))
+        except Exception as exc:
+            logging.getLogger(__name__).exception(
+                "Error al refrescar %s", self.__class__.__name__
+            )
+            QMessageBox.warning(self, "Error", str(exc))

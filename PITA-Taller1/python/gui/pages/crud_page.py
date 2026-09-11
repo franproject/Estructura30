@@ -1,4 +1,5 @@
 """Página genérica CRUD profesional para NexoCampus."""
+import logging
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import (
     QHBoxLayout,
@@ -49,6 +50,8 @@ class CrudPage(QWidget):
         self.row_builder = row_builder
         self.operation_name = operation_name or collection_name.rstrip("s")
         self._items = []
+        self._empty_title = f"No hay {self.title.lower()} registrados"
+        self._empty_subtitle = f"Presiona el botón '+ Nuevo' para añadir tu primer registro de {self.operation_name}."
         self._build_ui()
         self.refresh()
 
@@ -98,8 +101,8 @@ class CrudPage(QWidget):
 
         # Estado Vacío (se alterna dinámicamente)
         self.empty_state = EmptyState(
-            title=f"No hay {self.title.lower()} registrados",
-            subtitle=f"Presiona el botón '+ Nuevo' para añadir tu primer registro de {self.operation_name}.",
+            title=self._empty_title,
+            subtitle=self._empty_subtitle,
             action_text=f"+ Crear {self.operation_name.capitalize()}",
             on_action=self.create_item,
         )
@@ -110,7 +113,19 @@ class CrudPage(QWidget):
         return getattr(self.manager, self.collection_name, [])
 
     def refresh(self):
-        self.filter_data(self.search_bar.text())
+        try:
+            self.filter_data(self.search_bar.text())
+        except Exception as exc:
+            logging.getLogger(__name__).exception(
+                "Error al refrescar %s", self.__class__.__name__
+            )
+            self.table.hide()
+            self.empty_state.set_content(
+                "No se pudo cargar esta sección.",
+                "Intenta recargar los datos desde el menú lateral.",
+                show_action=False,
+            )
+            self.empty_state.show()
 
     def filter_data(self, query: str = ""):
         query = query.lower().strip()
@@ -125,11 +140,27 @@ class CrudPage(QWidget):
             ]
 
         if not items_all:
+            self.empty_state.set_content(
+                self._empty_title, self._empty_subtitle, show_action=True
+            )
+            self.table.hide()
+            self.empty_state.show()
+            self.table.populate([])
+            self._update_pagination()
+        elif not self._items:
+            self.empty_state.set_content(
+                f'Sin resultados para "{query}"',
+                "Intenta con otro término de búsqueda.",
+                show_action=False,
+            )
             self.table.hide()
             self.empty_state.show()
             self.table.populate([])
             self._update_pagination()
         else:
+            self.empty_state.set_content(
+                self._empty_title, self._empty_subtitle, show_action=True
+            )
             self.empty_state.hide()
             self.table.show()
             rows_formatted = [self.row_builder(item) for item in self._items]

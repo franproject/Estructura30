@@ -1,9 +1,11 @@
 """Dashboard financiero basado exclusivamente en PayrollRun."""
+import logging
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtCharts import QBarCategoryAxis, QBarSeries, QBarSet, QChart, QChartView, QPieSeries, QValueAxis
 from PySide6.QtWidgets import (
     QComboBox, QDialog, QFrame, QGridLayout, QHBoxLayout, QHeaderView, QLabel,
+    QMessageBox,
     QPushButton, QScrollArea, QSizePolicy, QTableWidget, QTableWidgetItem,
     QVBoxLayout, QWidget,
 )
@@ -419,28 +421,34 @@ class PayrollDashboardDialog(QDialog):
             self.chart_views[chart_key].setChart(chart)
 
     def refresh(self):
-        period_id = self.period_selector.currentData()
-        run = next((item for item in reversed(self.cycle.runs) if item.period_id == period_id), None)
-        if run is None:
-            self._clear_visuals()
-            return
-        data = PayrollFinancialDashboard(run, self.employees, self.faculties).snapshot()
-        count_keys = {"total_employees", "total_professors", "total_administratives"}
-        for key, card in self.kpi_cards.items():
-            value = data[key]
-            card.set_value(str(value) if key in count_keys else self._money(value))
-        for key, value_label in self.financial_values.items():
-            value_label.setText(self._money(data[key]))
-        for key, table in self.distribution_tables.items():
-            values = data[key]
-            table.setRowCount(len(values))
-            for row, (label, count) in enumerate(values.items()):
-                table.setItem(row, 0, QTableWidgetItem(label))
-                table.setItem(row, 1, QTableWidgetItem(str(count)))
-            self.distribution_counts[key].setText(f"{sum(values.values())} empleados")
-            table.resizeRowsToContents()
-            row_height = table.horizontalHeader().height() + sum(
-                table.rowHeight(row) for row in range(table.rowCount())
-            ) + 4
-            table.setMinimumHeight(min(max(row_height, 58), 170))
-        self._render_charts(data)
+        try:
+            period_id = self.period_selector.currentData()
+            run = next((item for item in reversed(self.cycle.runs) if item.period_id == period_id), None)
+            if run is None:
+                self._clear_visuals()
+                return
+            data = PayrollFinancialDashboard(run, self.employees, self.faculties).snapshot()
+            count_keys = {"total_employees", "total_professors", "total_administratives"}
+            for key, card in self.kpi_cards.items():
+                value = data[key]
+                card.set_value(str(value) if key in count_keys else self._money(value))
+            for key, value_label in self.financial_values.items():
+                value_label.setText(self._money(data[key]))
+            for key, table in self.distribution_tables.items():
+                values = data[key]
+                table.setRowCount(len(values))
+                for row, (label, count) in enumerate(values.items()):
+                    table.setItem(row, 0, QTableWidgetItem(label))
+                    table.setItem(row, 1, QTableWidgetItem(str(count)))
+                self.distribution_counts[key].setText(f"{sum(values.values())} empleados")
+                table.resizeRowsToContents()
+                row_height = table.horizontalHeader().height() + sum(
+                    table.rowHeight(row) for row in range(table.rowCount())
+                ) + 4
+                table.setMinimumHeight(min(max(row_height, 58), 170))
+            self._render_charts(data)
+        except Exception as exc:
+            logging.getLogger(__name__).exception(
+                "Error al refrescar %s", self.__class__.__name__
+            )
+            QMessageBox.warning(self, "Error", str(exc))

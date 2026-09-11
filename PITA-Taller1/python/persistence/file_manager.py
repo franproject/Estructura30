@@ -5,6 +5,11 @@ This module serializes those objects without replacing the existing architecture
 """
 
 import json
+import os
+import shutil
+import sys
+import tempfile
+from datetime import datetime
 import warnings
 from pathlib import Path
 
@@ -22,7 +27,22 @@ from models.professor import Professor
 from models.program import Program
 from models.student import Student
 
-DATA_DIRECTORY = Path(__file__).resolve().parents[2] / "data"
+_LOAD_ISSUES: list[str] = []
+
+
+def get_load_issues() -> list[str]:
+    """Devuelve las incidencias de carga acumuladas desde el último reset."""
+    return list(_LOAD_ISSUES)
+
+
+def clear_load_issues() -> None:
+    _LOAD_ISSUES.clear()
+
+
+if getattr(sys, "frozen", False):
+    DATA_DIRECTORY = Path(sys.executable).resolve().parent / "data"
+else:
+    DATA_DIRECTORY = Path(__file__).resolve().parents[2] / "data"
 
 _LABOR_DEFAULTS = {
     "hire_date": "",
@@ -51,11 +71,15 @@ def _labor_kwargs(data, entity_name):
             RuntimeWarning,
             stacklevel=2,
         )
+        _LOAD_ISSUES.append(
+            f"{entity_name}: se aplicaron valores de nómina por defecto para campos faltantes "
+            f"({', '.join(missing)}). Verifica que sean correctos."
+        )
     values = {}
     for field, default in _LABOR_DEFAULTS.items():
         value = data.get(field, default)
         if field in {"novelties", "bonuses", "salary_concepts", "non_salary_concepts"}:
-            value = value if isinstance(value, list) else []
+            value = list(value) if isinstance(value, list) else []
         values[field] = value
     return values
 
@@ -147,9 +171,38 @@ def _save_json(file_path, payload):
     """Persists a JSON payload to disk."""
     file_path = Path(file_path)
     _ensure_parent_directory(file_path)
-    with file_path.open("w", encoding="utf-8") as file:
-        json.dump(payload, file, indent=2, ensure_ascii=False)
-    return True
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=file_path.parent,
+            prefix=f".{file_path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as file:
+            tmp_path = Path(file.name)
+            json.dump(payload, file, indent=2, ensure_ascii=False)
+            file.flush()
+            os.fsync(file.fileno())
+        os.replace(tmp_path, file_path)
+        tmp_path = None
+        return True
+    finally:
+        if tmp_path is not None:
+            try:
+                tmp_path.unlink()
+            except OSError:
+                pass
+
+
+def _backup_corrupt_file(file_path):
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    backup_path = file_path.with_name(
+        f"{file_path.stem}.corrupto-{timestamp}{file_path.suffix}"
+    )
+    shutil.copy2(file_path, backup_path)
+    return backup_path
 
 
 def _load_json(file_path):
@@ -160,22 +213,41 @@ def _load_json(file_path):
 
     try:
         raw_text = file_path.read_text(encoding="utf-8")
-    except (TypeError, OSError, ValueError):
+    except OSError:
+        backup_path = _backup_corrupt_file(file_path)
+        _LOAD_ISSUES.append(
+            f"No se pudo leer {file_path.name}: el archivo estaba corrupto o ilegible. "
+            f"Se respaldó como {backup_path.name}."
+        )
         return []
 
     if not raw_text or not raw_text.strip():
+        backup_path = _backup_corrupt_file(file_path)
+        _LOAD_ISSUES.append(
+            f"No se pudo leer {file_path.name}: el archivo estaba corrupto o ilegible. "
+            f"Se respaldó como {backup_path.name}."
+        )
         return []
 
     try:
         data = json.loads(raw_text)
     except json.JSONDecodeError:
+        backup_path = _backup_corrupt_file(file_path)
+        _LOAD_ISSUES.append(
+            f"No se pudo leer {file_path.name}: el archivo estaba corrupto o ilegible. "
+            f"Se respaldó como {backup_path.name}."
+        )
         return []
 
-    if data is None:
-        return []
     if isinstance(data, list):
         return data
-    return [data]
+    if isinstance(data, dict):
+        return [data]
+
+    _LOAD_ISSUES.append(
+        f"El archivo {file_path.name} contiene un tipo JSON inesperado: {type(data).__name__}."
+    )
+    return []
 
 
 def _faculty_to_dict(faculty):

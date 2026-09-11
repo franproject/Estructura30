@@ -25,6 +25,9 @@ from persistence.file_manager import (
     load_payroll,
     load_programs,
     load_students,
+    clear_load_issues,
+    get_load_issues,
+    _save_json,
 )
 
 
@@ -32,6 +35,7 @@ class PersistenceTests(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.temp_path = self.temp_dir.name
+        clear_load_issues()
 
     def tearDown(self):
         self.temp_dir.cleanup()
@@ -106,10 +110,48 @@ class PersistenceTests(unittest.TestCase):
         self.assertEqual(loaded_payroll[0].description, "Monthly payroll")
 
     def test_invalid_json_is_tolerated(self):
+        clear_load_issues()
         invalid_file = os.path.join(self.temp_path, "broken.json")
         with open(invalid_file, "w", encoding="utf-8") as file:
-            file.write('{"bad": "json"')
+            file.write("{esto no es json")
         self.assertEqual(load_programs(invalid_file), [])
+        issues = get_load_issues()
+        self.assertTrue(issues)
+        self.assertIn("broken.corrupto-", issues[0])
+        backups = [name for name in os.listdir(self.temp_path) if name.startswith("broken.corrupto-")]
+        self.assertEqual(len(backups), 1)
+
+    def test_save_json_removes_temporary_file_after_success(self):
+        target_file = os.path.join(self.temp_path, "atomic.json")
+
+        self.assertTrue(_save_json(target_file, [{"saved": True}]))
+        self.assertTrue(os.path.exists(target_file))
+        temporary_files = [
+            name for name in os.listdir(self.temp_path)
+            if name.startswith(".atomic.json.") and name.endswith(".tmp")
+        ]
+        self.assertEqual(temporary_files, [])
+
+    def test_legacy_labor_defaults_use_independent_lists(self):
+        staff_file = os.path.join(self.temp_path, "legacy_staff.json")
+        legacy_records = [
+            {"administrative_id": 1, "full_name": "Ana", "active": True},
+            {"administrative_id": 2, "full_name": "Luis", "active": True},
+        ]
+        with open(staff_file, "w", encoding="utf-8") as file:
+            json.dump(legacy_records, file)
+
+        loaded_staff = load_administrative_staff(staff_file)
+        self.assertEqual(len(loaded_staff), 2)
+        loaded_staff[0].novelties.append({"code": "BONUS"})
+        self.assertEqual(loaded_staff[1].novelties, [])
+
+    def test_unexpected_json_type_is_reported(self):
+        scalar_file = os.path.join(self.temp_path, "scalar.json")
+        with open(scalar_file, "w", encoding="utf-8") as file:
+            file.write("42")
+        self.assertEqual(load_programs(scalar_file), [])
+        self.assertTrue(get_load_issues())
 
 
 if __name__ == '__main__':

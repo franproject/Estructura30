@@ -1,4 +1,5 @@
 """Ventana principal de la aplicación NexoCampus."""
+import logging
 import os
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
@@ -39,6 +40,8 @@ from persistence.file_manager import (
     load_payroll_novelties,
     load_payroll_periods,
     load_payroll_runs,
+    clear_load_issues,
+    get_load_issues,
     save_payroll_audit,
     save_payroll_details,
     save_payroll_novelties,
@@ -65,11 +68,13 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1100, 680)
 
         self.manager = EntityManager()
-        self._load_state()
-
         self._pages = {}
         self._load_styles()
         self._build_ui()
+        try:
+            self._load_state()
+        except Exception as exc:
+            QMessageBox.critical(self, "Error al iniciar", str(exc))
 
     def _load_styles(self):
         qss_path = os.path.join(os.path.dirname(__file__), "styles", "app.qss")
@@ -322,10 +327,14 @@ class MainWindow(QMainWindow):
 
     def _navigate(self, name: str):
         page = self._pages.get(name)
-        if page is not None:
-            self.stack.setCurrentWidget(page)
-            if hasattr(page, "refresh"):
-                page.refresh()
+        if page is None:
+            logging.getLogger(__name__).warning(
+                "Navegación a página inexistente: %s", name
+            )
+            return
+        self.stack.setCurrentWidget(page)
+        if hasattr(page, "refresh"):
+            page.refresh()
 
     def _refresh_dashboard(self):
         dash = self._pages.get("Dashboard")
@@ -333,39 +342,110 @@ class MainWindow(QMainWindow):
             dash.refresh()
 
     def _load_state(self):
-        self.manager.faculties = LinkedList(load_faculties())
-        self.manager.programs = LinkedList(load_programs())
-        self.manager.courses = LinkedList(load_courses())
-        self.manager.students = LinkedList(load_students())
-        self.manager.professors = LinkedList(load_professors())
-        self.manager.administrative_staff = LinkedList(load_administrative_staff())
-        self.manager.enrollments = LinkedList(load_enrollments())
-        records = load_payroll()
-        setattr(self.manager, "payroll", records[0] if records else None)
-        cycle = self.manager.payroll_cycle_service
-        cycle.periods = load_payroll_periods()
-        cycle.runs = load_payroll_runs()
-        cycle.novelties = load_payroll_novelties()
-        cycle.audits = load_payroll_audit()
+        clear_load_issues()
+        try:
+            loaded_state = {
+                "faculties": LinkedList(load_faculties()),
+                "programs": LinkedList(load_programs()),
+                "courses": LinkedList(load_courses()),
+                "students": LinkedList(load_students()),
+                "professors": LinkedList(load_professors()),
+                "administrative_staff": LinkedList(load_administrative_staff()),
+                "enrollments": LinkedList(load_enrollments()),
+            }
+            records = load_payroll()
+            loaded_state["payroll"] = records[0] if records else None
+            loaded_state["periods"] = load_payroll_periods()
+            loaded_state["runs"] = load_payroll_runs()
+            loaded_state["novelties"] = load_payroll_novelties()
+            loaded_state["audits"] = load_payroll_audit()
+
+            self.manager.faculties = loaded_state["faculties"]
+            self.manager.programs = loaded_state["programs"]
+            self.manager.courses = loaded_state["courses"]
+            self.manager.students = loaded_state["students"]
+            self.manager.professors = loaded_state["professors"]
+            self.manager.administrative_staff = loaded_state["administrative_staff"]
+            self.manager.enrollments = loaded_state["enrollments"]
+            setattr(self.manager, "payroll", loaded_state["payroll"])
+            cycle = self.manager.payroll_cycle_service
+            cycle.periods = loaded_state["periods"]
+            cycle.runs = loaded_state["runs"]
+            cycle.novelties = loaded_state["novelties"]
+            cycle.audits = loaded_state["audits"]
+
+            issues = get_load_issues()
+            if issues:
+                QMessageBox.warning(
+                    self,
+                    "Aviso de carga de datos",
+                    "\n\n".join(issues),
+                )
+            return True
+        except Exception as exc:
+            self.manager.faculties = LinkedList()
+            self.manager.programs = LinkedList()
+            self.manager.courses = LinkedList()
+            self.manager.students = LinkedList()
+            self.manager.professors = LinkedList()
+            self.manager.administrative_staff = LinkedList()
+            self.manager.enrollments = LinkedList()
+            setattr(self.manager, "payroll", None)
+            cycle = self.manager.payroll_cycle_service
+            cycle.periods = []
+            cycle.runs = []
+            cycle.novelties = []
+            cycle.audits = []
+            QMessageBox.critical(self, "Error al cargar datos", str(exc))
+            return False
 
     def _save_state(self):
-        save_faculties(self.manager.faculties)
-        save_programs(self.manager.programs)
-        save_courses(self.manager.courses)
-        save_students(self.manager.students)
-        save_professors(self.manager.professors)
-        save_administrative_staff(self.manager.administrative_staff)
-        save_enrollments(self.manager.enrollments)
-        payroll = getattr(self.manager, "payroll", None)
-        if payroll is not None:
-            save_payroll([payroll])
-        cycle = self.manager.payroll_cycle_service
-        save_payroll_periods(cycle.periods)
-        save_payroll_runs(cycle.runs)
-        save_payroll_details([detail for run in cycle.runs for detail in run.details])
-        save_payroll_novelties(cycle.novelties)
-        save_payroll_audit(cycle.audits)
-        QMessageBox.information(self, "NexoCampus", "Datos guardados correctamente.")
+        try:
+            results = []
+
+            def save_entity(name, save_function):
+                try:
+                    result = bool(save_function())
+                except Exception:
+                    result = False
+                results.append((name, result))
+
+            save_entity("Facultades", lambda: save_faculties(self.manager.faculties))
+            save_entity("Programas", lambda: save_programs(self.manager.programs))
+            save_entity("Cursos", lambda: save_courses(self.manager.courses))
+            save_entity("Estudiantes", lambda: save_students(self.manager.students))
+            save_entity("Profesores", lambda: save_professors(self.manager.professors))
+            save_entity(
+                "Administrativos",
+                lambda: save_administrative_staff(self.manager.administrative_staff),
+            )
+            save_entity("Inscripciones", lambda: save_enrollments(self.manager.enrollments))
+            payroll = getattr(self.manager, "payroll", None)
+            save_entity(
+                "Nómina",
+                lambda: save_payroll([payroll]) if payroll is not None else save_payroll([]),
+            )
+            cycle = self.manager.payroll_cycle_service
+            details = [detail for run in cycle.runs for detail in (run.details or [])]
+            save_entity("Períodos de nómina", lambda: save_payroll_periods(cycle.periods))
+            save_entity("Ejecuciones de nómina", lambda: save_payroll_runs(cycle.runs))
+            save_entity("Detalles de nómina", lambda: save_payroll_details(details))
+            save_entity("Novedades de nómina", lambda: save_payroll_novelties(cycle.novelties))
+            save_entity("Auditoría de nómina", lambda: save_payroll_audit(cycle.audits))
+
+            failed = [name for name, result in results if not result]
+            if failed:
+                QMessageBox.warning(
+                    self,
+                    "Aviso de guardado",
+                    "No se pudieron guardar: "
+                    + ", ".join(failed)
+                    + ". Verifica permisos de escritura o espacio en disco. El resto sí se guardó.",
+                )
+            else:
+                QMessageBox.information(self, "NexoCampus", "Datos guardados correctamente.")
+        except Exception as exc:
+            QMessageBox.critical(self, "Error al guardar datos", str(exc))
 
     def _reload_state(self):
         ans = QMessageBox.question(
@@ -375,8 +455,12 @@ class MainWindow(QMainWindow):
         )
         if ans != QMessageBox.StandardButton.Yes:
             return
-        self._load_state()
-        for page in self._pages.values():
-            if hasattr(page, "refresh"):
-                page.refresh()
-        QMessageBox.information(self, "NexoCampus", "Datos cargados correctamente.")
+        try:
+            if not self._load_state():
+                return
+            for page in self._pages.values():
+                if hasattr(page, "refresh"):
+                    page.refresh()
+            QMessageBox.information(self, "NexoCampus", "Datos cargados correctamente.")
+        except Exception as exc:
+            QMessageBox.critical(self, "Error al cargar datos", str(exc))

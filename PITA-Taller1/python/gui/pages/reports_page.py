@@ -1,5 +1,7 @@
 """Página de Reportes académicos e indicadores clave."""
+import logging
 from PySide6.QtWidgets import (
+    QMessageBox,
     QVBoxLayout,
     QWidget,
 )
@@ -33,19 +35,25 @@ class ReportsPage(QWidget):
         layout.addWidget(self.table)
 
     def refresh(self):
-        mgr = self.manager
-        ebra_count = sum(
-            1 for s in mgr.students if mgr.evaluate_ebra_status(s.student_id).get("status") == "EBRA"
-        )
+        try:
+            mgr = self.manager
+            ebra_count = sum(
+                1 for s in mgr.students if mgr.evaluate_ebra_status(s.student_id).get("status") == "EBRA"
+            )
 
-        data = [
-            ("Total Facultades Registradas", len(mgr.faculties)),
-            ("Total Programas Académicos", len(mgr.programs)),
-            ("Total Cursos Activos", len(mgr.courses)),
-            ("Estudiantes Matriculados", len(mgr.students)),
-            ("Cuerpo Docente / Profesores", len(mgr.professors)),
-            ("Personal Administrativo", len(mgr.administrative_staff)),
-            ("Inscripciones Registradas", len(mgr.enrollments)),
-            ("Estudiantes en Alerta EBRA", ebra_count),
-        ]
-        self.table.populate(data)
+            data = [
+                ("Total Facultades Registradas", len(mgr.faculties)),
+                ("Total Programas Académicos", len(mgr.programs)),
+                ("Total Cursos Activos", len(mgr.courses)),
+                ("Estudiantes Matriculados", len(mgr.students)),
+                ("Cuerpo Docente / Profesores", len(mgr.professors)),
+                ("Personal Administrativo", len(mgr.administrative_staff)),
+                ("Inscripciones Registradas", len(mgr.enrollments)),
+                ("Estudiantes en Alerta EBRA", ebra_count),
+            ]
+            self.table.populate(data)
+        except Exception as exc:
+            logging.getLogger(__name__).exception(
+                "Error al refrescar %s", self.__class__.__name__
+            )
+            QMessageBox.warning(self, "Error", str(exc))

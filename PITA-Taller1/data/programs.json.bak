@@ -1,0 +1,562 @@
+[
+  {
+    "program_id": 101,
+    "name": "Ingeniería de Sistemas",
+    "faculty_id": 1,
+    "program_director": "Andrea Morales Cárdenas",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Ingeniería",
+    "active": true,
+    "course_list": [
+      1001,
+      1002,
+      1003,
+      1004,
+      1005,
+      1006,
+      1007,
+      1008
+    ],
+    "student_list": [
+      10001,
+      10021,
+      10041,
+      10061,
+      10081,
+      10101
+    ]
+  },
+  {
+    "program_id": 102,
+    "name": "Ingeniería Electrónica",
+    "faculty_id": 1,
+    "program_director": "Santiago Pardo Beltrán",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Ingeniería",
+    "active": true,
+    "course_list": [
+      1009,
+      1010,
+      1011,
+      1012,
+      1013,
+      1014,
+      1015,
+      1016
+    ],
+    "student_list": [
+      10002,
+      10022,
+      10042,
+      10062,
+      10082,
+      10102
+    ]
+  },
+  {
+    "program_id": 103,
+    "name": "Ingeniería Ambiental y Sanitaria",
+    "faculty_id": 1,
+    "program_director": "Valentina Reyes Duarte",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Ingeniería",
+    "active": true,
+    "course_list": [
+      1017,
+      1018,
+      1019,
+      1020,
+      1021,
+      1022,
+      1023,
+      1024
+    ],
+    "student_list": [
+      10003,
+      10023,
+      10043,
+      10063,
+      10083,
+      10103
+    ]
+  },
+  {
+    "program_id": 104,
+    "name": "Ingeniería Agroindustrial",
+    "faculty_id": 1,
+    "program_director": "Mauricio Fuentes Salas",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Ingeniería",
+    "active": true,
+    "course_list": [
+      1025,
+      1026,
+      1027,
+      1028,
+      1029,
+      1030,
+      1031,
+      1032
+    ],
+    "student_list": [
+      10004,
+      10024,
+      10044,
+      10064,
+      10084,
+      10104
+    ]
+  },
+  {
+    "program_id": 105,
+    "name": "Enfermería",
+    "faculty_id": 2,
+    "program_director": "Natalia Castro Villazón",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Ciencias de la Salud",
+    "active": true,
+    "course_list": [
+      1033,
+      1034,
+      1035,
+      1036,
+      1037,
+      1038,
+      1039,
+      1040
+    ],
+    "student_list": [
+      10005,
+      10025,
+      10045,
+      10065,
+      10085,
+      10105
+    ]
+  },
+  {
+    "program_id": 106,
+    "name": "Instrumentación Quirúrgica",
+    "faculty_id": 2,
+    "program_director": "Felipe Mendoza Rincón",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Ciencias de la Salud",
+    "active": true,
+    "course_list": [
+      1041,
+      1042,
+      1043,
+      1044,
+      1045,
+      1046,
+      1047,
+      1048
+    ],
+    "student_list": [
+      10006,
+      10026,
+      10046,
+      10066,
+      10086,
+      10106
+    ]
+  },
+  {
+    "program_id": 107,
+    "name": "Microbiología",
+    "faculty_id": 7,
+    "program_director": "Carolina Nieto Pacheco",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Ciencias Básicas",
+    "active": true,
+    "course_list": [
+      1049,
+      1050,
+      1051,
+      1052,
+      1053,
+      1054,
+      1055,
+      1056
+    ],
+    "student_list": [
+      10007,
+      10027,
+      10047,
+      10067,
+      10087,
+      10107
+    ]
+  },
+  {
+    "program_id": 108,
+    "name": "Licenciatura en Matemáticas",
+    "faculty_id": 5,
+    "program_director": "Ricardo Acosta Meza",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Licenciatura",
+    "active": true,
+    "course_list": [
+      1057,
+      1058,
+      1059,
+      1060,
+      1061,
+      1062,
+      1063,
+      1064
+    ],
+    "student_list": [
+      10008,
+      10028,
+      10048,
+      10068,
+      10088,
+      10108
+    ]
+  },
+  {
+    "program_id": 109,
+    "name": "Licenciatura en Ciencias Naturales y Educación Ambiental",
+    "faculty_id": 5,
+    "program_director": "Diana Villalba Guerra",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Licenciatura",
+    "active": true,
+    "course_list": [
+      1065,
+      1066,
+      1067,
+      1068,
+      1069,
+      1070,
+      1071,
+      1072
+    ],
+    "student_list": [
+      10009,
+      10029,
+      10049,
+      10069,
+      10089,
+      10109
+    ]
+  },
+  {
+    "program_id": 110,
+    "name": "Licenciatura en Educación Física, Recreación y Deportes",
+    "faculty_id": 5,
+    "program_director": "Óscar Jiménez Amaya",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Licenciatura",
+    "active": true,
+    "course_list": [
+      1073,
+      1074,
+      1075,
+      1076,
+      1077,
+      1078,
+      1079,
+      1080
+    ],
+    "student_list": [
+      10010,
+      10030,
+      10050,
+      10070,
+      10090,
+      10110
+    ]
+  },
+  {
+    "program_id": 111,
+    "name": "Licenciatura en Español e Inglés",
+    "faculty_id": 5,
+    "program_director": "Mónica Salazar Peña",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Licenciatura",
+    "active": true,
+    "course_list": [
+      1081,
+      1082,
+      1083,
+      1084,
+      1085,
+      1086,
+      1087,
+      1088
+    ],
+    "student_list": [
+      10011,
+      10031,
+      10051,
+      10071,
+      10091,
+      10111
+    ]
+  },
+  {
+    "program_id": 119,
+    "name": "Licenciatura en Literatura y Lengua Castellana",
+    "faculty_id": 5,
+    "program_director": "Germán Villanueva Ortiz",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Licenciatura",
+    "active": true,
+    "course_list": [
+      1089,
+      1090,
+      1091,
+      1092,
+      1093,
+      1094,
+      1095,
+      1096
+    ],
+    "student_list": [
+      10012,
+      10032,
+      10052,
+      10072,
+      10092,
+      10112
+    ]
+  },
+  {
+    "program_id": 112,
+    "name": "Administración de Empresas",
+    "faculty_id": 3,
+    "program_director": "Paola Herrera Mena",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Ciencias Administrativas",
+    "active": true,
+    "course_list": [
+      1097,
+      1098,
+      1099,
+      1100,
+      1101,
+      1102,
+      1103,
+      1104
+    ],
+    "student_list": [
+      10013,
+      10033,
+      10053,
+      10073,
+      10093,
+      10113
+    ]
+  },
+  {
+    "program_id": 113,
+    "name": "Contaduría Pública",
+    "faculty_id": 3,
+    "program_director": "Jorge Álvarez Pineda",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Ciencias Contables",
+    "active": true,
+    "course_list": [
+      1105,
+      1106,
+      1107,
+      1108,
+      1109,
+      1110,
+      1111,
+      1112
+    ],
+    "student_list": [
+      10014,
+      10034,
+      10054,
+      10074,
+      10094,
+      10114
+    ]
+  },
+  {
+    "program_id": 114,
+    "name": "Economía",
+    "faculty_id": 3,
+    "program_director": "Luisa Fernanda Parra",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Ciencias Económicas",
+    "active": true,
+    "course_list": [
+      1113,
+      1114,
+      1115,
+      1116,
+      1117,
+      1118,
+      1119,
+      1120
+    ],
+    "student_list": [
+      10015,
+      10035,
+      10055,
+      10075,
+      10095,
+      10115
+    ]
+  },
+  {
+    "program_id": 115,
+    "name": "Comercio Internacional",
+    "faculty_id": 3,
+    "program_director": "Camilo Suárez Mendoza",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Ciencias Administrativas",
+    "active": true,
+    "course_list": [
+      1121,
+      1122,
+      1123,
+      1124,
+      1125,
+      1126,
+      1127,
+      1128
+    ],
+    "student_list": [
+      10016,
+      10036,
+      10056,
+      10076,
+      10096,
+      10116
+    ]
+  },
+  {
+    "program_id": 116,
+    "name": "Derecho",
+    "faculty_id": 4,
+    "program_director": "Elena Cifuentes Rojas",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Ciencias Jurídicas",
+    "active": true,
+    "course_list": [
+      1129,
+      1130,
+      1131,
+      1132,
+      1133,
+      1134,
+      1135,
+      1136
+    ],
+    "student_list": [
+      10017,
+      10037,
+      10057,
+      10077,
+      10097,
+      10117
+    ]
+  },
+  {
+    "program_id": 117,
+    "name": "Sociología",
+    "faculty_id": 4,
+    "program_director": "Tomás Beltrán Ospina",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Ciencias Sociales",
+    "active": true,
+    "course_list": [
+      1137,
+      1138,
+      1139,
+      1140,
+      1141,
+      1142,
+      1143,
+      1144
+    ],
+    "student_list": [
+      10018,
+      10038,
+      10058,
+      10078,
+      10098,
+      10118
+    ]
+  },
+  {
+    "program_id": 118,
+    "name": "Licenciatura en Arte",
+    "faculty_id": 6,
+    "program_director": "María Fernanda Rojas",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Artes",
+    "active": true,
+    "course_list": [
+      1145,
+      1146,
+      1147,
+      1148,
+      1149,
+      1150,
+      1151,
+      1152
+    ],
+    "student_list": [
+      10019,
+      10039,
+      10059,
+      10079,
+      10099,
+      10119
+    ]
+  },
+  {
+    "program_id": 120,
+    "name": "Música",
+    "faculty_id": 6,
+    "program_director": "Juan Carlos Pineda",
+    "level": "Pregrado",
+    "modality": "Presencial",
+    "program_type": "Artes",
+    "active": true,
+    "course_list": [
+      1153,
+      1154,
+      1155,
+      1156,
+      1157,
+      1158,
+      1159,
+      1160
+    ],
+    "student_list": [
+      10020,
+      10040,
+      10060,
+      10080,
+      10100,
+      10120
+    ]
+  }
+]

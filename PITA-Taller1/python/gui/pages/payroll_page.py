@@ -3,7 +3,8 @@ from datetime import date
 from pathlib import Path
 from typing import cast
 
-from PySide6.QtCore import QDate, Qt
+from PySide6.QtCore import QDate, Qt, Signal
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QComboBox,
     QDateEdit,
@@ -11,16 +12,19 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QFormLayout,
     QFrame,
+    QGridLayout,
     QHBoxLayout,
     QHeaderView,
     QLabel,
     QLineEdit,
+    QMenu,
     QMessageBox,
     QPushButton,
     QScrollArea,
     QSizePolicy,
     QTableWidget,
     QTableWidgetItem,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -29,13 +33,17 @@ from models.payroll_period import PayrollPeriodStatus
 from services.payroll_engine import PayrollRules
 from services.payslip_service import PayslipService
 from ..components.data_table import DataTable
+from ..components.icons import icon, pixmap
 from ..components.page_header import PageHeader
 from ..components.pagination_bar import PaginationBar
+from ..i18n.labels import get_payroll_status_label, get_employee_type_label, get_acronym_tooltip
 from .payroll_dashboard import PayrollDashboardDialog
 
 
 class PayrollPage(QWidget):
     """Opera el ciclo de nómina sin duplicar la lógica del motor."""
+
+    changed = Signal()
 
     COLUMNS = (
         "Empleado", "Tipo", "Período", "Salario base", "Devengado",
@@ -119,7 +127,7 @@ class PayrollPage(QWidget):
 
         controls = QHBoxLayout()
         self.period_selector = QComboBox()
-        self.period_selector.setMinimumWidth(220)
+        self.period_selector.setMinimumWidth(140)
         self.period_selector.currentIndexChanged.connect(self._period_changed)
         self.start_date = self._date_edit()
         self.end_date = self._date_edit()
@@ -136,34 +144,86 @@ class PayrollPage(QWidget):
         controls.addStretch()
         layout.addLayout(controls)
 
+        # Barra de acciones organizada en 3 grupos funcionales claros
         actions = QHBoxLayout()
         actions.setSpacing(8)
-        self.calculate_button = self._action_button("Calcular nómina", self._calculate)
-        self.recalculate_button = self._action_button("Recalcular", self._recalculate, "secondaryButton")
-        self.approve_button = self._action_button("Aprobar", self._approve)
-        self.close_button = self._action_button("Cerrar", self._close)
 
-        self.view_detail_button = self._action_button("👁 Ver detalle", self._show_selected_detail, "secondaryButton")
+        # GRUPO 1 — Ciclo de Liquidación (flujo secuencial de nómina con fondo distintivo sutil)
+        self.cycle_group_frame = QFrame()
+        self.cycle_group_frame.setObjectName("payrollCycleGroup")
+        cycle_layout = QHBoxLayout(self.cycle_group_frame)
+        cycle_layout.setContentsMargins(4, 3, 4, 3)
+        cycle_layout.setSpacing(4)
+
+        self.calculate_button = self._action_button("Calcular", self._calculate, "payrollPrimaryBtn")
+        self.calculate_button.setToolTip("Calcular nómina para el período seleccionado")
+        self.recalculate_button = self._action_button("Recalcular", self._recalculate, "payrollSecondaryBtn")
+        self.recalculate_button.setToolTip("Recalcular liquidación del ciclo actual")
+        self.approve_button = self._action_button("Aprobar", self._approve, "payrollPrimaryBtn")
+        self.approve_button.setToolTip("Aprobar ciclo de nómina calculado")
+        self.close_button = self._action_button("Cerrar", self._close, "payrollPrimaryBtn")
+        self.close_button.setToolTip("Cerrar definitivamente el ciclo de nómina")
+
+        cycle_layout.addWidget(self.calculate_button)
+        cycle_layout.addWidget(self.recalculate_button)
+        cycle_layout.addWidget(self.approve_button)
+        cycle_layout.addWidget(self.close_button)
+        actions.addWidget(self.cycle_group_frame)
+
+        # Separador visual sutil entre Grupo 1 y Grupo 2
+        self.sep_cycle_selected = QFrame()
+        self.sep_cycle_selected.setObjectName("payrollVerticalSep")
+        self.sep_cycle_selected.setFrameShape(QFrame.Shape.VLine)
+        actions.addWidget(self.sep_cycle_selected)
+
+        # GRUPO 2 — Empleado seleccionado (acciones contextuales de tabla)
+        self.view_detail_button = self._action_button("Ver detalle", self._show_selected_detail, "payrollSecondaryBtn")
+        self.view_detail_button.setIcon(icon("eye", "#16A34A", 14))
         self.view_detail_button.setToolTip("Ver detalle de liquidación del empleado seleccionado (o doble clic)")
-        self.single_slip_button = self._action_button("Desprendible individual", self._individual_payslip, "secondaryButton")
-        self.single_slip_button.setToolTip("Generar PDF de desprendible para el empleado seleccionado")
-
-        self.all_slips_button = self._action_button("Generar todos los desprendibles", self._all_payslips, "secondaryButton")
-        self.dashboard_button = self._action_button("Dashboard financiero", self._open_dashboard, "secondaryButton")
+        self.single_slip_button = self._action_button("Desprendible", self._individual_payslip, "payrollSecondaryBtn")
+        self.single_slip_button.setToolTip("Desprendible individual: Generar PDF para el empleado seleccionado")
 
         self.view_detail_button.setEnabled(False)
         self.single_slip_button.setEnabled(False)
 
-        actions.addWidget(self.calculate_button)
-        actions.addWidget(self.recalculate_button)
-        actions.addWidget(self.approve_button)
-        actions.addWidget(self.close_button)
-        actions.addSpacing(12)
         actions.addWidget(self.view_detail_button)
         actions.addWidget(self.single_slip_button)
-        actions.addSpacing(12)
-        actions.addWidget(self.all_slips_button)
-        actions.addWidget(self.dashboard_button)
+
+        # Separador visual sutil entre Grupo 2 y Grupo 3
+        self.sep_selected_reports = QFrame()
+        self.sep_selected_reports.setObjectName("payrollVerticalSep")
+        self.sep_selected_reports.setFrameShape(QFrame.Shape.VLine)
+        actions.addWidget(self.sep_selected_reports)
+
+        # GRUPO 3 — Reportería y consultas globales (menú desplegable compacto)
+        self.reports_button = QToolButton()
+        self.reports_button.setObjectName("payrollMoreBtn")
+        self.reports_button.setText("Reportes")
+        self.reports_button.setIcon(icon("chart", "#16A34A", 14))
+        self.reports_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.reports_button.setToolTip("Reportes globales y consultas de nómina")
+        self.reports_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+
+        self.reports_menu = QMenu(self.reports_button)
+        self.all_slips_action = QAction("Generar todos los desprendibles", self)
+        self.all_slips_action.setIcon(icon("file-text", "#16A34A", 14))
+        self.all_slips_action.setToolTip("Generar lote completo de desprendibles de pago en PDF")
+        self.all_slips_action.triggered.connect(lambda: self._all_payslips())
+
+        self.dashboard_action = QAction("Dashboard financiero", self)
+        self.dashboard_action.setIcon(icon("chart", "#16A34A", 14))
+        self.dashboard_action.setToolTip("Abrir tablero financiero y analítico de nómina")
+        self.dashboard_action.triggered.connect(lambda: self._open_dashboard())
+
+        self.reports_menu.addAction(self.all_slips_action)
+        self.reports_menu.addAction(self.dashboard_action)
+        self.reports_button.setMenu(self.reports_menu)
+
+        # Aliases para mantener compatibilidad con atributos históricos
+        self.all_slips_button = self.all_slips_action
+        self.dashboard_button = self.dashboard_action
+
+        actions.addWidget(self.reports_button)
         actions.addStretch()
         layout.addLayout(actions)
 
@@ -182,10 +242,12 @@ class PayrollPage(QWidget):
         banner_layout = QHBoxLayout(self.arl_warning_banner)
         banner_layout.setContentsMargins(14, 8, 14, 8)
         banner_layout.setSpacing(10)
-        self.arl_warning_icon = QLabel("⚠️")
-        self.arl_warning_icon.setStyleSheet("font-size: 16px; background: transparent;")
+        self.arl_warning_icon = QLabel()
+        self.arl_warning_icon.setPixmap(pixmap("warning", "#D97706", 18))
+        self.arl_warning_icon.setStyleSheet("background: transparent;")
         self.arl_warning_text = QLabel("Atención: Existen empleados activos asignados a ARL Clase 'I' (Riesgo Mínimo).")
-        self.arl_warning_text.setStyleSheet("color: #92400E; font-weight: 600; font-size: 12px; background: transparent;")
+        self.arl_warning_text.setStyleSheet("color: #92400E; font-weight: 600; font-size: 13px; background: transparent;")
+        self.arl_warning_text.setWordWrap(True)
         self.arl_review_button = QPushButton("Revisar empleados")
         self.arl_review_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.arl_review_button.setStyleSheet(
@@ -216,7 +278,9 @@ class PayrollPage(QWidget):
         self.search.setPlaceholderText("Buscar empleado...")
         self.search.textChanged.connect(self._render_run)
         self.type_filter = QComboBox()
-        self.type_filter.addItems(["Todos los tipos", "Professor", "Administrative"])
+        self.type_filter.addItem("Todos los tipos", "ALL")
+        self.type_filter.addItem("Docente", "Professor")
+        self.type_filter.addItem("Personal Administrativo", "Administrative")
         self.type_filter.currentIndexChanged.connect(self._render_run)
         self.status_filter = QComboBox()
         self.status_filter.addItems(["Todos los estados", "Liquidado", "Con error"])
@@ -226,28 +290,41 @@ class PayrollPage(QWidget):
         filters.addWidget(self.status_filter)
         layout.addLayout(filters)
 
-        summary = QHBoxLayout()
+        summary = QGridLayout()
+        summary.setHorizontalSpacing(16)
+        summary.setVerticalSpacing(6)
         self.summary_labels = {}
-        for key, title in (
+        summary_items = [
             ("gross_salary", "Total nómina"),
             ("total_employee_deductions", "Total deducciones"),
+            ("ibc", "IBC total"),
             ("total_employer_contributions", "Aportes patronales"),
             ("total_employer_cost", "Costo empleador"),
-            ("ibc", "IBC total"),
-        ):
+        ]
+        for idx, (key, title) in enumerate(summary_items):
             label = QLabel(f"{title}: $ 0")
-            label.setStyleSheet("font-size: 12px; font-weight: 700; color: #0F172A;")
+            label.setStyleSheet("font-size: 13px; font-weight: 700; color: #0F172A;")
+            label.setWordWrap(True)
+            if key == "ibc":
+                label.setToolTip(get_acronym_tooltip("IBC"))
             self.summary_labels[key] = (title, label)
-            summary.addWidget(label)
-        summary.addStretch()
+            summary.addWidget(label, idx // 3, idx % 3)
         layout.addLayout(summary)
 
         self.status_label = QLabel("Estado de liquidación: sin período")
         self.status_label.setStyleSheet("font-weight: 700; color: #64748B;")
         layout.addWidget(self.status_label)
 
-        self.table = DataTable(headers=self.COLUMNS)
-        self.table.setMinimumHeight(260)
+        self.table = DataTable(
+            headers=self.COLUMNS,
+            stretch_column="Empleado",
+            column_types=("text", "center", "center", "money", "money", "money", "money", "money", "money", "status"),
+        )
+        ibc_col = self.COLUMNS.index("IBC") if "IBC" in self.COLUMNS else -1
+        if ibc_col >= 0:
+            header_item = self.table.horizontalHeaderItem(ibc_col)
+            if header_item:
+                header_item.setToolTip(get_acronym_tooltip("IBC"))
         self.table.itemSelectionChanged.connect(self._on_table_selection_changed)
         self.table.itemDoubleClicked.connect(lambda *_: self._show_selected_detail())
         layout.addWidget(self.table)
@@ -258,21 +335,23 @@ class PayrollPage(QWidget):
         layout.addWidget(self.pagination)
 
         history_title = QLabel("Historial de liquidaciones")
-        history_title.setStyleSheet("font-size: 14px; font-weight: 800; color: #0F172A;")
+        history_title.setStyleSheet("font-size: 13px; font-weight: 800; color: #0F172A;")
         layout.addWidget(history_title)
         self.history_table = QTableWidget(0, 4)
         self.history_table.setHorizontalHeaderLabels(("Período", "Estado", "Ejecución", "Empleados"))
         self.history_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.history_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.history_table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.history_table.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self.history_table)
+        layout.addStretch()
 
     @staticmethod
     def _date_edit():
         editor = QDateEdit(QDate.currentDate())
         editor.setCalendarPopup(True)
         editor.setDisplayFormat("yyyy-MM-dd")
-        editor.setMinimumWidth(148)
+        editor.setMinimumWidth(105)
         editor.setMinimumHeight(34)
         # Estilos del popup vía app.qss; no forzar stylesheet aquí
         # porque rompe el botón que abre el calendario en algunos estilos Qt.
@@ -311,6 +390,7 @@ class PayrollPage(QWidget):
             return
         self._load_periods()
         self.period_selector.setCurrentIndex(self.period_selector.count() - 1)
+        self.changed.emit()
 
     def _calculate(self):
         period = self._selected_period()
@@ -324,6 +404,7 @@ class PayrollPage(QWidget):
             return
         self._notice("Nómina calculada", f"Liquidación creada para {len(run.details)} empleados.")
         self.refresh()
+        self.changed.emit()
 
     def _recalculate(self):
         period = self._selected_period()
@@ -342,6 +423,7 @@ class PayrollPage(QWidget):
             self._error("No se pudo recalcular la nómina", exc)
             return
         self.refresh()
+        self.changed.emit()
 
     def _approve(self):
         run = self._run_for(self._selected_period())
@@ -354,6 +436,7 @@ class PayrollPage(QWidget):
             self._error("No se pudo aprobar", exc)
             return
         self.refresh()
+        self.changed.emit()
 
     def _close(self):
         run = self._run_for(self._selected_period())
@@ -366,6 +449,7 @@ class PayrollPage(QWidget):
             self._error("No se pudo cerrar", exc)
             return
         self.refresh()
+        self.changed.emit()
 
     def _run_for(self, period):
         if period is None:
@@ -385,7 +469,7 @@ class PayrollPage(QWidget):
         self.period_selector.clear()
         for period in self.cycle.periods:
             self.period_selector.addItem(
-                f"{period.year}-{period.month:02d} · {period.status.value}", period.period_id
+                f"{period.year}-{period.month:02d} · {get_payroll_status_label(period.status)}", period.period_id
             )
         self.period_selector.blockSignals(False)
         if selected:
@@ -409,19 +493,21 @@ class PayrollPage(QWidget):
         search = self.search.text().strip().lower()
         employee_names = {str(getattr(item, "professor_id", getattr(item, "administrative_id", ""))): item.full_name for item in self._employees()}
         rows = []
+        selected_type = self.type_filter.currentData()
         for detail in details:
             employee_id = str(detail.get("employee_id", ""))
             employee = next((item for item in self._employees() if str(getattr(item, "professor_id", getattr(item, "administrative_id", ""))) == employee_id), None)
             name = employee_names.get(employee_id, employee_id)
             if search and search not in name.lower():
                 continue
-            if self.type_filter.currentText() != "Todos los tipos" and detail.get("employee_type") != self.type_filter.currentText():
+            if selected_type and selected_type != "ALL" and detail.get("employee_type") != selected_type:
                 continue
             if self.status_filter.currentText() == "Con error":
                 continue
             self._details.append(detail)
+            emp_type_label = get_employee_type_label(detail.get("employee_type", ""))
             rows.append((
-                name, detail.get("employee_type", ""), detail.get("period", ""),
+                name, emp_type_label, detail.get("period", ""),
                 self._money(detail.get("base_salary", 0)), self._money(detail.get("gross_salary", 0)),
                 self._money(detail.get("total_employee_deductions", 0)), self._money(detail.get("ibc", 0)),
                 self._money(detail.get("net_salary", 0)), self._money(detail.get("total_employer_cost", 0)),
@@ -432,13 +518,14 @@ class PayrollPage(QWidget):
         self._update_summary(run)
         self._update_actions(run)
         period = self._selected_period()
-        self.status_label.setText(f"Estado de liquidación: {period.status.value if period else 'sin período'}")
+        status_label_text = get_payroll_status_label(period.status) if period else 'sin período'
+        self.status_label.setText(f"Estado de liquidación: {status_label_text}")
 
     def _update_summary(self, run):
         totals = run.totals if run else {}
         if run:
             totals = dict(totals)
-            totals["ibc"] = sum((detail.get("ibc", 0) for detail in run.details), 0)
+            totals["ibc"] = sum((float(detail.get("ibc", 0) or 0) for detail in run.details), 0.0)
         for key, (title, label) in self.summary_labels.items():
             label.setText(f"{title}: {self._money(totals.get(key, 0))}")
 
@@ -490,11 +577,11 @@ class PayrollPage(QWidget):
         dialog.setStyleSheet(
             """
             QDialog { background-color: #FFFFFF; color: #0F172A; }
-            QLabel#detailTitle { color: #0F172A; font-size: 16px; font-weight: 800; background: transparent; }
-            QLabel#detailSubtitle { color: #64748B; font-size: 12px; background: transparent; }
-            QLabel#detailSection { color: #14532D; font-size: 12px; font-weight: 800; background: transparent; }
-            QLabel#detailKey { color: #64748B; font-size: 12px; background: transparent; }
-            QLabel#detailValue { color: #0F172A; font-size: 12px; font-weight: 600; background: transparent; }
+            QLabel#detailTitle { color: #0F172A; font-size: 15px; font-weight: 800; background: transparent; }
+            QLabel#detailSubtitle { color: #64748B; font-size: 13px; background: transparent; }
+            QLabel#detailSection { color: #14532D; font-size: 13px; font-weight: 800; background: transparent; }
+            QLabel#detailKey { color: #64748B; font-size: 13px; background: transparent; }
+            QLabel#detailValue { color: #0F172A; font-size: 13px; font-weight: 600; background: transparent; }
             QFrame#detailPanel {
                 background-color: #F8FAFC;
                 border: 1px solid #E2E8F0;
@@ -526,11 +613,14 @@ class PayrollPage(QWidget):
 
         title = QLabel(employee_name)
         title.setObjectName("detailTitle")
+        emp_type_desc = get_employee_type_label(detail.get('employee_type', 'Empleado'))
         subtitle = QLabel(
-            f"{detail.get('employee_type', 'Empleado')} · Período {detail.get('period', '-')} · "
-            f"{detail.get('days_worked', 0)} días"
+            f"{emp_type_desc} · Período {detail.get('period', '-')} · "
+            f"{detail.get('days_worked', 0)} días trabajados"
         )
         subtitle.setObjectName("detailSubtitle")
+        if detail.get('employee_type') == "Administrative":
+            subtitle.setToolTip(get_acronym_tooltip("CST"))
         root.addWidget(title)
         root.addWidget(subtitle)
 
@@ -618,6 +708,7 @@ class PayrollPage(QWidget):
             code_label = QLabel(str(concept.get("code", "")))
             code_label.setObjectName("detailKey")
             meta_label = QLabel(f"{amount_text}  ·  Afecta IBC: {affects}")
+            meta_label.setToolTip(get_acronym_tooltip("IBC"))
             meta_label.setObjectName("detailValue")
             meta_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
             row.addWidget(code_label)
@@ -675,15 +766,25 @@ class PayrollPage(QWidget):
         ).exec()
 
     def _render_history(self):
-        self.history_table.setRowCount(len(self.cycle.periods))
+        row_count = len(self.cycle.periods)
+        self.history_table.setRowCount(row_count)
         for row, period in enumerate(self.cycle.periods):
             run = self._run_for(period)
             values = (
-                f"{period.year}-{period.month:02d}", period.status.value,
+                f"{period.year}-{period.month:02d}", get_payroll_status_label(period.status),
                 run.executed_at if run else "-", str(len(run.details)) if run else "0",
             )
             for column, value in enumerate(values):
                 self.history_table.setItem(row, column, QTableWidgetItem(value))
+
+        header_h = self.history_table.horizontalHeader().height() or 33
+        rows_h = sum(self.history_table.rowHeight(i) for i in range(row_count))
+        if rows_h == 0 and row_count > 0:
+            rows_h = row_count * (self.history_table.verticalHeader().defaultSectionSize() or 30)
+        elif row_count == 0:
+            rows_h = 40
+        self.history_table.setFixedHeight(header_h + rows_h + self.history_table.frameWidth() * 2 + 4)
+        self.history_table.updateGeometry()
 
     def _get_default_arl_employees(self):
         default_employees = []
@@ -698,6 +799,7 @@ class PayrollPage(QWidget):
         default_emps = self._get_default_arl_employees()
         if default_emps:
             count = len(default_emps)
+            self.arl_warning_text.setWordWrap(True)
             self.arl_warning_text.setText(
                 f"Atención: {count} empleado(s) activo(s) tienen asignada ARL Clase 'I' (Riesgo Mínimo - 0.522%). "
                 "Verifique si desempeñan labores de mayor riesgo (laboratorios, talleres, etc.)."
@@ -716,7 +818,7 @@ class PayrollPage(QWidget):
             """
             QDialog { background-color: #FFFFFF; color: #0F172A; }
             QLabel#dialogTitle { color: #0F172A; font-size: 15px; font-weight: 800; background: transparent; }
-            QLabel#dialogSubtitle { color: #64748B; font-size: 12px; background: transparent; }
+            QLabel#dialogSubtitle { color: #64748B; font-size: 13px; background: transparent; }
             """
         )
         layout = QVBoxLayout(dialog)

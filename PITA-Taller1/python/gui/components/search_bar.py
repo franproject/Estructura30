@@ -13,6 +13,9 @@ class SearchBar(QLineEdit):
     def __init__(self, placeholder: str = "Buscar...", parent=None):
         super().__init__(parent)
         self.setPlaceholderText(placeholder)
-        self.setMaximumWidth(280)
-        self.addAction(icon("search", "#94A3B8", 15), QLineEdit.ActionPosition.LeadingPosition)
+        self.setMinimumWidth(260)
+        self.setMaximumWidth(400)
+        self.setClearButtonEnabled(True)
+        self.setToolTip("Buscar registros en la tabla (Ctrl+F)")
+        self.addAction(icon("search", "#64748B", 15), QLineEdit.ActionPosition.LeadingPosition)
         self.textChanged.connect(self.search_changed.emit)

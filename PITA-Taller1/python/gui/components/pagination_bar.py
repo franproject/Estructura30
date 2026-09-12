@@ -8,6 +8,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .icons import icon
+
 
 def calculate_page_range(
     current_page: int, total_pages: int, max_numeric: int = 7
@@ -74,13 +76,13 @@ class PaginationBar(QWidget):
         # Información de registros (ej. "Mostrando 1–10 de 100 registros")
         self.page_info = QLabel()
         self.page_info.setObjectName("paginationInfo")
-        self.page_info.setStyleSheet("color: #94A3B8; font-size: 11px;")
         layout.addWidget(self.page_info)
 
         layout.addStretch()
 
         # Botón Anterior
         self.btn_prev = QPushButton("Anterior")
+        self.btn_prev.setIcon(icon("chevron-left", color="#475569", size=12))
         self.btn_prev.setObjectName("pageNavButton")
         self.btn_prev.clicked.connect(self._on_prev_clicked)
         layout.addWidget(self.btn_prev)
@@ -92,6 +94,8 @@ class PaginationBar(QWidget):
 
         # Botón Siguiente
         self.btn_next = QPushButton("Siguiente")
+        self.btn_next.setIcon(icon("chevron-right", color="#475569", size=12))
+        self.btn_next.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         self.btn_next.setObjectName("pageNavButton")
         self.btn_next.clicked.connect(self._on_next_clicked)
         layout.addWidget(self.btn_next)
@@ -162,7 +166,6 @@ class PaginationBar(QWidget):
             if item == "...":
                 lbl_ellipsis = QLabel("...")
                 lbl_ellipsis.setObjectName("paginationEllipsis")
-                lbl_ellipsis.setStyleSheet("color: #94A3B8; font-weight: bold; padding: 0 4px;")
                 lbl_ellipsis.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.page_buttons.addWidget(lbl_ellipsis)
             else:

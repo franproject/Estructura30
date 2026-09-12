@@ -1,14 +1,20 @@
 """Ventana principal de la aplicación NexoCampus."""
 import logging
 import os
-from PySide6.QtCore import Qt, QPoint, QRect
+from PySide6.QtCore import Qt, QPoint, QRect, QSize
+from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (
+    QAbstractSpinBox,
+    QApplication,
     QFrame,
     QHBoxLayout,
+    QLineEdit,
     QMainWindow,
     QMessageBox,
+    QPlainTextEdit,
     QScrollArea,
     QStackedWidget,
+    QTextEdit,
     QToolTip,
     QVBoxLayout,
     QWidget,
@@ -43,6 +49,7 @@ from services.entity_manager import EntityManager
 
 from typing import Any, Optional
 
+from .components.breadcrumb import Breadcrumb
 from .components.header import TopHeader
 from .components.sidebar import Sidebar
 from .pages.crud_page import CrudPage, _normalize_text
@@ -51,15 +58,47 @@ from .pages.payroll_page import PayrollPage
 from .pages.reports_page import ReportsPage
 
 
+class AdaptiveStackedWidget(QStackedWidget):
+    """QStackedWidget adaptativo que ajusta sus dimensiones mínimas y recomendadas
+    según la página activa actual, evitando que páginas complejas inflen el ancho
+    mínimo de las demás vistas de la aplicación."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.currentChanged.connect(self._on_current_changed)
+
+    def _on_current_changed(self, index: int):
+        self.updateGeometry()
+        parent = self.parentWidget()
+        if parent is not None:
+            parent.updateGeometry()
+
+    def minimumSizeHint(self):
+        curr = self.currentWidget()
+        if curr is not None:
+            hint = curr.minimumSizeHint()
+            return QSize(0, hint.height())
+        return super().minimumSizeHint()
+
+    def sizeHint(self):
+        curr = self.currentWidget()
+        if curr is not None:
+            hint = curr.sizeHint()
+            return QSize(0, hint.height())
+        return super().sizeHint()
+
+
 class MainWindow(QMainWindow):
     """Ventana principal moderna de NexoCampus (PySide6 + QSS)."""
 
     def __init__(self, manager: Optional[EntityManager] = None):
         super().__init__()
-        self.setWindowTitle("NexoCampus | Gestión Universitaria")
+        self._base_window_title = "NexoCampus | Gestión Universitaria"
+        self.setWindowTitle(self._base_window_title)
         self.resize(1366, 768)
         self.setMinimumSize(960, 600)
 
+        self._has_unsaved_changes = False
         self.manager = manager if manager is not None else EntityManager()
         self._pages = {}
         self._load_styles()
@@ -106,15 +145,21 @@ class MainWindow(QMainWindow):
         self.header.navigate_requested.connect(self._navigate)
         right_layout.addWidget(self.header)
 
+        # Ruta de navegación contextual (Breadcrumbs)
+        self.breadcrumb = Breadcrumb(parent=self)
+        self.breadcrumb.navigate_requested.connect(self._navigate)
+        right_layout.addWidget(self.breadcrumb)
+
         # Contenedor del área de contenido principal envuelto en QScrollArea
-        self.stack = QStackedWidget()
+        self.stack = AdaptiveStackedWidget(parent=self)
         self.stack.setObjectName("mainStack")
+        self.stack.setMinimumWidth(0)
 
         self.content_scroll_area = QScrollArea()
         self.content_scroll_area.setObjectName("mainContentScrollArea")
         self.content_scroll_area.setWidgetResizable(True)
         self.content_scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-        self.content_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.content_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.content_scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.content_scroll_area.setWidget(self.stack)
 
@@ -124,13 +169,15 @@ class MainWindow(QMainWindow):
 
         # Registrar páginas
         self._add_pages()
+        self._setup_shortcuts()
         self.sidebar.set_active_page("Dashboard")
         self.header.update_alerts(self.manager)
 
     def _add_pages(self):
-        # 1. Dashboard
+        # 1. Dashboard / Inicio
         dashboard = DashboardPage(self.manager, self._navigate)
         self._register_page("Dashboard", dashboard)
+        self._pages["Inicio"] = dashboard
 
         # 2. Facultades
         self._register_page(
@@ -152,6 +199,8 @@ class MainWindow(QMainWindow):
                 columns=("ID", "Nombre", "Decano", "Fecha Creación", "Estado"),
                 row_builder=lambda x: (x.faculty_id, x.name, x.dean, x.creation_date, "Activo" if x.active else "Inactivo"),
                 operation_name="faculty",
+                stretch_column="Nombre",
+                column_types=("id", "text", "text", "date", "status"),
             ),
         )
 
@@ -194,6 +243,8 @@ class MainWindow(QMainWindow):
                     "Activo" if x.active else "Inactivo",
                 ),
                 operation_name="program",
+                stretch_column="Nombre",
+                column_types=("id", "text", "text", "text", "center", "status"),
             ),
         )
 
@@ -246,6 +297,8 @@ class MainWindow(QMainWindow):
                     "Activo" if x.active else "Inactivo",
                 ),
                 operation_name="course",
+                stretch_column="Nombre",
+                column_types=("id", "text", "text", "numeric", "center", "numeric", "status"),
             ),
         )
 
@@ -292,6 +345,8 @@ class MainWindow(QMainWindow):
                     "Sí" if x.active else "No",
                 ),
                 operation_name="student",
+                stretch_column="Nombre Completo",
+                column_types=("id", "text", "center", "text", "center", "status", "status"),
             ),
         )
 
@@ -338,6 +393,8 @@ class MainWindow(QMainWindow):
                     "Activo" if x.active else "Inactivo",
                 ),
                 operation_name="professor",
+                stretch_column="Nombre Completo",
+                column_types=("id", "text", "center", "text", "center", "text", "status"),
             ),
         )
 
@@ -368,6 +425,8 @@ class MainWindow(QMainWindow):
                 columns=("ID", "Nombre Completo", "Cargo", "Contrato", "Salario Base", "Estado"),
                 row_builder=lambda x: (x.administrative_id, x.full_name, x.position, x.employment_type, f"$ {x.base_salary:,.2f}", "Activo" if x.active else "Inactivo"),
                 operation_name="administrative",
+                stretch_column="Nombre Completo",
+                column_types=("id", "text", "text", "center", "money", "status"),
             ),
         )
 
@@ -418,6 +477,8 @@ class MainWindow(QMainWindow):
                     x.status,
                 ),
                 operation_name="enrollment",
+                stretch_column="Curso",
+                column_types=("id", "text", "text", "center", "numeric", "status"),
             ),
         )
 
@@ -427,10 +488,11 @@ class MainWindow(QMainWindow):
         # 10. Reportes
         self._register_page("Reportes", ReportsPage(self.manager))
 
-        # Conectar señal de cambio para refrescar Dashboard
+        # Conectar señal de cambio para refrescar Dashboard y marcar modificaciones sin guardar
         for page in self._pages.values():
             if hasattr(page, "changed"):
                 page.changed.connect(self._refresh_dashboard)
+                page.changed.connect(self._on_page_data_changed)
 
     def _register_page(self, name: str, page: QWidget):
         self._pages[name] = page
@@ -444,10 +506,49 @@ class MainWindow(QMainWindow):
             )
             return
         self.stack.setCurrentWidget(page)
+        self.stack.updateGeometry()
         if hasattr(page, "refresh"):
             page.refresh()
         if hasattr(self, "sidebar") and self.sidebar:
             self.sidebar.set_active_page(name)
+        if hasattr(self, "breadcrumb") and self.breadcrumb:
+            self.breadcrumb.set_page(name)
+        self._update_content_size()
+        if hasattr(self, "content_scroll_area") and self.content_scroll_area:
+            self.content_scroll_area.verticalScrollBar().setValue(0)
+
+    def _update_content_size(self):
+        """Ajusta la altura del contenedor principal para que las páginas con tablas compactas
+        no generen scrollbars verticales innecesarios, respetando el tamaño de las vistas extensas."""
+        if not hasattr(self, "stack") or not hasattr(self, "content_scroll_area"):
+            return
+        curr = self.stack.currentWidget()
+        if curr is None:
+            return
+        vp_h = self.content_scroll_area.viewport().height()
+        hint_h = curr.sizeHint().height()
+        target_h = max(vp_h, hint_h)
+        self.stack.setFixedHeight(target_h)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._update_content_size()
+
+    def _on_page_data_changed(self):
+        """Manejador reactivo invocado cuando cualquier entidad o nómina sufre modificaciones."""
+        self._set_unsaved_changes(True)
+
+    def _set_unsaved_changes(self, dirty: bool):
+        """Actualiza el estado de persistencia en Sidebar, Breadcrumb y título de ventana."""
+        self._has_unsaved_changes = dirty
+        if hasattr(self, "sidebar") and self.sidebar:
+            self.sidebar.set_unsaved_changes(dirty)
+        if hasattr(self, "breadcrumb") and self.breadcrumb:
+            self.breadcrumb.set_unsaved_indicator(dirty)
+        if dirty:
+            self.setWindowTitle(f"{self._base_window_title} • Cambios sin guardar")
+        else:
+            self.setWindowTitle(self._base_window_title)
 
     def _handle_global_search(self, query: str):
         query = query.strip()
@@ -605,6 +706,7 @@ class MainWindow(QMainWindow):
                     page.refresh()
             if hasattr(self, "header") and self.header:
                 self.header.update_alerts(self.manager)
+            self._set_unsaved_changes(False)
             return True
         except Exception as exc:
             self.manager.faculties = LinkedList()
@@ -625,6 +727,11 @@ class MainWindow(QMainWindow):
     def _save_state(self):
         try:
             batch_save_state(self.manager, DATA_DIRECTORY)
+            self._set_unsaved_changes(False)
+            dashboard = self._pages.get("Dashboard")
+            if dashboard and hasattr(dashboard, "update_baseline"):
+                dashboard.update_baseline()
+                dashboard.refresh()
             QMessageBox.information(
                 self,
                 "NexoCampus",
@@ -639,11 +746,24 @@ class MainWindow(QMainWindow):
             )
 
     def _reload_state(self):
-        ans = QMessageBox.question(
-            self,
-            "Cargar datos",
-            "¿Deseas reemplazar la sesión actual por los datos guardados en los archivos JSON?",
-        )
+        if self._has_unsaved_changes:
+            ans = QMessageBox.warning(
+                self,
+                "Descartar cambios no guardados",
+                "ATENCIÓN: Hay modificaciones en la sesión actual que aún no se han guardado en disco.\n\n"
+                "Si recargas los datos desde los archivos JSON, perderás todos los cambios no guardados de forma irreversible.\n\n"
+                "¿Estás seguro de que deseas descartar los cambios y recargar desde disco?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+        else:
+            ans = QMessageBox.question(
+                self,
+                "Cargar datos",
+                "¿Deseas reemplazar la sesión actual por los datos guardados en los archivos JSON?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
         if ans != QMessageBox.StandardButton.Yes:
             return
         try:
@@ -656,3 +776,103 @@ class MainWindow(QMainWindow):
                 QMessageBox.information(self, "NexoCampus", "Datos cargados correctamente.")
         except Exception as exc:
             QMessageBox.critical(self, "Error al cargar datos", str(exc))
+
+    def closeEvent(self, event):
+        """Previene la pérdida accidental de datos al cerrar la aplicación con cambios pendientes."""
+        if self._has_unsaved_changes:
+            ans = QMessageBox.question(
+                self,
+                "Cambios sin guardar",
+                "Tienes modificaciones pendientes de guardar en disco.\n\n"
+                "¿Deseas guardar los cambios antes de salir?",
+                QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Save,
+            )
+            if ans == QMessageBox.StandardButton.Save:
+                try:
+                    self._save_state()
+                    event.accept()
+                except Exception:
+                    event.ignore()
+            elif ans == QMessageBox.StandardButton.Discard:
+                event.accept()
+            else:
+                event.ignore()
+        else:
+            event.accept()
+
+    def _setup_shortcuts(self):
+        """Configura los atajos de teclado globales y su gestión contextual."""
+        # 1. Ctrl+S: Guardado global de datos a disco
+        self.shortcut_save = QShortcut(QKeySequence("Ctrl+S"), self)
+        self.shortcut_save.activated.connect(self._handle_shortcut_save)
+
+        # 2. F5: Refrescar la página activa e indicadores
+        self.shortcut_refresh = QShortcut(QKeySequence("F5"), self)
+        self.shortcut_refresh.activated.connect(self._handle_shortcut_refresh)
+
+        # 3. Ctrl+K: Enfocar buscador global institucional del TopHeader
+        self.shortcut_global_search = QShortcut(QKeySequence("Ctrl+K"), self)
+        self.shortcut_global_search.activated.connect(self._handle_shortcut_global_search)
+
+        # 4. Ctrl+N: Abrir diálogo de creación de registro en la vista activa
+        self.shortcut_new = QShortcut(QKeySequence("Ctrl+N"), self)
+        self.shortcut_new.activated.connect(self._handle_shortcut_new)
+
+        # 5. Ctrl+F: Enfocar buscador local de la vista activa
+        self.shortcut_find = QShortcut(QKeySequence("Ctrl+F"), self)
+        self.shortcut_find.activated.connect(self._handle_shortcut_find)
+
+        # 6. Delete: Eliminar seleccionado si hay una fila seleccionada en la vista activa y no se está editando texto
+        self.shortcut_delete = QShortcut(QKeySequence(Qt.Key.Key_Delete), self)
+        self.shortcut_delete.activated.connect(self._handle_shortcut_delete)
+
+    def _handle_shortcut_save(self):
+        self._save_state()
+
+    def _handle_shortcut_refresh(self):
+        curr = self.stack.currentWidget()
+        refresh = getattr(curr, "refresh", None)
+        if callable(refresh):
+            refresh()
+        if hasattr(self, "header") and self.header:
+            self.header.update_alerts(self.manager)
+
+    def _handle_shortcut_global_search(self):
+        if hasattr(self, "header") and hasattr(self.header, "search_input"):
+            self.header.search_input.setFocus()
+            self.header.search_input.selectAll()
+
+    def _handle_shortcut_new(self):
+        curr = self.stack.currentWidget()
+        create_item = getattr(curr, "create_item", None)
+        if callable(create_item):
+            create_item()
+            return
+
+        create_period = getattr(curr, "_create_period", None)
+        if callable(create_period):
+            create_period()
+
+    def _handle_shortcut_find(self):
+        curr = self.stack.currentWidget()
+        if curr:
+            for attr in ("search_bar", "search_input", "search", "search_ebra", "search_workload", "search_salary"):
+                w = getattr(curr, attr, None)
+                if isinstance(w, QLineEdit) and w.isVisible():
+                    w.setFocus()
+                    w.selectAll()
+                    return
+        self._handle_shortcut_global_search()
+
+    def _handle_shortcut_delete(self):
+        # Proteger edición nativa en campos de entrada y texto
+        focus_widget = QApplication.focusWidget()
+        if isinstance(focus_widget, (QLineEdit, QTextEdit, QPlainTextEdit, QAbstractSpinBox)):
+            return
+        curr = self.stack.currentWidget()
+        delete_item = getattr(curr, "delete_item", None)
+        delete_button = getattr(curr, "btn_delete", None)
+        if callable(delete_item) and delete_button is not None:
+            if delete_button.isEnabled():
+                delete_item()

@@ -2,15 +2,21 @@
 import logging
 import unicodedata
 from PySide6.QtCore import Signal, Qt
+from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (
+    QAbstractSpinBox,
+    QApplication,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QMessageBox,
+    QPlainTextEdit,
     QPushButton,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
-from typing import Optional
+from typing import Optional, Union, List, Tuple
 
 from ..components.confirm_dialog import ConfirmDialog
 from ..components.data_table import DataTable
@@ -19,6 +25,7 @@ from ..components.entity_dialog import EntityDialog
 from ..components.page_header import PageHeader
 from ..components.pagination_bar import PaginationBar
 from ..components.search_bar import SearchBar
+from ..i18n.labels import get_entity_info
 
 
 def _normalize_text(text: str) -> str:
@@ -46,6 +53,8 @@ class CrudPage(QWidget):
         columns: tuple,
         row_builder,
         operation_name: Optional[str] = None,
+        stretch_column: Optional[Union[int, str]] = None,
+        column_types: Optional[Union[List[str], Tuple[str, ...]]] = None,
         parent=None,
     ):
         super().__init__(parent)
@@ -59,9 +68,12 @@ class CrudPage(QWidget):
         self.columns = columns
         self.row_builder = row_builder
         self.operation_name = operation_name or collection_name.rstrip("s")
+        self.entity_info = get_entity_info(self.operation_name)
+        self.stretch_column = stretch_column
+        self.column_types = column_types
         self._items = []
         self._empty_title = f"No hay {self.title.lower()} registrados"
-        self._empty_subtitle = f"Presiona el botón '+ Nuevo' para añadir tu primer registro de {self.operation_name}."
+        self._empty_subtitle = self.entity_info.empty_hint
         self._build_ui()
         self.refresh()
 
@@ -74,7 +86,7 @@ class CrudPage(QWidget):
         self.header = PageHeader(
             title=self.title,
             subtitle=self.subtitle,
-            action_text=f"+ Nuevo {self.operation_name.capitalize()}",
+            action_text=self.entity_info.new_button_label,
             on_action=self.create_item,
         )
         layout.addWidget(self.header)
@@ -88,13 +100,16 @@ class CrudPage(QWidget):
 
         toolbar.addStretch()
 
-        self.btn_edit = QPushButton("Editar Seleccionado")
+        self.btn_edit = QPushButton("Editar")
         self.btn_edit.setObjectName("secondaryButton")
+        self.btn_edit.setEnabled(False)
+        self.btn_edit.setToolTip("Editar el registro seleccionado")
         self.btn_edit.clicked.connect(self.edit_item)
 
-        self.btn_delete = QPushButton("Eliminar Seleccionado")
-        self.btn_delete.setObjectName("ghostButton")
-        self.btn_delete.setStyleSheet("color: #DC2626;")
+        self.btn_delete = QPushButton("Eliminar")
+        self.btn_delete.setObjectName("ghostDeleteButton")
+        self.btn_delete.setEnabled(False)
+        self.btn_delete.setToolTip("Eliminar el registro seleccionado (Supr / Delete)")
         self.btn_delete.clicked.connect(self.delete_item)
 
         toolbar.addWidget(self.btn_edit)
@@ -102,10 +117,20 @@ class CrudPage(QWidget):
         layout.addLayout(toolbar)
 
         # Tabla de Datos
-        self.table = DataTable(headers=self.columns)
+        self.table = DataTable(
+            headers=self.columns,
+            stretch_column=self.stretch_column,
+            column_types=self.column_types,
+        )
         self.table.set_row_actions()
+        self.table.itemSelectionChanged.connect(self._update_selection_state)
         self.table.edit_requested.connect(self._edit_source_item)
         self.table.delete_requested.connect(self._delete_source_item)
+
+        # Atajo Delete para la tabla cuando tiene foco y fila seleccionada
+        self.shortcut_delete = QShortcut(QKeySequence(Qt.Key.Key_Delete), self.table)
+        self.shortcut_delete.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
+        self.shortcut_delete.activated.connect(self._on_table_delete_shortcut)
         layout.addWidget(self.table)
         self.pagination = PaginationBar(parent=self)
         self.pagination.connect_table(self.table)
@@ -117,11 +142,12 @@ class CrudPage(QWidget):
         self.empty_state = EmptyState(
             title=self._empty_title,
             subtitle=self._empty_subtitle,
-            action_text=f"+ Crear {self.operation_name.capitalize()}",
+            action_text=self.entity_info.create_button_label,
             on_action=self.create_item,
         )
         layout.addWidget(self.empty_state)
         self.empty_state.hide()
+        layout.addStretch()
 
     def _collection(self):
         return getattr(self.manager, self.collection_name, [])
@@ -159,7 +185,7 @@ class CrudPage(QWidget):
             )
             self.table.hide()
             self.empty_state.show()
-            self.table.populate([], keep_page=False)
+            self.table.populate([], payloads=[], keep_page=False)
             self._update_pagination()
         elif not self._items:
             self.empty_state.set_content(
@@ -169,7 +195,7 @@ class CrudPage(QWidget):
             )
             self.table.hide()
             self.empty_state.show()
-            self.table.populate([], keep_page=False)
+            self.table.populate([], payloads=[], keep_page=False)
             self._update_pagination()
         else:
             self.empty_state.set_content(
@@ -178,14 +204,36 @@ class CrudPage(QWidget):
             self.empty_state.hide()
             self.table.show()
             rows_formatted = [self.row_builder(item) for item in self._items]
-            self.table.populate(rows_formatted, keep_page=keep_page)
+            self.table.populate(rows_formatted, payloads=self._items, keep_page=keep_page)
             self._update_pagination()
+        self._update_selection_state()
 
     def _selected_item(self):
+        if hasattr(self, "table") and self.table.selectionModel() and not self.table.selectionModel().hasSelection():
+            return None
+        payload = self.table.current_source_payload()
+        if payload is not None:
+            return payload
         row = self.table.current_source_row()
         if 0 <= row < len(self._items):
             return self._items[row]
         return None
+
+    def _update_selection_state(self):
+        """Habilita o deshabilita dinámicamente los botones de acción contextual según la selección activa."""
+        has_selection = self._selected_item() is not None
+        if hasattr(self, "btn_edit"):
+            self.btn_edit.setEnabled(has_selection)
+        if hasattr(self, "btn_delete"):
+            self.btn_delete.setEnabled(has_selection)
+
+    def _on_table_delete_shortcut(self):
+        """Elimina el registro seleccionado desde teclado si el foco no está en un campo de texto."""
+        focus_widget = QApplication.focusWidget()
+        if isinstance(focus_widget, (QLineEdit, QTextEdit, QPlainTextEdit, QAbstractSpinBox)):
+            return
+        if hasattr(self, "btn_delete") and self.btn_delete.isEnabled():
+            self.delete_item()
 
     def _edit_source_item(self, source_index: int):
         self.table.selectRow(source_index - (self.table.page - 1) * self.table.page_size)
@@ -227,7 +275,7 @@ class CrudPage(QWidget):
             if method and not method(item):
                 raise ValueError("El registro fue rechazado por las reglas de negocio de EntityManager.")
 
-            self._after_change(f"{self.operation_name.capitalize()} creado exitosamente.")
+            self._after_change(self.entity_info.created_message)
         except Exception as exc:
             QMessageBox.critical(self, "Error al crear", str(exc))
 

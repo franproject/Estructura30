@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
 from services.payroll_dashboard import PayrollFinancialDashboard
 from ..components.icons import icon
 from ..components.stat_card import StatCard
+from ..i18n.labels import get_payroll_status_label, get_acronym_tooltip
 
 
 class PayrollDashboardDialog(QDialog):
@@ -63,75 +64,15 @@ class PayrollDashboardDialog(QDialog):
 
     def _build_ui(self):
         self.setWindowTitle("Dashboard financiero de nómina")
+        self.setObjectName("payrollDashboard")
         self.resize(980, 720)
         self.setMinimumSize(760, 560)
-        self.setStyleSheet(
-            """
-            QDialog { background-color: #F8FAFC; color: #0F172A; }
-            QScrollArea { background-color: #F8FAFC; border: none; }
-            QScrollArea > QWidget > QWidget { background-color: #F8FAFC; }
-            QLabel#payrollDashboardTitle { color: #0F172A; font-size: 20px; font-weight: 800; background: transparent; }
-            QLabel#payrollDashboardSubtitle { color: #64748B; font-size: 12px; background: transparent; }
-            QLabel#payrollControlLabel { color: #475569; font-size: 11px; font-weight: 700; background: transparent; }
-            QLabel#payrollSectionTitle { color: #14532D; font-size: 14px; font-weight: 800; background: transparent; }
-            QFrame#payrollPanel {
-                background-color: #FFFFFF;
-                border: 1px solid #E2E8F0;
-                border-radius: 10px;
-            }
-            QLabel#payrollPanelTitle { color: #0F172A; font-size: 13px; font-weight: 700; background: transparent; }
-            QLabel#payrollPanelCount { color: #16A34A; font-size: 11px; font-weight: 700; background: transparent; }
-            QLabel#payrollChartEmpty {
-                background-color: #F8FAFC;
-                border: 1px dashed #CBD5E1;
-                border-radius: 8px;
-                color: #64748B;
-                font-size: 12px;
-                font-weight: 600;
-            }
-            QFrame#payrollMetricItem {
-                background-color: #F8FAFC;
-                border: 1px solid #E2E8F0;
-                border-radius: 7px;
-            }
-            QLabel#payrollMetricLabel { color: #64748B; font-size: 11px; font-weight: 600; background: transparent; }
-            QLabel#payrollMetricValue { color: #0F172A; font-size: 13px; font-weight: 800; background: transparent; }
-            QTableWidget {
-                background-color: #FFFFFF;
-                color: #0F172A;
-                border: 1px solid #E2E8F0;
-                border-radius: 6px;
-                gridline-color: #F1F5F9;
-                selection-background-color: #DCFCE7;
-                selection-color: #14532D;
-            }
-            QHeaderView::section {
-                background-color: #F8FAFC;
-                color: #64748B;
-                border: none;
-                border-bottom: 1px solid #E2E8F0;
-                padding: 6px 8px;
-                font-size: 11px;
-                font-weight: 700;
-            }
-            QChartView {
-                background-color: #FFFFFF;
-                border: none;
-            }
-            QComboBox {
-                background-color: #FFFFFF;
-                color: #0F172A;
-            }
-            """
-        )
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
-        scroll.setStyleSheet("background-color: #F8FAFC; border: none;")
         content = QWidget()
         content.setObjectName("payrollDashboardContent")
-        content.setStyleSheet("background-color: #F8FAFC;")
         layout = QVBoxLayout(content)
         layout.setContentsMargins(24, 22, 24, 28)
         layout.setSpacing(18)
@@ -220,11 +161,15 @@ class PayrollDashboardDialog(QDialog):
         for index, (key, title) in enumerate(metrics):
             item = QFrame()
             item.setObjectName("payrollMetricItem")
+            if key == "ibc":
+                item.setToolTip(get_acronym_tooltip("IBC"))
             item_layout = QVBoxLayout(item)
             item_layout.setContentsMargins(10, 8, 10, 8)
             item_layout.setSpacing(2)
             label = QLabel(title)
             label.setObjectName("payrollMetricLabel")
+            if key == "ibc":
+                label.setToolTip(get_acronym_tooltip("IBC"))
             value = QLabel("$ 0")
             value.setObjectName("payrollMetricValue")
             value.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
@@ -307,7 +252,6 @@ class PayrollDashboardDialog(QDialog):
             chart.setMinimumHeight(210)
             chart.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             chart.setRenderHint(QPainter.RenderHint.Antialiasing)
-            chart.setStyleSheet("background-color: #FFFFFF; border: none;")
             chart.setBackgroundBrush(QColor("#FFFFFF"))
             layout.addWidget(chart)
             self.chart_views[key] = chart
@@ -327,7 +271,7 @@ class PayrollDashboardDialog(QDialog):
         for period in self.cycle.periods:
             run = next((item for item in reversed(self.cycle.runs) if item.period_id == period.period_id), None)
             if run is not None:
-                self.period_selector.addItem(f"{period.year}-{period.month:02d} · {run.status.value}", period.period_id)
+                self.period_selector.addItem(f"{period.year}-{period.month:02d} · {get_payroll_status_label(run.status)}", period.period_id)
         self.refresh()
 
     @staticmethod

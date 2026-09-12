@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 from typing import Optional
+from .icons import pixmap
 
 
 class EmptyState(QFrame):
@@ -23,19 +24,24 @@ class EmptyState(QFrame):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.setSpacing(8)
 
-        lbl_icon = QLabel("📋")
-        lbl_icon.setStyleSheet("font-size: 36px; color: #CBD5E1;")
-        lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(lbl_icon)
+        self.lbl_icon = QLabel()
+        self.lbl_icon.setObjectName("emptyStateIcon")
+        self.lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lbl_icon.setPixmap(pixmap("clipboard-check", color="#64748B", size=42))
+        layout.addWidget(self.lbl_icon)
+
+        self.setMinimumWidth(0)
 
         self._lbl_title = QLabel(title)
-        self._lbl_title.setStyleSheet("font-size: 14px; font-weight: 700; color: #0F172A;")
+        self._lbl_title.setObjectName("emptyStateTitle")
         self._lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._lbl_title.setWordWrap(True)
         layout.addWidget(self._lbl_title)
 
         self._lbl_sub = QLabel(subtitle)
-        self._lbl_sub.setStyleSheet("font-size: 12px; color: #94A3B8;")
+        self._lbl_sub.setObjectName("emptyStateSubtitle")
         self._lbl_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._lbl_sub.setWordWrap(True)
         layout.addWidget(self._lbl_sub)
 
         self._btn = None

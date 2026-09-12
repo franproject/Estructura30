@@ -128,6 +128,51 @@ class TestPayrollPageSelection(unittest.TestCase):
             mock_notice.assert_called_once()
             mock_dialog.assert_not_called()
 
+    def test_update_summary_with_string_and_mixed_ibc_values(self):
+        """Verifica que _update_summary maneja IBC como string sin lanzar TypeError."""
+        run = PayrollRun(
+            run_id="RUN-STR",
+            period_id="2026-06",
+            employee_ids=["1", "2", "3"],
+            details=[
+                {"ibc": "1000000"},
+                {"ibc": "2500000"},
+                {"ibc": 500000},
+                {"ibc": ""},
+                {"ibc": None},
+            ],
+            totals={
+                "gross_salary": "4000000",
+            },
+        )
+        self.page._update_summary(run)
+        ibc_title, ibc_label = self.page.summary_labels["ibc"]
+        self.assertIn("4.000.000", ibc_label.text())
+
+
+class TestMainWindowLoadStateIntegration(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        os.environ["QT_QPA_PLATFORM"] = "offscreen"
+        cls.app = QApplication.instance() or QApplication([])
+
+    def test_main_window_load_and_reload_state_no_error(self):
+        """Verifica que MainWindow cargue y recargue los datos reales sin errores de tipo int + str."""
+        from gui.main_window import MainWindow
+
+        with patch.object(QMessageBox, "warning"), \
+             patch.object(QMessageBox, "critical") as mock_crit, \
+             patch.object(QMessageBox, "information"), \
+             patch.object(QMessageBox, "question", return_value=QMessageBox.StandardButton.Yes):
+            window = MainWindow()
+            self.assertTrue(window._load_state())
+            mock_crit.assert_not_called()
+
+            # Probar también _reload_state
+            window._reload_state()
+            mock_crit.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
+

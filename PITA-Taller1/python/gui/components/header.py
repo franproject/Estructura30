@@ -59,18 +59,19 @@ class TopHeader(QFrame):
 
         # Separador vertical
         sep1 = QFrame()
+        sep1.setObjectName("headerSeparator")
         sep1.setFrameShape(QFrame.Shape.VLine)
-        sep1.setStyleSheet("color: #E2E8F0; background-color: #E2E8F0; max-width: 1px;")
         layout.addWidget(sep1)
 
         # Buscador central interactivo
         self.search_input = QLineEdit()
         self.search_input.setObjectName("headerSearch")
-        self.search_input.setPlaceholderText("Buscar en el sistema... (Enter)")
+        self.search_input.setPlaceholderText("Buscar en NexoCampus... (Ctrl+K)")
+        self.search_input.setToolTip("Buscar en el portal universitario (Ctrl+K)")
         self.search_input.setClearButtonEnabled(True)
         self.search_input.setMaximumWidth(320)
         search_action = self.search_input.addAction(
-            icon("search", "#94A3B8", 15), QLineEdit.ActionPosition.LeadingPosition
+            icon("search", "#64748B", 15), QLineEdit.ActionPosition.LeadingPosition
         )
         search_action.triggered.connect(self._on_search_submitted)
         self.search_input.returnPressed.connect(self._on_search_submitted)
@@ -81,13 +82,12 @@ class TopHeader(QFrame):
         # Fecha y Hora en tiempo real con QTimer
         self.date_label = QLabel()
         self.date_label.setObjectName("headerClock")
-        self.date_label.setStyleSheet("color: #64748B; font-size: 12px; font-weight: 500;")
         layout.addWidget(self.date_label)
 
         # Separador
         sep2 = QFrame()
+        sep2.setObjectName("headerSeparator")
         sep2.setFrameShape(QFrame.Shape.VLine)
-        sep2.setStyleSheet("color: #E2E8F0; background-color: #E2E8F0; max-width: 1px;")
         layout.addWidget(sep2)
 
         # Notificación con panel interactivo
@@ -107,7 +107,6 @@ class TopHeader(QFrame):
         self.dot.setObjectName("notificationDot")
         self.dot.setFixedSize(8, 8)
         self.dot.move(24, 4)
-        self.dot.setStyleSheet("background: #EF4444; border: 2px solid white; border-radius: 4px;")
         self.dot.setVisible(False)
 
         layout.addWidget(self.notif_wrap)
@@ -117,18 +116,16 @@ class TopHeader(QFrame):
         user_layout.setSpacing(8)
 
         avatar = QLabel("SA")
-        avatar.setStyleSheet(
-            "background: linear-gradient(135deg, #16A34A, #14532D);"
-            "color: white; font-weight: 700; border-radius: 16px;"
-            "padding: 6px 10px; font-size: 11px;"
-        )
+        avatar.setObjectName("headerAvatar")
+        avatar.setFixedSize(32, 32)
+        avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         user_info = QVBoxLayout()
         user_info.setSpacing(0)
         user_name = QLabel("Administrador")
-        user_name.setStyleSheet("font-weight: 700; font-size: 12px; color: #0F172A;")
+        user_name.setObjectName("headerUserName")
         user_role = QLabel("Sistema")
-        user_role.setStyleSheet("font-size: 11px; color: #94A3B8;")
+        user_role.setObjectName("headerUserRole")
         user_info.addWidget(user_name)
         user_info.addWidget(user_role)
 

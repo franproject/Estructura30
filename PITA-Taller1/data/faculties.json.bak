@@ -1,0 +1,85 @@
+[
+  {
+    "faculty_id": 1,
+    "name": "Facultad de Ingenierías y Tecnológicas",
+    "dean": "Decanatura de Ingenierías y Tecnologías",
+    "creation_date": "01/01/1977",
+    "active": true,
+    "program_list": [
+      101,
+      102,
+      103,
+      104
+    ]
+  },
+  {
+    "faculty_id": 2,
+    "name": "Facultad de Ciencias de la Salud",
+    "dean": "Decanatura de Ciencias de la Salud",
+    "creation_date": "15/03/1998",
+    "active": true,
+    "program_list": [
+      105,
+      106
+    ]
+  },
+  {
+    "faculty_id": 3,
+    "name": "Facultad de Ciencias Administrativas, Contables y Económicas",
+    "dean": "Decanatura FACE",
+    "creation_date": "20/06/1985",
+    "active": true,
+    "program_list": [
+      112,
+      113,
+      114,
+      115
+    ]
+  },
+  {
+    "faculty_id": 4,
+    "name": "Facultad de Derecho, Ciencias Políticas y Sociales",
+    "dean": "Decanatura de Derecho y Ciencias Sociales",
+    "creation_date": "10/08/2002",
+    "active": true,
+    "program_list": [
+      116,
+      117
+    ]
+  },
+  {
+    "faculty_id": 5,
+    "name": "Facultad de Educación",
+    "dean": "Decanatura de Educación",
+    "creation_date": "05/02/1994",
+    "active": true,
+    "program_list": [
+      108,
+      109,
+      110,
+      111,
+      119
+    ]
+  },
+  {
+    "faculty_id": 6,
+    "name": "Facultad de Bellas Artes",
+    "dean": "Decanatura de Bellas Artes",
+    "creation_date": "12/09/2006",
+    "active": true,
+    "program_list": [
+      118,
+      120
+    ]
+  },
+  {
+    "faculty_id": 7,
+    "name": "Facultad de Ciencias Básicas",
+    "dean": "Decanatura de Ciencias Básicas",
+    "creation_date": "18/04/1990",
+    "active": true,
+    "program_list": [
+      107
+    ]
+  }
+]

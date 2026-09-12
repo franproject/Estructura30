@@ -72559,20 +72559,19 @@
       "total_employer_cost": "314428185"
     },
     "employer_cost": 314428185,
-    "status": "CLOSED",
+    "status": "APPROVED",
     "executed_at": "2026-09-11T22:11:23",
     "audit_ids": [
       "AUD-fc992b2e84f8467396fce86932950ef1",
       "AUD-89b93837a96c468da92618c5dc335e47",
-      "AUD-735af7e5830b45c09f2bd745d3ba58bc",
-      "AUD-1c043fdd7e6c412eb46e27497b4ea518"
+      "AUD-735af7e5830b45c09f2bd745d3ba58bc"
     ],
     "created_at": "2026-09-11T22:11:23",
     "calculated_at": "2026-09-11T22:11:23",
     "calculated_by": "gui",
     "approved_at": "2026-09-11T22:11:29",
     "approved_by": "",
-    "closed_at": "2026-09-11T22:13:30",
+    "closed_at": "",
     "closed_by": "",
     "novelty_ids": [],
     "revision_of": "RUN-0bf04c02985f492188da17a60b33f133"

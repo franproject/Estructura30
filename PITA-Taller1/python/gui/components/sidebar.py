@@ -21,6 +21,19 @@ class Sidebar(QFrame):
     save_requested = Signal()
     reload_requested = Signal()
 
+    NAV_ICON_MAP = {
+        "Dashboard": "home",
+        "Facultades": "building",
+        "Programas": "layers",
+        "Cursos": "book",
+        "Estudiantes": "user",
+        "Profesores": "hat",
+        "Administrativos": "briefcase",
+        "Inscripciones": "clipboard",
+        "Nómina": "money",
+        "Reportes": "chart",
+    }
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("sidebar")
@@ -36,16 +49,16 @@ class Sidebar(QFrame):
 
         # Brand Box
         brand_frame = QFrame()
+        brand_frame.setObjectName("sidebarBrand")
         brand_frame.setMinimumHeight(76)
-        brand_frame.setStyleSheet("border-bottom: 1px solid rgba(255,255,255,0.08);")
         brand_layout = QHBoxLayout(brand_frame)
         brand_layout.setContentsMargins(16, 12, 12, 10)
         brand_layout.setSpacing(10)
 
         logo = QLabel()
+        logo.setObjectName("sidebarLogo")
         logo.setFixedSize(36, 36)
         logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        logo.setStyleSheet("background: rgba(255,255,255,0.15); border-radius: 10px;")
         logo.setPixmap(icon("building", "#FFFFFF", 20).pixmap(20, 20))
 
         brand_text = QVBoxLayout()
@@ -71,11 +84,9 @@ class Sidebar(QFrame):
         nav_scroll.setFrameShape(QFrame.Shape.NoFrame)
         nav_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         nav_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        nav_scroll.setStyleSheet("background: transparent; border: none;")
 
         nav_widget = QWidget()
         nav_widget.setObjectName("sidebarNavWidget")
-        nav_widget.setStyleSheet("background: transparent;")
         nav_layout = QVBoxLayout(nav_widget)
         nav_layout.setContentsMargins(0, 4, 0, 4)
         nav_layout.setSpacing(2)
@@ -105,36 +116,62 @@ class Sidebar(QFrame):
         nav_scroll.setWidget(nav_widget)
         layout.addWidget(nav_scroll, stretch=1)
 
-        # Footer con Guardar y Cargar datos
+        # Footer con Guardar y Cargar datos (Persistencia física diferenciada)
         footer_frame = QFrame()
-        footer_frame.setStyleSheet("border-top: 1px solid rgba(255,255,255,0.08);")
+        footer_frame.setObjectName("sidebarFooter")
         footer_layout = QVBoxLayout(footer_frame)
-        footer_layout.setContentsMargins(12, 8, 12, 10)
+        footer_layout.setContentsMargins(12, 10, 12, 12)
         footer_layout.setSpacing(6)
 
-        save_btn = QPushButton("Guardar Datos")
-        save_btn.setIcon(icon("save", "#FFFFFF", 16))
-        save_btn.setStyleSheet(
-            "background: rgba(255,255,255,0.12); color: white; border: none; border-radius: 6px; "
-            "padding: 8px 10px; font-size: 11px; font-weight: 600; text-align: left;"
-        )
-        save_btn.setMinimumHeight(32)
-        save_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        save_btn.clicked.connect(self.save_requested.emit)
+        # Encabezado de sección de persistencia
+        storage_header = QLabel("PERSISTENCIA EN DISCO")
+        storage_header.setObjectName("sidebarStorageHeader")
+        footer_layout.addWidget(storage_header)
 
-        reload_btn = QPushButton("Cargar Datos")
-        reload_btn.setIcon(icon("refresh", "rgba(255,255,255,0.7)", 16))
-        reload_btn.setStyleSheet(
-            "background: transparent; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.2); "
-            "border-radius: 6px; padding: 7px 10px; font-size: 11px; text-align: left;"
-        )
-        reload_btn.setMinimumHeight(32)
-        reload_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        reload_btn.clicked.connect(self.reload_requested.emit)
+        # Estado de sincronización visual
+        self.lbl_sync_status = QLabel("Sincronizado con disco")
+        self.lbl_sync_status.setObjectName("sidebarSyncStatus")
+        footer_layout.addWidget(self.lbl_sync_status)
 
-        footer_layout.addWidget(save_btn)
-        footer_layout.addWidget(reload_btn)
+        self.save_btn = QPushButton("Guardar Datos")
+        self.save_btn.setObjectName("sidebarSaveButton")
+        self.save_btn.setIcon(icon("save", "#FFFFFF", 16))
+        self.save_btn.setMinimumHeight(36)
+        self.save_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.save_btn.setToolTip("Guardar Datos (Ctrl+S): Sobrescribe de forma atómica los archivos del sistema con el estado actual en memoria.")
+        self.save_btn.clicked.connect(self.save_requested.emit)
+
+        self.reload_btn = QPushButton("Cargar Datos")
+        self.reload_btn.setObjectName("sidebarReloadButton")
+        self.reload_btn.setIcon(icon("refresh", "#F87171", 16))
+        self.reload_btn.setMinimumHeight(34)
+        self.reload_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.reload_btn.setToolTip("Cargar Datos (F5): Reemplaza la sesión actual leyendo los archivos de disco. Los cambios no guardados se perderán.")
+        self.reload_btn.clicked.connect(self.reload_requested.emit)
+
+        footer_layout.addWidget(self.save_btn)
+        footer_layout.addWidget(self.reload_btn)
         layout.addWidget(footer_frame)
+
+    def set_unsaved_changes(self, dirty: bool):
+        """Actualiza los indicadores visuales de persistencia según existan cambios pendientes."""
+        if dirty:
+            self.lbl_sync_status.setText("● Cambios sin guardar")
+            self.lbl_sync_status.setProperty("unsaved", "true")
+            self.save_btn.setProperty("unsaved", "true")
+            self.save_btn.setText("Guardar Datos ●")
+            self.save_btn.setToolTip("Guardar Datos (Ctrl+S): Hay cambios sin guardar. Sobrescribe los archivos con las modificaciones actuales.")
+        else:
+            self.lbl_sync_status.setText("Sincronizado con disco")
+            self.lbl_sync_status.setProperty("unsaved", "false")
+            self.save_btn.setProperty("unsaved", "false")
+            self.save_btn.setText("Guardar Datos")
+            self.save_btn.setToolTip("Guardar Datos (Ctrl+S): Sobrescribe de forma atómica los archivos del sistema con el estado actual en memoria.")
+        
+        self.lbl_sync_status.style().unpolish(self.lbl_sync_status)
+        self.lbl_sync_status.style().polish(self.lbl_sync_status)
+        self.save_btn.style().unpolish(self.save_btn)
+        self.save_btn.style().polish(self.save_btn)
 
     def _create_section_label(self, text: str) -> QLabel:
         lbl = QLabel(text)
@@ -143,14 +180,10 @@ class Sidebar(QFrame):
 
     def _add_nav_button(self, layout: QVBoxLayout, page_name: str, label_text: str, is_sub: bool = False):
         btn = QPushButton(label_text)
-        icon_name = {
-            "Dashboard": "home", "Facultades": "building", "Programas": "hat",
-            "Cursos": "book", "Estudiantes": "user", "Profesores": "hat",
-            "Administrativos": "briefcase", "Inscripciones": "clipboard",
-            "Nómina": "money", "Reportes": "chart",
-        }.get(page_name, "home")
+        icon_name = self.NAV_ICON_MAP.get(page_name, "home")
         btn.setIcon(icon(icon_name, "#FFFFFF", 16))
         btn.setIconSize(QSize(16, 16))
+        btn.setProperty("icon_name", icon_name)
         btn.setObjectName("subNavButton" if is_sub else "navButton")
         btn.setCheckable(True)
         btn.clicked.connect(lambda checked=False, p=page_name: self._on_button_clicked(p))
@@ -169,8 +202,9 @@ class Sidebar(QFrame):
 
     def set_active_page(self, page_name: str, emit_signal: bool = False):
         self._active_page = page_name
+        target = "Dashboard" if page_name in ("Inicio", "Dashboard") else page_name
         for name, btn in self._buttons.items():
-            is_active = (name == page_name)
+            is_active = (name == target)
             btn.setChecked(is_active)
             btn.setProperty("active", "true" if is_active else "false")
             btn.style().unpolish(btn)

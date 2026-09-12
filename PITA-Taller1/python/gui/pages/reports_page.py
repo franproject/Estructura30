@@ -21,6 +21,7 @@ from ..components.icons import icon
 from ..components.page_header import PageHeader
 from ..components.pagination_bar import PaginationBar
 from ..components.search_bar import SearchBar
+from ..i18n.labels import get_acronym_tooltip
 from .crud_page import _normalize_text
 
 
@@ -69,10 +70,11 @@ class ReportsPage(QWidget):
         self.tab_salary = self._create_salary_tab()
         self.tab_metrics = self._create_metrics_tab()
 
-        self.tabs.addTab(self.tab_ebra, "⚠️  Riesgo Académico (EBRA)")
-        self.tabs.addTab(self.tab_workload, "📚  Carga Docente")
-        self.tabs.addTab(self.tab_salary, "💼  Consolidado Salarial")
-        self.tabs.addTab(self.tab_metrics, "📊  Indicadores Globales")
+        self.tabs.addTab(self.tab_ebra, icon("warning", "#DC2626", 16), "Riesgo Académico (EBRA)")
+        self.tabs.setTabToolTip(0, get_acronym_tooltip("EBRA"))
+        self.tabs.addTab(self.tab_workload, icon("book-open", "#2563EB", 16), "Carga Docente")
+        self.tabs.addTab(self.tab_salary, icon("briefcase", "#16A34A", 16), "Consolidado Salarial")
+        self.tabs.addTab(self.tab_metrics, icon("chart", "#0D9488", 16), "Indicadores Globales")
 
         root_layout.addWidget(self.tabs, stretch=1)
 
@@ -92,6 +94,7 @@ class ReportsPage(QWidget):
         toolbar.addWidget(self.search_ebra)
 
         self.lbl_ebra_badge = QLabel("0 estudiantes")
+        self.lbl_ebra_badge.setToolTip(get_acronym_tooltip("EBRA"))
         self.lbl_ebra_badge.setStyleSheet(
             "background: #FEE2E2; color: #DC2626; font-size: 11px; font-weight: 700; "
             "border-radius: 6px; padding: 5px 10px;"
@@ -100,7 +103,8 @@ class ReportsPage(QWidget):
 
         toolbar.addStretch()
 
-        btn_export = QPushButton("📥 Exportar CSV")
+        btn_export = QPushButton("Exportar CSV")
+        btn_export.setIcon(icon("download", "#16A34A", 14))
         btn_export.setObjectName("secondaryButton")
         btn_export.clicked.connect(self._export_ebra_csv)
         toolbar.addWidget(btn_export)
@@ -109,12 +113,17 @@ class ReportsPage(QWidget):
 
         # Tabla y Paginador
         columns = ("ID", "Nombre Completo", "Programa Académico", "Semestre", "Promedio Acumulado", "Estado de Riesgo")
-        self.table_ebra = DataTable(headers=columns)
+        self.table_ebra = DataTable(
+            headers=columns,
+            stretch_column="Nombre Completo",
+            column_types=("id", "text", "text", "center", "numeric", "status"),
+        )
         layout.addWidget(self.table_ebra)
 
         self.pag_ebra = PaginationBar(parent=self)
         self.pag_ebra.connect_table(self.table_ebra)
         layout.addWidget(self.pag_ebra)
+        layout.addStretch()
 
         return widget
 
@@ -164,7 +173,8 @@ class ReportsPage(QWidget):
 
         toolbar.addStretch()
 
-        btn_export = QPushButton("📥 Exportar CSV")
+        btn_export = QPushButton("Exportar CSV")
+        btn_export.setIcon(icon("download", "#16A34A", 14))
         btn_export.setObjectName("secondaryButton")
         btn_export.clicked.connect(self._export_workload_csv)
         toolbar.addWidget(btn_export)
@@ -173,12 +183,17 @@ class ReportsPage(QWidget):
 
         # Tabla y Paginador
         columns = ("ID", "Nombre del Profesor", "Categoría / Rango", "Cursos Asignados", "Total Créditos a Cargo", "Dedicación")
-        self.table_workload = DataTable(headers=columns)
+        self.table_workload = DataTable(
+            headers=columns,
+            stretch_column="Nombre del Profesor",
+            column_types=("id", "text", "text", "numeric", "numeric", "center"),
+        )
         layout.addWidget(self.table_workload)
 
         self.pag_workload = PaginationBar(parent=self)
         self.pag_workload.connect_table(self.table_workload)
         layout.addWidget(self.pag_workload)
+        layout.addStretch()
 
         return widget
 
@@ -228,7 +243,8 @@ class ReportsPage(QWidget):
 
         toolbar.addStretch()
 
-        btn_export = QPushButton("📥 Exportar CSV")
+        btn_export = QPushButton("Exportar CSV")
+        btn_export.setIcon(icon("download", "#16A34A", 14))
         btn_export.setObjectName("secondaryButton")
         btn_export.clicked.connect(self._export_salary_csv)
         toolbar.addWidget(btn_export)
@@ -237,12 +253,17 @@ class ReportsPage(QWidget):
 
         # Tabla y Paginador
         columns = ("Categoría / Escalafón", "Tipo de Personal", "Cantidad de Empleados", "Salario Base Promedio", "Total a Pagar")
-        self.table_salary = DataTable(headers=columns)
+        self.table_salary = DataTable(
+            headers=columns,
+            stretch_column="Categoría / Escalafón",
+            column_types=("text", "text", "numeric", "money", "money"),
+        )
         layout.addWidget(self.table_salary)
 
         self.pag_salary = PaginationBar(parent=self)
         self.pag_salary.connect_table(self.table_salary)
         layout.addWidget(self.pag_salary)
+        layout.addStretch()
 
         return widget
 
@@ -284,7 +305,8 @@ class ReportsPage(QWidget):
 
         toolbar.addStretch()
 
-        btn_export = QPushButton("📥 Exportar CSV")
+        btn_export = QPushButton("Exportar CSV")
+        btn_export.setIcon(icon("download", "#16A34A", 14))
         btn_export.setObjectName("secondaryButton")
         btn_export.clicked.connect(self._export_metrics_csv)
         toolbar.addWidget(btn_export)
@@ -293,12 +315,17 @@ class ReportsPage(QWidget):
 
         # Tabla y Paginador
         columns = ("Área / Dimensión", "Indicador Institucional", "Valor Actual", "Observaciones y Contexto")
-        self.table_metrics = DataTable(headers=columns)
+        self.table_metrics = DataTable(
+            headers=columns,
+            stretch_column="Indicador Institucional",
+            column_types=("text", "text", "center", "text"),
+        )
         layout.addWidget(self.table_metrics)
 
         self.pag_metrics = PaginationBar(parent=self)
         self.pag_metrics.connect_table(self.table_metrics)
         layout.addWidget(self.pag_metrics)
+        layout.addStretch()
 
         return widget
 
@@ -399,7 +426,7 @@ class ReportsPage(QWidget):
             workload_rows = []
             for p in getattr(mgr, "professors", []):
                 p_courses = [c for c in active_courses if getattr(c, "assigned_professor_id", None) == p.professor_id]
-                total_credits = sum(getattr(c, "credits", 0) for c in p_courses)
+                total_credits = sum(int(getattr(c, "credits", 0) or 0) for c in p_courses)
                 workload_rows.append((
                     p.professor_id,
                     p.full_name,

@@ -10,7 +10,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from .icons import icon
+from .icons import icon, pixmap
+from ..i18n.labels import get_payroll_status_label, get_acronym_tooltip
 
 
 class NotificationPanel(QFrame):
@@ -41,7 +42,7 @@ class NotificationPanel(QFrame):
             "  padding: 12px 16px; "
             "} "
             "#notifTitle { "
-            "  font-size: 14px; "
+            "  font-size: 13px; "
             "  font-weight: 700; "
             "  color: #0F172A; "
             "} "
@@ -117,7 +118,7 @@ class NotificationPanel(QFrame):
                 threshold = getattr(mgr, "ebra_threshold", 3.0)
                 alerts.append({
                     "id": "ebra",
-                    "title": f"{ebra_count} Estudiantes en Riesgo EBRA",
+                    "title": f"{ebra_count} Estudiantes en Riesgo Académico (EBRA)",
                     "description": f"Promedio inferior a {threshold:.1f}. Requieren acompañamiento o tutoría académica.",
                     "target": "Estudiantes",
                     "action_text": "Ver Estudiantes",
@@ -142,10 +143,11 @@ class NotificationPanel(QFrame):
                         open_periods.append((p, st_val))
                 if open_periods:
                     first, status_val = open_periods[0]
+                    status_es = get_payroll_status_label(status_val)
                     alerts.append({
                         "id": "payroll",
                         "title": f"Período de Nómina: {first.year}-{first.month:02d}",
-                        "description": f"En estado '{status_val}'. Requiere cálculo, aprobación o cierre definitivo.",
+                        "description": f"En estado '{status_es}'. Requiere cálculo, aprobación o cierre definitivo.",
                         "target": "Nómina",
                         "action_text": "Ir a Nómina",
                         "level": "warning",
@@ -211,13 +213,13 @@ class NotificationPanel(QFrame):
             e_layout.setContentsMargins(16, 24, 16, 24)
             e_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-            check_lbl = QLabel("✓")
+            check_lbl = QLabel()
             check_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            check_lbl.setStyleSheet("font-size: 28px; color: #16A34A; font-weight: 800;")
+            check_lbl.setPixmap(pixmap("check", color="#16A34A", size=24))
 
             msg_title = QLabel("Todo al día")
             msg_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            msg_title.setStyleSheet("font-size: 14px; font-weight: 700; color: #0F172A;")
+            msg_title.setStyleSheet("font-size: 13px; font-weight: 700; color: #0F172A;")
 
             msg_sub = QLabel("No hay alertas críticas ni acciones pendientes en el sistema universitario.")
             msg_sub.setWordWrap(True)
@@ -265,7 +267,7 @@ class NotificationPanel(QFrame):
         top_row.addWidget(icon_lbl)
 
         card_title = QLabel(alert.get("title", ""))
-        card_title.setStyleSheet("font-size: 12px; font-weight: 700; color: #0F172A;")
+        card_title.setStyleSheet("font-size: 13px; font-weight: 700; color: #0F172A;")
         top_row.addWidget(card_title, stretch=1)
         card_layout.addLayout(top_row)
 
@@ -279,7 +281,9 @@ class NotificationPanel(QFrame):
         action_row = QHBoxLayout()
         action_row.addStretch()
 
-        action_btn = QPushButton(f"{alert.get('action_text', 'Ver más')} ➔")
+        action_btn = QPushButton(alert.get("action_text", "Ver más"))
+        action_btn.setIcon(icon("arrow-right", color="#166534", size=12))
+        action_btn.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         action_btn.setStyleSheet(
             "QPushButton { "
             "  background: transparent; "

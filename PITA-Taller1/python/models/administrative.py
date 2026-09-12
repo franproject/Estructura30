@@ -110,6 +110,16 @@ class Administrative:
                 raise TypeError(f"{field_name} must be a list")
         return True
 
+    def __eq__(self, other):
+        if isinstance(other, Administrative):
+            return self.administrative_id == other.administrative_id
+        if isinstance(other, int):
+            return self.administrative_id == other
+        return False
+
+    def __hash__(self):
+        return hash(self.administrative_id)
+
     def to_dict(self):
         return {
             "administrative_id": self.administrative_id,

@@ -143,6 +143,16 @@ class Professor:
                 raise TypeError(f"{field_name} must be a list")
         return True
 
+    def __eq__(self, other):
+        if isinstance(other, Professor):
+            return self.professor_id == other.professor_id
+        if isinstance(other, int):
+            return self.professor_id == other
+        return False
+
+    def __hash__(self):
+        return hash(self.professor_id)
+
     def to_dict(self):
         return {
             "professor_id": self.professor_id,

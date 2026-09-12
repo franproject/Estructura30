@@ -4,7 +4,6 @@ from models.administrative import Administrative
 from models.course import Course
 from models.enrollment import Enrollment
 from models.faculty import Faculty
-from models.payroll import Payroll
 from models.professor import Professor
 from models.program import Program
 from models.student import Student
@@ -40,77 +39,9 @@ class DomainModelTests(unittest.TestCase):
         self.assertTrue(professor.validate())
         self.assertEqual(Professor.from_dict(professor.to_dict()).full_name, "Luis Gomez")
 
-    def test_administrative_and_payroll_serialization(self):
+    def test_administrative_serialization(self):
         administrative = Administrative(administrative_id=7, full_name="Maria Ruiz", document_type="CC", document_number="456", email="maria@test.com", phone="888", position="Coordinator", category="A", employment_type="Full-time", base_salary=3500000.0, health_discount=180000.0, pension_discount=220000.0, severance_provision=100000.0, holiday_bonus=50000.0, vacation_provision=75000.0, net_salary=3100000.0, active=True)
-        payroll = Payroll(description="Monthly payroll")
-
         self.assertEqual(Administrative.from_dict(administrative.to_dict()).position, "Coordinator")
-        self.assertEqual(Payroll.from_dict(payroll.to_dict()).description, "Monthly payroll")
-
-    def test_payroll_calculations_for_professor_and_administrative(self):
-        professor = Professor(
-            professor_id=3,
-            full_name="Luis Gomez",
-            document_type="CC",
-            document_number="321",
-            email="luis@test.com",
-            phone="777",
-            faculty_id=1,
-            employment_type="Full-time",
-            category_rank="A",
-            academic_title="PhD",
-            years_of_qualified_experience=8,
-            dedication="Full-time",
-            lecture_hours=10,
-            managerial_role="Coordinator",
-            category_score=10.5,
-            title_score=5.5,
-            experience_score=3.0,
-            productivity_score=4.0,
-            academic_management_score=2.0,
-            total_points=25.0,
-            point_value=1000.0,
-            base_monthly_salary=5000000.0,
-            health_discount=250000.0,
-            pension_discount=300000.0,
-            severance_provision=150000.0,
-            bonus_provision=200000.0,
-            vacation_provision=100000.0,
-            net_salary=4500000.0,
-            active=True,
-        )
-
-        payroll = Payroll(description="Monthly payroll")
-        professor_report = payroll.generate_payroll_report(professor)
-        self.assertAlmostEqual(professor_report["points"], 25.0)
-        self.assertAlmostEqual(professor_report["deductions"], 550000.0)
-        self.assertAlmostEqual(professor_report["benefits"], 450000.0)
-        self.assertAlmostEqual(professor_report["net_salary"], 5000000.0 - 550000.0 + 450000.0)
-
-        administrative = Administrative(
-            administrative_id=7,
-            full_name="Maria Ruiz",
-            document_type="CC",
-            document_number="456",
-            email="maria@test.com",
-            phone="888",
-            position="Coordinator",
-            category="A",
-            employment_type="Full-time",
-            base_salary=3500000.0,
-            health_discount=180000.0,
-            pension_discount=220000.0,
-            severance_provision=100000.0,
-            holiday_bonus=50000.0,
-            vacation_provision=75000.0,
-            net_salary=3100000.0,
-            active=True,
-        )
-
-        admin_report = payroll.generate_payroll_report(administrative)
-        self.assertAlmostEqual(admin_report["deductions"], 400000.0)
-        self.assertAlmostEqual(admin_report["benefits"], 225000.0)
-        self.assertAlmostEqual(admin_report["net_salary"], 3500000.0 - 400000.0 + 225000.0)
 
     def test_invalid_ids_are_rejected(self):
         with self.assertRaises(ValueError):

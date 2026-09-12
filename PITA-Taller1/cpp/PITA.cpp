@@ -109,6 +109,62 @@ string resolverRutaArchivoDatos(const char* argv0 = nullptr) {
 #endif
 }
 
+#ifdef _WIN32
+class ConsolaUtf8Buf final : public streambuf {
+public:
+    explicit ConsolaUtf8Buf(streambuf* salidaOriginal)
+        : salidaOriginal_(salidaOriginal), esConsola_(false) {
+        HANDLE salida = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD modo = 0;
+        esConsola_ = salida != INVALID_HANDLE_VALUE && salida != nullptr && GetConsoleMode(salida, &modo) != 0;
+    }
+
+    ~ConsolaUtf8Buf() override {
+        sync();
+    }
+
+protected:
+    int_type overflow(int_type caracter = traits_type::eof()) override {
+        if (!traits_type::eq_int_type(caracter, traits_type::eof())) {
+            buffer_.push_back(static_cast<char>(caracter));
+        }
+        return sync() == 0 ? traits_type::not_eof(caracter) : traits_type::eof();
+    }
+
+    streamsize xsputn(const char* datos, streamsize cantidad) override {
+        buffer_.append(datos, static_cast<size_t>(cantidad));
+        return cantidad;
+    }
+
+    int sync() override {
+        if (buffer_.empty()) return 0;
+        if (!esConsola_) {
+            const streamsize escritos = salidaOriginal_->sputn(buffer_.data(), static_cast<streamsize>(buffer_.size()));
+            buffer_.clear();
+            return escritos < 0 ? -1 : 0;
+        }
+
+        HANDLE salida = GetStdHandle(STD_OUTPUT_HANDLE);
+        const int caracteresAnchos = MultiByteToWideChar(
+            CP_UTF8, 0, buffer_.data(), static_cast<int>(buffer_.size()), nullptr, 0);
+        if (caracteresAnchos <= 0) return -1;
+
+        wstring texto(caracteresAnchos, L'\0');
+        MultiByteToWideChar(CP_UTF8, 0, buffer_.data(), static_cast<int>(buffer_.size()),
+                            texto.data(), caracteresAnchos);
+        DWORD escritos = 0;
+        const BOOL correcto = WriteConsoleW(salida, texto.data(), caracteresAnchos, &escritos, nullptr);
+        buffer_.clear();
+        return correcto ? 0 : -1;
+    }
+
+private:
+    streambuf* salidaOriginal_;
+    string buffer_;
+    bool esConsola_;
+};
+#endif
+
 // ======================================================================
 // 2. ENUMERACIONES
 // ======================================================================
@@ -266,6 +322,8 @@ void   pausar();
 void   titulo(const string &t);
 void   linea();
 void   verificarFinDeEntrada();
+size_t anchoVisualUtf8(const string& texto);
+void   imprimirColumna(const string& texto, size_t ancho);
 
 // -- funciones auxiliares de mensajeria --
 void msgError(const string& msg);
@@ -411,6 +469,12 @@ void menuPrincipal();
 // 6. MAIN
 // ======================================================================
 int main(int argc, char* argv[]) {
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    ConsolaUtf8Buf consolaUtf8(cout.rdbuf());
+    cout.rdbuf(&consolaUtf8);
+#endif
     ARCHIVO_DATOS = resolverRutaArchivoDatos(argc > 0 ? argv[0] : nullptr);
     titulo("NexoCampus - PROGRAMA INTEGRADO DE TRANSACCIONES ACADEMICAS");
     cout << "  Universidad Popular del Cesar - Modulo C++ (Listas Enlazadas)\n";
@@ -441,6 +505,42 @@ int main(int argc, char* argv[]) {
 // ======================================================================
 void linea() {
     cout << "----------------------------------------------------------------------\n";
+}
+
+size_t anchoVisualUtf8(const string& texto) {
+    size_t ancho = 0;
+    for (size_t i = 0; i < texto.size(); ++i) {
+        if ((static_cast<unsigned char>(texto[i]) & 0xC0) != 0x80) ++ancho;
+    }
+    return ancho;
+}
+
+void imprimirColumna(const string& texto, size_t ancho) {
+    if (ancho == 0) return;
+    const size_t anchoTexto = anchoVisualUtf8(texto);
+    if (anchoTexto <= ancho) {
+        cout << texto << string(ancho - anchoTexto, ' ') << ' ';
+        return;
+    }
+    if (ancho <= 3) {
+        cout << texto.substr(0, ancho) << ' ';
+        return;
+    }
+
+    size_t bytes = 0;
+    size_t caracteres = 0;
+    while (bytes < texto.size() && caracteres < ancho - 3) {
+        const unsigned char byte = static_cast<unsigned char>(texto[bytes]);
+        size_t longitud = 1;
+        if ((byte & 0x80) == 0) longitud = 1;
+        else if ((byte & 0xE0) == 0xC0) longitud = 2;
+        else if ((byte & 0xF0) == 0xE0) longitud = 3;
+        else if ((byte & 0xF8) == 0xF0) longitud = 4;
+        if (bytes + longitud > texto.size()) break;
+        bytes += longitud;
+        ++caracteres;
+    }
+    cout << texto.substr(0, bytes) << "..." << ' ';
 }
 
 void limpiarPantalla() {
@@ -562,21 +662,21 @@ string nombreTipoContrato(TipoContratoDocente t) {
     switch (t) {
         case PLANTA:      return "Planta";
         case OCASIONAL:   return "Ocasional";
-        case CATEDRATICO: return "Catedratico";
+        case CATEDRATICO: return "Catedrático";
     }
     return "Desconocido";
 }
 
 string nombreTipoPrograma(TipoPrograma t) {
     switch (t) {
-        case INGENIERIA: return "Ingenieria";
+        case INGENIERIA: return "Ingeniería";
         case MEDICINA: return "Medicina";
-        case ODONTOLOGIA: return "Odontologia";
-        case ENFERMERIA: return "Enfermeria";
-        case PSICOLOGIA: return "Psicologia";
+        case ODONTOLOGIA: return "Odontología";
+        case ENFERMERIA: return "Enfermería";
+        case PSICOLOGIA: return "Psicología";
         case DERECHO: return "Derecho";
-        case ADMINISTRACION: return "Administracion";
-        case EDUCACION: return "Educacion";
+        case ADMINISTRACION: return "Administración";
+        case EDUCACION: return "Educación";
         default: return "Otro";
     }
 }
@@ -862,17 +962,23 @@ void listarFacultades() {
         msgVacio("facultades");
         return;
     }
-    cout << left << setw(8) << "CODIGO" << setw(40) << "NOMBRE"
-         << setw(10) << "ESTADO" << setw(10) << "PROGRAMAS" << "\n";
+    cout << left;
+    imprimirColumna("CODIGO", 8);
+    imprimirColumna("NOMBRE", 42);
+    imprimirColumna("ESTADO", 12);
+    imprimirColumna("PROGRAMAS", 10);
+    cout << "\n";
     linea();
     Facultad* actual = cabezaFacultades;
     while (actual != nullptr) {
         int numProgramas = 0;
         Programa* p = actual->listaProgramas;
         while (p != nullptr) { numProgramas++; p = p->sig; }
-        cout << left << setw(8) << actual->codigo << setw(40) << actual->nombre
-             << setw(10) << (actual->activo ? "Activa" : "Inactiva")
-             << setw(10) << numProgramas << "\n";
+        cout << left;
+        imprimirColumna(actual->codigo, 8);
+        imprimirColumna(actual->nombre, 42);
+        imprimirColumna(actual->activo ? "Activa" : "Inactiva", 12);
+        cout << setw(10) << numProgramas << "\n";
         actual = actual->sig;
     }
 }
@@ -993,13 +1099,20 @@ void listarProgramas() {
         if (f->listaProgramas == nullptr) {
             msgVacio("programas");
         } else {
-            cout << "    " << left << setw(8) << "CODIGO" << setw(28) << "NOMBRE"
-                 << setw(18) << "TIPO" << setw(10) << "ESTADO" << "\n";
+            cout << "    " << left;
+            imprimirColumna("CODIGO", 8);
+            imprimirColumna("NOMBRE", 36);
+            imprimirColumna("TIPO", 20);
+            imprimirColumna("ESTADO", 10);
+            cout << "\n";
             Programa* p = f->listaProgramas;
             while (p != nullptr) {
-                cout << "    " << left << setw(8) << p->codigo << setw(28) << p->nombre
-                     << setw(18) << nombreTipoPrograma(p->tipo)
-                     << setw(10) << (p->activo ? "Activo" : "Inactivo") << "\n";
+                cout << "    " << left;
+                imprimirColumna(p->codigo, 8);
+                imprimirColumna(p->nombre, 36);
+                imprimirColumna(nombreTipoPrograma(p->tipo), 20);
+                imprimirColumna(p->activo ? "Activo" : "Inactivo", 10);
+                cout << "\n";
                 p = p->sig;
             }
         }
@@ -1105,14 +1218,21 @@ void listarCursos() {
     Programa* p = seleccionarProgramaPorCodigo();
     if (p == nullptr) return;
     if (p->listaCursos == nullptr) { msgVacio("cursos"); return; }
-    cout << left << setw(8) << "CODIGO" << setw(35) << "NOMBRE"
-         << setw(10) << "CREDITOS" << setw(10) << "ESTADO" << "\n";
+    cout << left;
+    imprimirColumna("CODIGO", 8);
+    imprimirColumna("NOMBRE", 38);
+    imprimirColumna("CREDITOS", 10);
+    imprimirColumna("ESTADO", 10);
+    cout << "\n";
     linea();
     Curso* actual = p->listaCursos;
     while (actual != nullptr) {
-        cout << left << setw(8) << actual->codigo << setw(35) << actual->nombre
-             << setw(10) << actual->creditos
-             << setw(10) << (actual->activo ? "Activo" : "Inactivo") << "\n";
+        cout << left;
+        imprimirColumna(actual->codigo, 8);
+        imprimirColumna(actual->nombre, 38);
+        cout << setw(10) << actual->creditos;
+        imprimirColumna(actual->activo ? "Activo" : "Inactivo", 10);
+        cout << "\n";
         actual = actual->sig;
     }
 }
@@ -1219,17 +1339,27 @@ void listarEstudiantes() {
     Programa* p = seleccionarProgramaPorCodigo();
     if (p == nullptr) return;
     if (p->listaEstudiantes == nullptr) { msgVacio("estudiantes"); return; }
-    cout << left << setw(8) << "CODIGO" << setw(28) << "NOMBRE" << setw(14) << "DOCUMENTO"
-         << setw(14) << "CATEGORIA" << setw(10) << "ESTADO" << setw(10) << "PROMEDIO" << "\n";
+    cout << left;
+    imprimirColumna("CODIGO", 8);
+    imprimirColumna("NOMBRE", 30);
+    imprimirColumna("DOCUMENTO", 14);
+    imprimirColumna("CATEGORIA", 16);
+    imprimirColumna("ESTADO", 10);
+    imprimirColumna("PROMEDIO", 10);
+    cout << "\n";
     linea();
     Estudiante* actual = p->listaEstudiantes;
     while (actual != nullptr) {
         double prom = calcularPromedio(actual);
-        cout << left << setw(8) << actual->codigo << setw(28) << actual->nombre
-             << setw(14) << actual->documento << setw(14) << actual->categoria
-             << setw(10) << (actual->activo ? "Activo" : "Inactivo");
-        if (prom < 0) cout << setw(10) << "N/A" << "\n";
-        else cout << fixed << setprecision(2) << setw(10) << prom << "\n";
+           cout << left;
+           imprimirColumna(actual->codigo, 8);
+           imprimirColumna(actual->nombre, 30);
+           imprimirColumna(actual->documento, 14);
+           imprimirColumna(actual->categoria, 16);
+           imprimirColumna(actual->activo ? "Activo" : "Inactivo", 10);
+           if (prom < 0) imprimirColumna("N/A", 10);
+           else cout << fixed << setprecision(2) << setw(10) << prom;
+           cout << "\n";
         actual = actual->sig;
     }
 }
@@ -1391,12 +1521,19 @@ void consultarPromedioEstudiante() {
     if (e == nullptr) { msgError("No existe ese estudiante."); return; }
 
     cout << "\n  Historial academico de " << e->nombre << ":\n";
-    cout << "  " << left << setw(30) << "CURSO" << setw(10) << "NOTA" << setw(12) << "ESTADO" << "\n";
+    cout << "  " << left;
+    imprimirColumna("CURSO", 36);
+    imprimirColumna("NOTA", 10);
+    imprimirColumna("ESTADO", 12);
+    cout << "\n";
     Nota* n = e->cursosMatriculados;
     while (n != nullptr) {
-        cout << "  " << left << setw(30) << n->nombreCurso;
-        if (n->valor < 0) cout << setw(10) << "N/A"; else cout << fixed << setprecision(2) << setw(10) << n->valor;
-        cout << setw(12) << (n->cancelado ? "Cancelado" : "Activo") << "\n";
+        cout << "  " << left;
+        imprimirColumna(n->nombreCurso, 36);
+        if (n->valor < 0) imprimirColumna("N/A", 10);
+        else cout << fixed << setprecision(2) << setw(10) << n->valor;
+        imprimirColumna(n->cancelado ? "Cancelado" : "Activo", 12);
+        cout << "\n";
         n = n->sig;
     }
 
@@ -1510,16 +1647,24 @@ void listarProfesores() {
     Programa* p = seleccionarProgramaPorCodigo();
     if (p == nullptr) return;
     if (p->listaProfesores == nullptr) { msgVacio("profesores"); return; }
-    cout << left << setw(8) << "CODIGO" << setw(26) << "NOMBRE" << setw(13) << "CONTRATO"
-         << setw(12) << "CATEGORIA" << setw(10) << "ESTADO" << setw(14) << "SALARIO MES" << "\n";
+    cout << left;
+    imprimirColumna("CODIGO", 8);
+    imprimirColumna("NOMBRE", 30);
+    imprimirColumna("CONTRATO", 15);
+    imprimirColumna("CATEGORIA", 14);
+    imprimirColumna("ESTADO", 10);
+    imprimirColumna("SALARIO MES", 14);
+    cout << "\n";
     linea();
     Profesor* actual = p->listaProfesores;
     while (actual != nullptr) {
-        cout << left << setw(8) << actual->codigo << setw(26) << actual->nombre
-             << setw(13) << nombreTipoContrato(actual->nomina.tipoContrato)
-             << setw(12) << nombreCategoria(actual->nomina.categoria)
-             << setw(10) << (actual->activo ? "Activo" : "Inactivo")
-             << fixed << setprecision(0) << setw(14) << calcularSalarioMensualBruto(actual) << "\n";
+        cout << left;
+        imprimirColumna(actual->codigo, 8);
+        imprimirColumna(actual->nombre, 30);
+        imprimirColumna(nombreTipoContrato(actual->nomina.tipoContrato), 15);
+        imprimirColumna(nombreCategoria(actual->nomina.categoria), 14);
+        imprimirColumna(actual->activo ? "Activo" : "Inactivo", 10);
+        cout << fixed << setprecision(0) << setw(14) << calcularSalarioMensualBruto(actual) << "\n";
         actual = actual->sig;
     }
 }
@@ -1662,15 +1807,24 @@ void crearAdministrativo() {
 void listarAdministrativos() {
     titulo("LISTADO DE ADMINISTRATIVOS");
     if (cabezaAdministrativos == nullptr) { msgVacio("administrativos"); return; }
-    cout << left << setw(8) << "CODIGO" << setw(24) << "NOMBRE" << setw(20) << "CARGO"
-         << setw(14) << "CONTRATO" << setw(10) << "ESTADO" << setw(14) << "SALARIO" << "\n";
+    cout << left;
+    imprimirColumna("CODIGO", 8);
+    imprimirColumna("NOMBRE", 30);
+    imprimirColumna("CARGO", 24);
+    imprimirColumna("CONTRATO", 16);
+    imprimirColumna("ESTADO", 10);
+    imprimirColumna("SALARIO", 14);
+    cout << "\n";
     linea();
     Administrativo* actual = cabezaAdministrativos;
     while (actual != nullptr) {
-        cout << left << setw(8) << actual->codigo << setw(24) << actual->nombre
-             << setw(20) << actual->cargo << setw(14) << actual->tipoContrato
-             << setw(10) << (actual->activo ? "Activo" : "Inactivo")
-             << fixed << setprecision(0) << setw(14) << actual->salarioBase << "\n";
+        cout << left;
+        imprimirColumna(actual->codigo, 8);
+        imprimirColumna(actual->nombre, 30);
+        imprimirColumna(actual->cargo, 24);
+        imprimirColumna(actual->tipoContrato, 16);
+        imprimirColumna(actual->activo ? "Activo" : "Inactivo", 10);
+        cout << fixed << setprecision(0) << setw(14) << actual->salarioBase << "\n";
         actual = actual->sig;
     }
 }
@@ -1903,15 +2057,23 @@ void reporteNominaPorPrograma() {
     if (p == nullptr) return;
     double totalMensual = 0, totalAnual = 0;
     int cuenta = 0;
-    cout << left << setw(8) << "CODIGO" << setw(26) << "NOMBRE" << setw(13) << "CONTRATO"
-         << setw(16) << "MENSUAL BRUTO" << setw(16) << "ANUAL BRUTO" << "\n";
+    cout << left;
+    imprimirColumna("CODIGO", 8);
+    imprimirColumna("NOMBRE", 30);
+    imprimirColumna("CONTRATO", 15);
+    imprimirColumna("MENSUAL BRUTO", 16);
+    imprimirColumna("ANUAL BRUTO", 16);
+    cout << "\n";
     linea();
     Profesor* d = p->listaProfesores;
     while (d != nullptr) {
         double m = calcularSalarioMensualBruto(d);
         double a = calcularSalarioAnualBruto(d);
-        cout << left << setw(8) << d->codigo << setw(26) << d->nombre
-             << setw(13) << nombreTipoContrato(d->nomina.tipoContrato)
+        cout << left;
+        imprimirColumna(d->codigo, 8);
+        imprimirColumna(d->nombre, 30);
+        imprimirColumna(nombreTipoContrato(d->nomina.tipoContrato), 15);
+        cout
              << fixed << setprecision(0) << setw(16) << m << setw(16) << a << "\n";
         totalMensual += m; totalAnual += a; cuenta++;
         d = d->sig;
@@ -1978,8 +2140,9 @@ void reporteNominaUniversidadCompleta() {
             }
             p = p->sig;
         }
-        cout << "  Facultad " << left << setw(30) << f->nombre
-             << " -> nomina mensual: $ " << fixed << setprecision(0) << subtotalFac << "\n";
+        cout << "  Facultad ";
+        imprimirColumna(f->nombre, 42);
+        cout << " -> nomina mensual: $ " << fixed << setprecision(0) << subtotalFac << "\n";
         f = f->sig;
     }
 
@@ -2004,9 +2167,11 @@ void reporteEstudiantesEnEBRA() {
             while (e != nullptr) {
                 double prom = calcularPromedio(e);
                 if (prom >= 0 && prom < UMBRAL_EBRA) {
-                    cout << "  [ALERTA] " << left << setw(25) << e->nombre
-                         << " (" << e->codigo << ")  Programa: " << setw(25) << p->nombre
-                         << " Promedio: " << fixed << setprecision(2) << prom << "\n";
+                    cout << "  [ALERTA] ";
+                    imprimirColumna(e->nombre, 30);
+                    cout << " (" << e->codigo << ")  Programa: ";
+                    imprimirColumna(p->nombre, 38);
+                    cout << " Promedio: " << fixed << setprecision(2) << prom << "\n";
                     encontrados++;
                 }
                 e = e->sig;
@@ -2144,14 +2309,20 @@ void reporteNominaTotalAdministrativos() {
     if (cabezaAdministrativos == nullptr) { msgVacio("administrativos"); return; }
     double totalMensual = 0, totalAnual = 0;
     int cuenta = 0;
-    cout << left << setw(8) << "CODIGO" << setw(24) << "NOMBRE" << setw(16) << "MENSUAL BRUTO"
-         << setw(16) << "ANUAL BRUTO" << "\n";
+    cout << left;
+    imprimirColumna("CODIGO", 8);
+    imprimirColumna("NOMBRE", 30);
+    imprimirColumna("MENSUAL BRUTO", 16);
+    imprimirColumna("ANUAL BRUTO", 16);
+    cout << "\n";
     linea();
     Administrativo* a = cabezaAdministrativos;
     while (a != nullptr) {
         double anual = calcularSalarioAnualBrutoAdministrativo(a);
-        cout << left << setw(8) << a->codigo << setw(24) << a->nombre
-             << fixed << setprecision(0) << setw(16) << a->salarioBase << setw(16) << anual << "\n";
+        cout << left;
+        imprimirColumna(a->codigo, 8);
+        imprimirColumna(a->nombre, 30);
+        cout << fixed << setprecision(0) << setw(16) << a->salarioBase << setw(16) << anual << "\n";
         totalMensual += a->salarioBase;
         totalAnual += anual;
         cuenta++;
@@ -3209,12 +3380,20 @@ void consultarNominaFormal() {
     }
     cout << "  Periodo: " << periodId << " | Estado: " << nombreEstadoPeriodo(period->status)
          << " | Liquidacion: " << nombreEstadoRun(run->status) << "\n";
-    cout << left << setw(14) << "EMPLEADO" << setw(14) << "TIPO" << setw(14) << "DEVENGADO"
-         << setw(14) << "DEDUCCIONES" << setw(14) << "IBC" << setw(14) << "NETO" << "\n";
+    cout << left;
+    imprimirColumna("EMPLEADO", 14);
+    imprimirColumna("TIPO", 16);
+    imprimirColumna("DEVENGADO", 14);
+    imprimirColumna("DEDUCCIONES", 14);
+    imprimirColumna("IBC", 14);
+    imprimirColumna("NETO", 14);
+    cout << "\n";
     linea();
     for (const auto& detail : run->details) {
-        cout << left << setw(14) << detail.employeeId << setw(14) << detail.employeeType
-             << setw(14) << detail.grossSalary << setw(14) << detail.totalEmployeeDeductions
+        cout << left;
+        imprimirColumna(detail.employeeId, 14);
+        imprimirColumna(detail.employeeType, 16);
+        cout << setw(14) << detail.grossSalary << setw(14) << detail.totalEmployeeDeductions
              << setw(14) << detail.ibc << setw(14) << detail.netSalary << "\n";
     }
 }

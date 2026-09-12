@@ -48,8 +48,22 @@ class PayrollEngineTests(unittest.TestCase):
             continuous_service_days=360,
         )
         rules = PayrollRules(service_bonus_top=2500000)
+
+        # In regular months (e.g. September), service bonus in cash is 0
         result = calculate_payroll(employee, self.period, rules)
-        self.assertEqual(result.service_bonus, Decimal("1000000"))
+        self.assertEqual(result.service_bonus, Decimal("0"))
+        self.assertEqual(result.net_salary, Decimal("1840000"))
+
+        # In legal payment months (June and December), service bonus is paid in cash
+        june_period = PayrollPeriod("2026-06", date(2026, 6, 1), date(2026, 6, 30), 30)
+        result_june = calculate_payroll(employee, june_period, rules)
+        self.assertEqual(result_june.service_bonus, Decimal("1000000"))
+        self.assertEqual(result_june.net_salary, Decimal("2840000"))
+
+        dec_period = PayrollPeriod("2026-12", date(2026, 12, 1), date(2026, 12, 31), 30)
+        result_dec = calculate_payroll(employee, dec_period, rules)
+        self.assertEqual(result_dec.service_bonus, Decimal("1000000"))
+        self.assertEqual(result_dec.net_salary, Decimal("2840000"))
 
     def test_exoneration_and_rounding_are_parameterized(self):
         employee = PayrollEmployee("A1", "Administrative", "planta", base_monthly_salary=1234567)

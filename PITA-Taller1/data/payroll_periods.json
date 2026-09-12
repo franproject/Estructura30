@@ -1,0 +1,35 @@
+[
+  {
+    "period_id": "PER-125e3cf663b949628b97d80ad5305903",
+    "year": 2026,
+    "month": 2,
+    "start_date": "2026-02-09",
+    "end_date": "2026-12-10",
+    "status": "CLOSED",
+    "created_at": "2026-09-11T08:52:55",
+    "closed_at": "2026-09-11T08:55:12",
+    "responsible_user": ""
+  },
+  {
+    "period_id": "PER-e02f1d9c35ca44b387f869df7acb5187",
+    "year": 2026,
+    "month": 8,
+    "start_date": "2026-08-07",
+    "end_date": "2026-12-10",
+    "status": "CLOSED",
+    "created_at": "2026-09-11T08:55:48",
+    "closed_at": "2026-09-11T08:56:25",
+    "responsible_user": ""
+  },
+  {
+    "period_id": "PER-178f6830b6d943939a523aa188f7c726",
+    "year": 2027,
+    "month": 2,
+    "start_date": "2027-02-08",
+    "end_date": "2027-05-31",
+    "status": "CLOSED",
+    "created_at": "2026-09-11T22:11:01",
+    "closed_at": "2026-09-11T22:13:30",
+    "responsible_user": ""
+  }
+]

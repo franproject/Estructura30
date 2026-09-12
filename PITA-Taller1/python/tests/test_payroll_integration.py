@@ -9,6 +9,8 @@ from decimal import Decimal
 from models.administrative import Administrative
 from models.professor import Professor
 from persistence.file_manager import (
+    clear_load_issues,
+    get_load_issues,
     load_administrative_staff,
     load_professors,
     save_administrative_staff,
@@ -28,10 +30,7 @@ class PayrollIntegrationTests(unittest.TestCase):
             professor_id=1,
             full_name="Ana Gomez",
             employment_type="Planta",
-            base_monthly_salary=5000000,
             hire_date="2020-01-10",
-            linkage_type="PUBLIC_EMPLOYMENT",
-            employment_status="ACTIVE",
             salary_type="FIXED_MONTHLY",
             arl_risk_class="I",
             social_security_config_id="2026",
@@ -43,6 +42,7 @@ class PayrollIntegrationTests(unittest.TestCase):
         self.assertEqual(professor.salary_concepts[0]["code"], "SALARY_ADJUSTMENT")
 
     def test_legacy_json_loads_with_safe_defaults_and_warning(self):
+        clear_load_issues()
         with tempfile.TemporaryDirectory() as directory:
             path = os.path.join(directory, "professors.json")
             with open(path, "w", encoding="utf-8") as file:
@@ -53,7 +53,8 @@ class PayrollIntegrationTests(unittest.TestCase):
             self.assertEqual(len(loaded), 1)
             self.assertEqual(loaded[0].worked_days, 0)
             self.assertEqual(loaded[0].employment_status, "UNKNOWN")
-            self.assertTrue(any("labor fields" in str(item.message) for item in captured))
+            issues = get_load_issues()
+            self.assertTrue(any("Legacy" in issue and "campos laborales" in issue for issue in issues))
 
     def test_new_fields_round_trip_for_both_employee_types(self):
         professor = Professor(professor_id=1, full_name="Ana", hire_date="2020-01-10", worked_days=12)

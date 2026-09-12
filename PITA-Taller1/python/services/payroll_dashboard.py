@@ -8,9 +8,10 @@ MONEY_FIELDS = (
     "base_salary", "gross_salary", "total_employee_deductions", "ibc",
     "employee_health", "employee_pension", "service_bonus_provision",
     "severance_provision", "severance_interest", "christmas_bonus_provision",
-    "vacation_provision", "vacation_bonus_provision", "employer_pension",
-    "employer_health", "arl", "compensation_fund", "sena", "icbf",
-    "total_employer_contributions", "total_employer_cost", "net_salary",
+    "vacation_provision", "vacation_bonus_provision", "service_bonus",
+    "employer_pension", "employer_health", "arl", "compensation_fund",
+    "sena", "icbf", "total_employer_contributions", "total_employer_cost",
+    "net_salary",
 )
 
 
@@ -55,6 +56,8 @@ class PayrollFinancialDashboard:
                     "christmas_bonus_provision", "vacation_provision", "vacation_bonus_provision",
                 )
             ),
+            "total_service_bonus_paid": metrics["service_bonus"],
+            "total_service_bonus_provision": metrics["service_bonus_provision"],
             "total_employee_health": metrics["employee_health"],
             "total_employee_pension": metrics["employee_pension"],
             "total_employer_pension": metrics["employer_pension"],

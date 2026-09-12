@@ -83,6 +83,16 @@ class Student:
             raise TypeError("enrollment_list must be a LinkedList")
         return True
 
+    def __eq__(self, other):
+        if isinstance(other, Student):
+            return self.student_id == other.student_id
+        if isinstance(other, int):
+            return self.student_id == other
+        return False
+
+    def __hash__(self):
+        return hash(self.student_id)
+
     def to_dict(self):
         return {
             "student_id": self.student_id,

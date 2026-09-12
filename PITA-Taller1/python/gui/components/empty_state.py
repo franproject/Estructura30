@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 from typing import Optional
+from .icons import pixmap
 
 
 class EmptyState(QFrame):
@@ -23,24 +24,36 @@ class EmptyState(QFrame):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.setSpacing(8)
 
-        lbl_icon = QLabel("📋")
-        lbl_icon.setStyleSheet("font-size: 36px; color: #CBD5E1;")
-        lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(lbl_icon)
+        self.lbl_icon = QLabel()
+        self.lbl_icon.setObjectName("emptyStateIcon")
+        self.lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lbl_icon.setPixmap(pixmap("clipboard-check", color="#64748B", size=42))
+        layout.addWidget(self.lbl_icon)
 
-        lbl_title = QLabel(title)
-        lbl_title.setStyleSheet("font-size: 14px; font-weight: 700; color: #0F172A;")
-        lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(lbl_title)
+        self.setMinimumWidth(0)
 
-        lbl_sub = QLabel(subtitle)
-        lbl_sub.setStyleSheet("font-size: 12px; color: #94A3B8;")
-        lbl_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(lbl_sub)
+        self._lbl_title = QLabel(title)
+        self._lbl_title.setObjectName("emptyStateTitle")
+        self._lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._lbl_title.setWordWrap(True)
+        layout.addWidget(self._lbl_title)
 
+        self._lbl_sub = QLabel(subtitle)
+        self._lbl_sub.setObjectName("emptyStateSubtitle")
+        self._lbl_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._lbl_sub.setWordWrap(True)
+        layout.addWidget(self._lbl_sub)
+
+        self._btn = None
         if action_text and on_action:
-            btn = QPushButton(action_text)
-            btn.setObjectName("primaryButton")
-            btn.clicked.connect(on_action)
+            self._btn = QPushButton(action_text)
+            self._btn.setObjectName("primaryButton")
+            self._btn.clicked.connect(on_action)
             layout.addSpacing(6)
-            layout.addWidget(btn, alignment=Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(self._btn, alignment=Qt.AlignmentFlag.AlignCenter)
+
+    def set_content(self, title: str, subtitle: str, show_action: bool = True):
+        self._lbl_title.setText(title)
+        self._lbl_sub.setText(subtitle)
+        if self._btn is not None:
+            self._btn.setVisible(show_action)

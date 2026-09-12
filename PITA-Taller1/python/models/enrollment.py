@@ -51,6 +51,16 @@ class Enrollment:
             raise TypeError("enrollment_date must be a string")
         return True
 
+    def __eq__(self, other):
+        if isinstance(other, Enrollment):
+            return self.enrollment_id == other.enrollment_id
+        if isinstance(other, int):
+            return self.enrollment_id == other
+        return False
+
+    def __hash__(self):
+        return hash(self.enrollment_id)
+
     def to_dict(self):
         return {
             "enrollment_id": self.enrollment_id,

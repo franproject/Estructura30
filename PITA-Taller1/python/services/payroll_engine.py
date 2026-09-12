@@ -54,6 +54,28 @@ class PayrollPeriod:
         if not 0 <= self.days_worked <= 360:
             raise PayrollDomainError("days_worked must be between 0 and 360")
 
+    @property
+    def month(self) -> int:
+        if self.start_date:
+            return self.start_date.month
+        if self.end_date:
+            return self.end_date.month
+        parts = self.period.split("-")
+        if len(parts) >= 2 and parts[1].isdigit():
+            return int(parts[1])
+        return 0
+
+    def is_service_bonus_month(self, payment_months: Iterable[int] = (6, 12)) -> bool:
+        months_set = set(payment_months)
+        if self.start_date and self.start_date.month in months_set:
+            return True
+        if self.end_date and self.end_date.month in months_set:
+            return True
+        parts = self.period.split("-")
+        if len(parts) >= 2 and parts[1].isdigit() and int(parts[1]) in months_set:
+            return True
+        return False
+
 
 @dataclass(frozen=True)
 class PayrollEmployee:
@@ -146,6 +168,7 @@ class PayrollRules:
     service_bonus_top: Money = Decimal("0")
     service_bonus_rate_below_top: Money = Decimal("0.50")
     service_bonus_rate_above_top: Money = Decimal("0.35")
+    service_bonus_payment_months: tuple[int, ...] = (6, 12)
     arl_risk_class: str = "I"
     health_exempt: bool = False
     sena_exempt: bool = False
@@ -175,6 +198,9 @@ class PayrollRules:
             raise PayrollDomainError("arl risk class has no configured rate")
         if money(self.arl_rates[self.arl_risk_class]) < ZERO:
             raise PayrollDomainError("ARL rate cannot be negative")
+        for month_num in self.service_bonus_payment_months:
+            if not isinstance(month_num, int) or not (1 <= month_num <= 12):
+                raise PayrollDomainError("service_bonus_payment_months must contain integers between 1 and 12")
 
 
 @dataclass(frozen=True)
@@ -289,7 +315,8 @@ def calculate_payroll(
     vacation_bonus_provision = round_peso(adjusted_base * money(rules.vacation_bonus_rate))
 
     service_bonus = ZERO
-    if employee.continuous_service_days >= rules.service_bonus_year_days:
+    is_bonus_period = period.is_service_bonus_month(rules.service_bonus_payment_months)
+    if is_bonus_period and employee.continuous_service_days >= rules.service_bonus_year_days:
         bonus_rate = (
             money(rules.service_bonus_rate_below_top)
             if money(employee.base_monthly_salary) <= money(rules.service_bonus_top)

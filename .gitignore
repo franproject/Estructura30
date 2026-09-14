@@ -3,7 +3,8 @@
 .idea/
 .DS_Store
 
-# C++ build artifacts
+# C++ build artifacts. Source files, headers, CMakeLists.txt and runtime seed
+# data remain trackable; only generated outputs are excluded.
 build/
 cmake-build-debug/
 cmake-build-release/
@@ -19,6 +20,9 @@ Makefile
 *.so
 *.a
 *.lib
+
+# Required C++ seed data used by CMake configure_file and the SLF executable.
+!PITA-Taller1/cpp/pita_datos.txt
 
 # Python artifacts
 __pycache__/

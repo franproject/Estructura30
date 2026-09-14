@@ -1,12 +1,12 @@
-"""Business-layer entity management for the existing domain models.
+"""Gestión de entidades en la capa de negocio para los modelos de dominio existentes.
 
-The project already uses a custom LinkedList as the primary collection type.
-This module keeps the logic in a manager layer, cleanly separated from the GUI.
+El proyecto ya usa una LinkedList personalizada como tipo principal de colección.
+Este módulo mantiene la lógica en una capa de gestión, separada claramente de la interfaz gráfica.
 
-Academic transaction rule:
-- The current EBRA rule is configured as: weighted_average < configured_threshold.
-- The threshold is stored in the manager and can be changed without modifying the
-  academic logic itself.
+Regla académica de transacción:
+- La regla actual de EBRA está configurada como: weighted_average < configured_threshold.
+- El umbral se almacena en el gestor y puede cambiarse sin modificar la
+  lógica académica en sí.
 """
 
 from datetime import date
@@ -23,7 +23,7 @@ from services.payroll_cycle import PayrollCycleService
 
 
 class EntityManager:
-    """Provides CRUD and lifecycle operations for the main entities."""
+    """Proporciona operaciones CRUD y de ciclo de vida para las entidades principales."""
 
     def __init__(self):
         self.faculties = LinkedList()
@@ -38,7 +38,7 @@ class EntityManager:
         self.ebra_rule = "weighted_average < configured_threshold"
 
     def set_ebra_threshold(self, threshold):
-        """Configures the academic EBRA threshold without changing the rule itself."""
+        """Configura el umbral académico de EBRA sin cambiar la regla en sí."""
         if not isinstance(threshold, (int, float)):
             raise TypeError("threshold must be numeric")
         if threshold < 0:
@@ -99,7 +99,7 @@ class EntityManager:
         return False
 
     # ------------------------------------------------------------------
-    # Utilities
+    # Utilidades
     # ------------------------------------------------------------------
 
     @staticmethod
@@ -149,8 +149,8 @@ class EntityManager:
 
     @staticmethod
     def _remove_from_linked_list(target_list, entity_or_id, id_field_name=None):
-        """Removes an item from target_list matching either by direct equality,
-        model equality (via __eq__), or by identifier.
+        """Elimina un elemento de target_list coincidente por igualdad directa,
+        igualdad del modelo (mediante __eq__) o por identificador.
         """
         if target_list is None:
             return False
@@ -195,7 +195,7 @@ class EntityManager:
         return False
 
     # ------------------------------------------------------------------
-    # Faculty
+    # Facultad
     # ------------------------------------------------------------------
 
     def create_faculty(self, faculty):
@@ -599,7 +599,7 @@ class EntityManager:
         return True
 
     # ------------------------------------------------------------------
-    # Administrative
+    # Administrativo
     # ------------------------------------------------------------------
 
     def create_administrative(self, administrative):
@@ -660,11 +660,11 @@ class EntityManager:
         return True
 
     # ------------------------------------------------------------------
-    # Enrollment
+    # Matrícula
     # ------------------------------------------------------------------
 
     def enroll_student(self, student_id, course_id, academic_period, enrollment_id=None):
-        """Creates a new academic enrollment with validation for state, capacity and duplicates."""
+        """Crea una nueva matrícula académica con validación de estado, capacidad y duplicados."""
         student = self.get_student(student_id)
         if student is None or not student.active:
             return False
@@ -721,7 +721,7 @@ class EntityManager:
         )
 
     def cancel_enrollment(self, enrollment_id):
-        """Cancels an enrollment without deleting historical records."""
+        """Cancela una matrícula sin eliminar los registros históricos."""
         enrollment = self.get_enrollment(enrollment_id)
         if enrollment is None:
             return False
@@ -770,7 +770,7 @@ class EntityManager:
         return True
 
     def register_grade(self, enrollment_id, grade):
-        """Validates the grade range and records the final academic grade."""
+        """Valida el rango de la nota y registra la calificación académica final."""
         if not isinstance(grade, (int, float)):
             return False
         if grade < 0.0 or grade > 5.0:
@@ -788,10 +788,10 @@ class EntityManager:
         return True
 
     def calculate_student_average(self, student_id, enr_map=None, course_map=None):
-        """Returns the weighted average by course credits for the student.
+        """Devuelve el promedio ponderado por créditos del curso para el estudiante.
 
-        Supports both resolved Enrollment instances and scalar integer/string IDs.
-        Evaluates real academic grades for all completed/active statuses.
+        Soporta tanto instancias de Enrollment resueltas como IDs escalares enteros o de texto.
+        Evalúa calificaciones académicas reales para todos los estados completados o activos.
         """
         student = self.get_student(student_id)
         if student is None:
@@ -857,7 +857,7 @@ class EntityManager:
         return weighted_total / credit_total
 
     def evaluate_ebra_status(self, student_id, enr_map=None, course_map=None):
-        """Current EBRA rule: weighted_average < configured_threshold."""
+        """Regla actual de EBRA: weighted_average < configured_threshold."""
         student = self.get_student(student_id)
         if student is None:
             return {
@@ -889,7 +889,7 @@ class EntityManager:
         }
 
     def get_ebra_students(self):
-        """Returns a list of all students currently evaluated under EBRA alert."""
+        """Devuelve una lista de todos los estudiantes actualmente evaluados bajo la alerta de EBRA."""
         enr_map = {e.enrollment_id: e for e in self.enrollments if hasattr(e, "enrollment_id")}
         course_map = {c.course_id: c for c in self.courses if hasattr(c, "course_id")}
         ebra_list = []
@@ -900,11 +900,11 @@ class EntityManager:
         return ebra_list
 
     def count_ebra_students(self):
-        """Returns the count of students currently evaluated under EBRA alert."""
+        """Devuelve la cantidad de estudiantes actualmente evaluados bajo la alerta de EBRA."""
         return len(self.get_ebra_students())
 
     def link_hierarchical_references(self):
-        """Links and resolves hierarchical references across loaded entities."""
+        """Enlaza y resuelve referencias jerárquicas entre las entidades cargadas."""
         from persistence.file_manager import link_hierarchical_entities
         link_hierarchical_entities(
             self.faculties,
@@ -915,7 +915,7 @@ class EntityManager:
         )
 
     def load_from_directory(self, data_directory=None):
-        """Loads all entities from disk and resolves hierarchical references."""
+        """Carga todas las entidades desde disco y resuelve las referencias jerárquicas."""
         from pathlib import Path
         from persistence.file_manager import (
             DATA_DIRECTORY,

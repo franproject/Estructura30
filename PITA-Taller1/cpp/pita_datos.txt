@@ -1,0 +1,258 @@
+#FACULTADES
+F001|Facultad de Ingenierías y Tecnológicas|1
+F002|Facultad de Ciencias Administrativas, Contables y Económicas|1
+F003|Facultad de Ciencias Básicas y de Educación|1
+F004|Facultad de Ciencias de la Salud|1
+F005|Facultad de Derecho, Ciencias Políticas y Sociales|1
+F006|Facultad de Bellas Artes|1
+#FIN_FACULTADES
+#PROGRAMAS
+P001|F001|Ingeniería de Sistemas|0|1
+P002|F001|Ingeniería Electrónica|0|1
+P003|F001|Ingeniería Ambiental y Sanitaria|0|1
+P004|F001|Ingeniería Agroindustrial|0|1
+P005|F002|Administración de Empresas|6|1
+P006|F002|Administración de Comercio Internacional|6|1
+P007|F002|Administración de Empresas Turísticas y Hoteleras|6|1
+P008|F002|Contaduría Pública|6|1
+P009|F002|Economía|6|1
+P010|F003|Licenciatura en Matemáticas y Física|7|1
+P011|F003|Licenciatura en Ciencias Naturales y Educación Ambiental|7|1
+P012|F003|Licenciatura en Literatura y Lengua Castellana|7|1
+P013|F003|Licenciatura en Lenguas Extranjeras (Inglés)|7|1
+P014|F003|Microbiologia|8|1
+P015|F004|Enfermería|3|1
+P016|F004|Instrumentación Quirúrgica|8|1
+P017|F005|Derecho|5|1
+P018|F005|Sociologia|8|1
+P019|F005|Psicologia|4|1
+P020|F006|Licenciatura en Arte y Folclor|7|1
+#FIN_PROGRAMAS
+#CURSOS
+C001|P001|Fundamentos de Programacion|3|1
+C002|P001|Estructuras de Datos|4|1
+C003|P001|Ingenieria de Software|3|1
+C004|P002|Circuitos Electricos|3|1
+C005|P002|Electronica Digital|4|1
+C006|P002|Sistemas de Control|3|1
+C007|P003|Calculo Ambiental|3|1
+C008|P003|Gestion de Recursos Naturales|4|1
+C009|P003|Saneamiento Basico|3|1
+C010|P004|Procesos Agroindustriales|4|1
+C011|P004|Biotecnologia Aplicada|3|1
+C012|P004|Control de Calidad|3|1
+C013|P005|Fundamentos de Administracion|3|1
+C014|P005|Contabilidad Empresarial|3|1
+C015|P005|Gestion del Talento Humano|3|1
+C016|P006|Comercio Exterior|3|1
+C017|P006|Negociacion Internacional|3|1
+C018|P006|Logistica Global|4|1
+C019|P007|Gestion Hotelera|3|1
+C020|P007|Mercadeo Turistico|3|1
+C021|P007|Operaciones Turisticas|4|1
+C022|P008|Contabilidad Financiera|4|1
+C023|P008|Auditoria|3|1
+C024|P008|Tributaria|3|1
+C025|P009|Microeconomia|3|1
+C026|P009|Macroeconomia|3|1
+C027|P009|Econometria|4|1
+C028|P010|Calculo Diferencial|4|1
+C029|P010|Fisica Mecanica|4|1
+C030|P010|Didactica de las Matematicas|3|1
+C031|P011|Biologia General|3|1
+C032|P011|Educacion Ambiental|3|1
+C033|P011|Quimica General|4|1
+C034|P012|Literatura Colombiana|3|1
+C035|P012|Lingueistica|3|1
+C036|P012|Comprension Lectora|3|1
+C037|P013|Ingles I|3|1
+C038|P013|Fonetics and Phonology|3|1
+C039|P013|Foreign Language Teaching|3|1
+C040|P014|Microbiologia General|4|1
+C041|P014|Genetica|3|1
+C042|P014|Laboratorio de Microbiologia|4|1
+C043|P015|Anatomia Humana|4|1
+C044|P015|Fundamentos de Enfermeria|4|1
+C045|P015|Cuidado del Adulto|3|1
+C046|P016|Anatomia Quirurgica|4|1
+C047|P016|Instrumentacion Basica|4|1
+C048|P016|Bioseguridad|3|1
+C049|P017|Teoria del Derecho|3|1
+C050|P017|Derecho Constitucional|4|1
+C051|P017|Derecho Penal|4|1
+C052|P018|Teoria Sociologica|3|1
+C053|P018|Metodologia de la Investigacion|3|1
+C054|P018|Problemas Sociales Colombianos|3|1
+C055|P019|Psicologia General|4|1
+C056|P019|Psicologia del Desarrollo|4|1
+C057|P019|Evaluacion Psicologica|4|1
+C058|P020|Historia del Arte|3|1
+C059|P020|Artes Plasticas|3|1
+C060|P020|Folclor Colombiano|3|1
+#FIN_CURSOS
+#ESTUDIANTES
+E001|P001|Ana Sofia Martinez|1001000001|ana.martinez@unicesar.edu.co|Regular|1
+E002|P001|Luis Fernando Rojas|1001000002|luis.rojas@unicesar.edu.co|Regular|1
+E003|P002|Camila Torres|1001000003|camila.torres@unicesar.edu.co|Regular|1
+E004|P002|Mateo Hernandez|1001000004|mateo.hernandez@unicesar.edu.co|Transferencia|1
+E005|P003|Valentina Castro|1001000005|valentina.castro@unicesar.edu.co|Regular|1
+E006|P003|Nicolas Perez|1001000006|nicolas.perez@unicesar.edu.co|Regular|1
+E007|P004|Sara Gomez|1001000007|sara.gomez@unicesar.edu.co|Regular|1
+E008|P004|Juan David Leon|1001000008|juan.leon@unicesar.edu.co|Reingreso|1
+E009|P005|Mariana Vargas|1001000009|mariana.vargas@unicesar.edu.co|Regular|1
+E010|P005|Carlos Andres Ruiz|1001000010|carlos.ruiz@unicesar.edu.co|Regular|1
+E011|P006|Laura Mendoza|1001000011|laura.mendoza@unicesar.edu.co|Regular|1
+E012|P006|Sebastian Gil|1001000012|sebastian.gil@unicesar.edu.co|Intercambio|1
+E013|P007|Daniela Suarez|1001000013|daniela.suarez@unicesar.edu.co|Regular|1
+E014|P007|Andres Felipe Mora|1001000014|andres.mora@unicesar.edu.co|Regular|1
+E015|P008|Isabella Cardenas|1001000015|isabella.cardenas@unicesar.edu.co|Regular|1
+E016|P008|Miguel Angel Diaz|1001000016|miguel.diaz@unicesar.edu.co|Regular|1
+E017|P009|Natalia Reyes|1001000017|natalia.reyes@unicesar.edu.co|Regular|1
+E018|P009|Jorge Ivan Molina|1001000018|jorge.ivan@unicesar.edu.co|Regular|1
+E019|P010|Paula Andrea Vega|1001000019|paula.vega@unicesar.edu.co|Regular|1
+E020|P010|Diego Salazar|1001000020|diego.salazar@unicesar.edu.co|Regular|1
+E021|P011|Manuela Pardo|1001000021|manuela.pardo@unicesar.edu.co|Regular|1
+E022|P011|Tomas Gutierrez|1001000022|tomas.gutierrez@unicesar.edu.co|Regular|1
+E023|P012|Juliana Parra|1001000023|juliana.parra@unicesar.edu.co|Regular|1
+E024|P012|Samuel Marin|1001000024|samuel.marin@unicesar.edu.co|Regular|1
+E025|P013|Maria Jose Nunez|1001000025|maria.nunez@unicesar.edu.co|Regular|1
+E026|P013|Alejandro Pineda|1001000026|alejandro.pineda@unicesar.edu.co|Regular|1
+E027|P014|Gabriela Arias|1001000027|gabriela.arias@unicesar.edu.co|Regular|1
+E028|P014|Oscar Fabian Soto|1001000028|oscar.soto@unicesar.edu.co|Regular|1
+E029|P015|Sofia Martinez|1001000029|sofia.martinez@unicesar.edu.co|Regular|1
+E030|P015|Manuel Torres|1001000030|manuel.torres@unicesar.edu.co|Regular|1
+E031|P016|Elena Rios|1001000031|elena.rios@unicesar.edu.co|Regular|1
+E032|P016|Ricardo Becerra|1001000032|ricardo.becerra@unicesar.edu.co|Regular|1
+E033|P017|Antonella Vargas|1001000033|antonella.vargas@unicesar.edu.co|Regular|1
+E034|P017|Juan Esteban Cruz|1001000034|juan.cruz@unicesar.edu.co|Regular|1
+E035|P018|Luciana Romero|1001000035|luciana.romero@unicesar.edu.co|Regular|1
+E036|P018|Felipe Cardenas|1001000036|felipe.cardenas@unicesar.edu.co|Regular|1
+E037|P019|Carolina Mejia|1001000037|carolina.mejia@unicesar.edu.co|Regular|1
+E038|P019|Martin Ospina|1001000038|martin.ospina@unicesar.edu.co|Regular|1
+E039|P020|Andrea Beltran|1001000039|andrea.beltran@unicesar.edu.co|Regular|1
+E040|P020|Emilio Fajardo|1001000040|emilio.fajardo@unicesar.edu.co|Regular|1
+#FIN_ESTUDIANTES
+#MATRICULAS
+E001|C001|Fundamentos de Programacion|4.5|0
+E001|C002|Estructuras de Datos|4.0|0
+E002|C001|Fundamentos de Programacion|3.2|0
+E002|C003|Ingenieria de Software|2.8|0
+E003|C004|Circuitos Electricos|4.2|0
+E003|C005|Electronica Digital|3.8|0
+E004|C004|Circuitos Electricos|2.9|0
+E004|C006|Sistemas de Control|3.5|0
+E005|C007|Calculo Ambiental|4.6|0
+E005|C008|Gestion de Recursos Naturales|4.1|0
+E006|C007|Calculo Ambiental|3.0|0
+E006|C009|Saneamiento Basico|2.7|0
+E007|C010|Procesos Agroindustriales|4.3|0
+E007|C011|Biotecnologia Aplicada|4.0|0
+E008|C010|Procesos Agroindustriales|2.5|0
+E008|C012|Control de Calidad|3.1|0
+E009|C013|Fundamentos de Administracion|4.4|0
+E009|C014|Contabilidad Empresarial|4.0|0
+E010|C013|Fundamentos de Administracion|3.6|0
+E010|C015|Gestion del Talento Humano|3.8|0
+E011|C016|Comercio Exterior|4.2|0
+E011|C017|Negociacion Internacional|4.5|0
+E012|C016|Comercio Exterior|3.0|0
+E012|C018|Logistica Global|2.9|0
+E013|C019|Gestion Hotelera|4.7|0
+E013|C020|Mercadeo Turistico|4.3|0
+E014|C019|Gestion Hotelera|3.1|0
+E014|C021|Operaciones Turisticas|3.9|0
+E015|C022|Contabilidad Financiera|4.6|0
+E015|C023|Auditoria|4.1|0
+E016|C022|Contabilidad Financiera|3.4|0
+E016|C024|Tributaria|3.8|0
+E017|C025|Microeconomia|4.0|0
+E017|C026|Macroeconomia|4.2|0
+E018|C025|Microeconomia|2.7|0
+E018|C027|Econometria|3.3|0
+E019|C028|Calculo Diferencial|4.5|0
+E019|C029|Fisica Mecanica|4.2|0
+E020|C028|Calculo Diferencial|3.1|0
+E020|C030|Didactica de las Matematicas|3.6|0
+E021|C031|Biologia General|4.3|0
+E021|C032|Educacion Ambiental|4.0|0
+E022|C031|Biologia General|2.8|0
+E022|C033|Quimica General|3.2|0
+E023|C034|Literatura Colombiana|4.8|0
+E023|C035|Lingueistica|4.4|0
+E024|C034|Literatura Colombiana|3.0|0
+E024|C036|Comprension Lectora|3.7|0
+E025|C037|Ingles I|4.6|0
+E025|C038|Fonetics and Phonology|4.1|0
+E026|C037|Ingles I|3.2|0
+E026|C039|Foreign Language Teaching|3.9|0
+E027|C040|Microbiologia General|4.5|0
+E027|C041|Genetica|4.2|0
+E028|C040|Microbiologia General|2.9|0
+E028|C042|Laboratorio de Microbiologia|3.6|0
+E029|C043|Anatomia Humana|4.1|0
+E029|C044|Fundamentos de Enfermeria|4.4|0
+E030|C043|Anatomia Humana|3.0|0
+E030|C045|Cuidado del Adulto|3.8|0
+E031|C046|Anatomia Quirurgica|4.0|0
+E031|C047|Instrumentacion Basica|4.3|0
+E032|C046|Anatomia Quirurgica|2.6|0
+E032|C048|Bioseguridad|3.5|0
+E033|C049|Teoria del Derecho|4.7|0
+E033|C050|Derecho Constitucional|4.2|0
+E034|C049|Teoria del Derecho|3.0|0
+E034|C051|Derecho Penal|3.8|0
+E035|C052|Teoria Sociologica|4.4|0
+E035|C053|Metodologia de la Investigacion|4.0|0
+E036|C052|Teoria Sociologica|2.8|0
+E036|C054|Problemas Sociales Colombianos|3.4|0
+E037|C055|Psicologia General|4.6|0
+E037|C056|Psicologia del Desarrollo|4.2|0
+E038|C055|Psicologia General|3.1|0
+E038|C057|Evaluacion Psicologica|3.9|0
+E039|C058|Historia del Arte|4.8|0
+E039|C059|Artes Plasticas|4.5|0
+E040|C058|Historia del Arte|3.4|0
+E040|C060|Folclor Colombiano|4.0|0
+#FIN_MATRICULAS
+#PROFESORES
+D001|P001|Alejandro Gomez Hernandez|1002000001|alejandro.gomez@unicesar.edu.co|0|0|20|10|8|0|1|2018-01-15||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|2800000.00|0.00|2920
+D002|P002|Camilo Perez Castro|1002000002|camilo.perez@unicesar.edu.co|0|1|25|15|10|0|1|2019-01-15||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|3200000.00|0.00|2555
+D003|P003|Daniel Torres Villalba|1002000003|daniel.torres@unicesar.edu.co|1|2|30|18|12|0|1|2020-01-15||Ocasional|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|3600000.00|0.00|2190
+D004|P004|Esteban Cardenas Torres|1002000004|esteban.cardenas@unicesar.edu.co|2|3|0|0|0|80|1|2021-01-15||Catedratico|ACTIVE|HOURLY|I|DEFAULT|30|0.00|60000.00|1825
+D005|P005|Felipe Castro Suarez|1002000005|felipe.castro@unicesar.edu.co|0|0|22|12|9|0|1|2018-02-15||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|3000000.00|0.00|2920
+D006|P006|Gabriela Rojas Duarte|1002000006|gabriela.rojas@unicesar.edu.co|1|1|27|16|11|0|1|2019-02-15||Ocasional|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|3400000.00|0.00|2555
+D007|P007|Hector Gonzalez Suarez|1002000007|hector.gonzalez@unicesar.edu.co|0|2|32|20|13|0|1|2020-02-15||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|3900000.00|0.00|2190
+D008|P008|Ivan Hernandez Morales|1002000008|ivan.hernandez@unicesar.edu.co|2|0|0|0|0|60|1|2021-02-15||Catedratico|ACTIVE|HOURLY|I|DEFAULT|30|0.00|52000.00|1825
+D009|P009|Julian Torres Herrera|1002000009|julian.torres@unicesar.edu.co|0|1|24|14|10|0|1|2018-03-15||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|3300000.00|0.00|2920
+D010|P010|Laura Mendoza Gil|1002000010|laura.mendoza@unicesar.edu.co|1|2|29|17|12|0|1|2019-03-15||Ocasional|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|3700000.00|0.00|2555
+D011|P011|Mauricio Fuentes Salas|1002000011|mauricio.fuentes@unicesar.edu.co|0|3|35|22|15|0|1|2020-03-15||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|4300000.00|0.00|2190
+D012|P012|Natalia Castro Villazon|1002000012|natalia.castro@unicesar.edu.co|2|1|0|0|0|70|1|2021-03-15||Catedratico|ACTIVE|HOURLY|I|DEFAULT|30|0.00|45000.00|1825
+D013|P013|Oscar Pineda Leon|1002000013|oscar.pineda@unicesar.edu.co|0|0|21|11|8|0|1|2018-04-15||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|2900000.00|0.00|2920
+D014|P014|Patricia Arias Mora|1002000014|patricia.arias@unicesar.edu.co|1|2|31|19|13|0|1|2019-04-15||Ocasional|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|3800000.00|0.00|2555
+D015|P015|Ricardo Becerra Ruiz|1002000015|ricardo.becerra@unicesar.edu.co|0|1|26|15|10|0|1|2020-04-15||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|3500000.00|0.00|2190
+D016|P016|Sofia Martinez Rios|1002000016|sofia.martinez@unicesar.edu.co|2|3|0|0|0|75|1|2021-04-15||Catedratico|ACTIVE|HOURLY|I|DEFAULT|30|0.00|60000.00|1825
+D017|P017|Tomas Gutierrez Cruz|1002000017|tomas.gutierrez@unicesar.edu.co|0|2|33|20|14|0|1|2018-05-15||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|4100000.00|0.00|2920
+D018|P018|Valeria Ospina Rojas|1002000018|valeria.ospina@unicesar.edu.co|1|0|28|16|11|0|1|2019-05-15||Ocasional|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|3600000.00|0.00|2555
+D019|P019|William Mejia Soto|1002000019|william.mejia@unicesar.edu.co|0|1|23|13|9|0|1|2020-05-15||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|3100000.00|0.00|2920
+D020|P020|Ximena Beltran Fajardo|1002000020|ximena.beltran@unicesar.edu.co|2|2|0|0|0|65|1|2021-05-15||Catedratico|ACTIVE|HOURLY|I|DEFAULT|30|0.00|52000.00|1825
+#FIN_PROFESORES
+#ADMINISTRATIVOS
+A001|Felipe Martinez Vargas|7002000001|Profesional Universitario|Planta|4200000.00|1|2016-02-01||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|3650
+A002|Maria Fernanda Ruiz|7002000002|Tecnico Administrativo|Planta|3000000.00|1|2017-02-01||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|3285
+A003|Gabriel Perez Castro|7002000003|Auxiliar Administrativo|Planta|2800000.00|1|2018-02-01||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|2920
+A004|Helena Gonzalez Suarez|7002000004|Secretaria Academica|Ocasional|3200000.00|1|2019-02-01||Ocasional|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|2555
+A005|Luis Rojas Duarte|7002000005|Coordinador Administrativo|Planta|4500000.00|1|2020-02-01||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|2190
+A006|Carolina Nieto Pacheco|7002000006|Profesional de Recursos Humanos|Planta|3900000.00|1|2021-02-01||Planta|ACTIVE|FIXED_MONTHLY|I|DEFAULT|30|1825
+#FIN_ADMINISTRATIVOS
+#CONTADORES
+6|20|60|40|20|6
+#FIN_CONTADORES
+#PAYROLL_PERIODS
+PER-2026-09|2026|9|2026-09-01|2026-09-30|0|2026-09-01T08:00:00||seed
+#FIN_PAYROLL_PERIODS
+#PAYROLL_NOVELTIES
+#FIN_PAYROLL_NOVELTIES
+#PAYROLL_RUNS
+#FIN_PAYROLL_RUNS
+#PAYROLL_AUDIT
+#FIN_PAYROLL_AUDIT

@@ -1,12 +1,13 @@
-"""Linked list module.
+"""Módulo de lista enlazada.
 
-This file contains an optimized singly linked list implementation with a tail pointer
-for O(1) append operations, supporting Pythonic sequence indexing and operations.
+Este archivo contiene una implementación optimizada de una lista enlazada
+simple con un puntero de cola para operaciones de agregado en O(1),
+soportando indexación y operaciones de secuencia de estilo Python.
 """
 
 
 class Node:
-    """Represents a single node in the linked list."""
+    """Representa un único nodo en la lista enlazada."""
 
     __slots__ = ("data", "next")
 
@@ -16,10 +17,10 @@ class Node:
 
 
 class LinkedList:
-    """Represents a singly linked list with safe, reusable operations and tail pointer."""
+    """Representa una lista enlazada simple con operaciones seguras, reutilizables y puntero de cola."""
 
     def __init__(self, values=None):
-        """Initializes an empty list or a list from an iterable."""
+        """Inicializa una lista vacía o una lista a partir de un iterable."""
         self.head = None
         self.tail = None
         self.size = 0
@@ -43,18 +44,18 @@ class LinkedList:
         return f"LinkedList({list(self)!r})"
 
     def __getitem__(self, index):
-        """Protocol for index access: list[i] or list[start:stop:step]."""
+        """Protocolo de acceso por índice: list[i] o list[inicio:fin:paso]."""
         if isinstance(index, slice):
             return [self[i] for i in range(*index.indices(self.size))]
 
         if not isinstance(index, int):
-            raise TypeError(f"LinkedList indices must be integers or slices, not {type(index).__name__}")
+            raise TypeError(f"Los índices de LinkedList deben ser enteros o slices, no {type(index).__name__}")
 
         if index < 0:
             index = self.size + index
 
         if index < 0 or index >= self.size:
-            raise IndexError("LinkedList index out of range")
+            raise IndexError("Índice fuera de rango de LinkedList")
 
         if index == 0 and self.head is not None:
             return self.head.data
@@ -63,19 +64,19 @@ class LinkedList:
 
         node = self._node_at(index)
         if node is None:
-            raise IndexError("LinkedList index out of range")
+            raise IndexError("Índice fuera de rango de LinkedList")
         return node.data
 
     def __setitem__(self, index, value):
-        """Protocol for index assignment: list[i] = value."""
+        """Protocolo de asignación por índice: list[i] = value."""
         if not isinstance(index, int):
-            raise TypeError(f"LinkedList indices must be integers, not {type(index).__name__}")
+            raise TypeError(f"Los índices de LinkedList deben ser enteros, no {type(index).__name__}")
 
         if index < 0:
             index = self.size + index
 
         if index < 0 or index >= self.size:
-            raise IndexError("LinkedList assignment index out of range")
+            raise IndexError("Índice de asignación fuera de rango de LinkedList")
 
         if index == 0 and self.head is not None:
             self.head.data = value
@@ -86,30 +87,30 @@ class LinkedList:
 
         node = self._node_at(index)
         if node is None:
-            raise IndexError("LinkedList assignment index out of range")
+            raise IndexError("Índice de asignación fuera de rango de LinkedList")
         node.data = value
 
     def __contains__(self, value):
-        """Protocol for 'in' operator: value in list."""
+        """Protocolo del operador 'in': value in list."""
         return self.search(value)
 
     def append(self, value):
-        """Appends a value to the end of the list in O(1) time."""
+        """Agrega un valor al final de la lista en tiempo O(1)."""
         self.insert(value)
 
     def extend(self, iterable):
-        """Appends all elements from iterable to the list."""
+        """Agrega todos los elementos del iterable a la lista."""
         for item in iterable:
             self.insert(item)
 
     def pop(self, index=-1):
-        """Removes and returns element at index (default last element)."""
+        """Elimina y devuelve el elemento en el índice indicado (por defecto, el último)."""
         if self.size == 0:
-            raise IndexError("pop from empty list")
+            raise IndexError("pop desde una lista vacía")
         if index < 0:
             index = self.size + index
         if index < 0 or index >= self.size:
-            raise IndexError("pop index out of range")
+            raise IndexError("Índice de pop fuera de rango")
         val = self[index]
         self.remove_at(index)
         return val
@@ -132,14 +133,14 @@ class LinkedList:
         return current
 
     def insert(self, value, position=None):
-        """Inserts a value at the given position.
+        """Inserta un valor en la posición indicada.
 
-        If no position is provided (or position >= size), the value is appended to
-        the end in O(1) time using the tail pointer. Position 0 inserts at the
-        beginning. Negative positions raise ValueError.
+        Si no se proporciona una posición (o si position >= size), el valor se agrega
+        al final en tiempo O(1) usando el puntero de cola. La posición 0 inserta al
+        inicio. Las posiciones negativas generan ValueError.
         """
         if position is not None and position < 0:
-            raise ValueError("Position must be non-negative")
+            raise ValueError("La posición debe ser no negativa")
 
         new_node = Node(value)
 
@@ -161,7 +162,7 @@ class LinkedList:
         if position is None or position >= self.size:
             tail = self.tail
             if tail is None:
-                raise RuntimeError("Linked list invariant violated: tail is missing")
+                raise RuntimeError("Se violó la invariancia de la lista enlazada: falta la cola")
             tail.next = new_node
             self.tail = new_node
             self.size += 1
@@ -179,7 +180,7 @@ class LinkedList:
         self.size += 1
 
     def remove(self, value):
-        """Removes the first occurrence of the given value."""
+        """Elimina la primera ocurrencia del valor dado."""
         current = self.head
         previous = None
 
@@ -203,7 +204,7 @@ class LinkedList:
         return False
 
     def remove_at(self, position):
-        """Removes the value at the given position."""
+        """Elimina el valor en la posición indicada."""
         if position < 0 or position >= self.size:
             return False
 
@@ -232,14 +233,14 @@ class LinkedList:
         return True
 
     def get(self, position):
-        """Returns the element at position or None when it does not exist."""
+        """Devuelve el elemento en la posición o None si no existe."""
         node = self._node_at(position)
         if node is None:
             return None
         return node.data
 
     def search(self, value):
-        """Returns True if the value exists, otherwise False."""
+        """Devuelve True si el valor existe; de lo contrario, False."""
         current = self.head
         while current is not None:
             if current.data == value:
@@ -248,7 +249,7 @@ class LinkedList:
         return False
 
     def find_by(self, field_name, expected_value):
-        """Finds the first element whose attribute or dictionary key matches."""
+        """Busca el primer elemento cuyo atributo o clave del diccionario coincide."""
         current = self.head
         while current is not None:
             item = current.data
@@ -262,7 +263,7 @@ class LinkedList:
         return None
 
     def update(self, target_value, new_value):
-        """Updates the first matching value."""
+        """Actualiza la primera coincidencia encontrada."""
         current = self.head
         while current is not None:
             if current.data == target_value:
@@ -272,7 +273,7 @@ class LinkedList:
         return False
 
     def update_at(self, position, new_value):
-        """Updates the element at the given position."""
+        """Actualiza el elemento en la posición indicada."""
         node = self._node_at(position)
         if node is None:
             return False
@@ -280,7 +281,7 @@ class LinkedList:
         return True
 
     def update_by(self, field_name, expected_value, new_value):
-        """Updates the first element matching a field value."""
+        """Actualiza el primer elemento que coincida con un valor de campo."""
         current = self.head
         while current is not None:
             item = current.data
@@ -303,7 +304,7 @@ class LinkedList:
         return False
 
     def remove_by(self, field_name, expected_value):
-        """Removes the first element matching a field value."""
+        """Elimina el primer elemento que coincida con un valor de campo."""
         current = self.head
         previous = None
 
@@ -335,19 +336,19 @@ class LinkedList:
         return False
 
     def traverse(self):
-        """Returns a list of nodes in their current order."""
+        """Devuelve una lista de nodos en su orden actual."""
         return list(self)
 
     def clear(self):
-        """Removes all elements and resets the list."""
+        """Elimina todos los elementos y restablece la lista."""
         self.head = None
         self.tail = None
         self.size = 0
 
     def count_elements(self):
-        """Returns the number of elements in the list."""
+        """Devuelve la cantidad de elementos de la lista."""
         return self.size
 
     def is_empty(self):
-        """Returns True if the list is empty, otherwise False."""
+        """Devuelve True si la lista está vacía; de lo contrario, False."""
         return self.head is None

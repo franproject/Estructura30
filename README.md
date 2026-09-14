@@ -83,7 +83,7 @@ Ingrese a la carpeta `python/` y lance la aplicación:
 
 ```powershell
 cd python
-python main.py
+python SLF.py
 ```
 
 ¡Listo! La interfaz institucional de NexoCampus se abrirá en su pantalla.
@@ -96,66 +96,8 @@ Si prefiere instalar las librerías directamente en su intérprete de Python glo
 ```powershell
 pip install -r python\requirements.txt
 cd python
-python main.py
+python SLF.py
 ```
-
----
-
-### Ejecución en Linux o macOS
-Para evaluar el sistema en sistemas Unix:
-
-```bash
-cd PITA-Taller1
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r python/requirements.txt
-cd python
-python main.py
-```
-
----
-
-## 3. Ejecución de Pruebas Automatizadas
-
-El proyecto cuenta con una exhaustiva batería de **302 pruebas automatizadas** que validan la integridad de las listas enlazadas, los cálculos matemáticos de nómina, la persistencia atómica en JSON, la responsividad y la accesibilidad.
-
-Con el entorno virtual activado, desde la carpeta `PITA-Taller1/python`:
-
-```powershell
-# Ejecutar la suite completa de 302 pruebas
-python -m unittest discover -s tests -v
-```
-
-**Resultado esperado:**
-```text
-Ran 302 tests in XX.XXXs
-OK
-```
-
-### Ejecutar suites de prueba específicas:
-Si desea evaluar un módulo en particular:
-
-```powershell
-# 1. Pruebas de la estructura de datos Lista Enlazada
-python -m unittest tests/test_linked_list.py
-
-# 2. Pruebas de cálculo de Nómina, ARL y Seguridad Social Colombiana
-python -m unittest tests/test_payroll_engine.py
-python -m unittest tests/test_payroll_cycle.py
-
-# 3. Pruebas del algoritmo EBRA (Alerta Temprana de Riesgo Académico)
-python -m unittest tests/test_academic_ebra.py
-
-# 4. Pruebas de dimensionamiento compacto de tablas (cero espacios vacíos)
-python -m unittest tests/test_compact_tables.py
-
-# 5. Pruebas de diseño responsivo (cero scroll horizontal en 960x600)
-python -m unittest tests/test_responsive_layout.py
-
-# 6. Pruebas de navegación (Breadcrumbs) y persistencia segura en disco
-python -m unittest tests/test_breadcrumbs_and_persistence_ui.py
-```
-
 ---
 
 ## 4. Ejecutar la Versión de Consola en C++ (Opcional)
@@ -171,17 +113,17 @@ cmake -S cpp -B cpp/build
 cmake --build cpp/build --config Release
 
 # 2. Ejecutar
-.\cpp\build\Release\PITA.exe   # Con generador Visual Studio
+.\cpp\build\Release\SLF.exe   # Con generador Visual Studio
 # O bien:
-.\cpp\build\PITA.exe           # Con generador Ninja o MinGW
+.\cpp\build\SLF.exe           # Con generador Ninja o MinGW
 ```
 
 ### Compilación directa con MinGW / GCC (sin CMake ni Visual Studio):
 Si tiene `g++` en su consola:
 
 ```powershell
-g++ -std=c++17 cpp\PITA.cpp -o cpp\PITA.exe
-.\cpp\PITA.exe
+g++ -std=c++17 cpp\SLF.cpp -o cpp\SLF.exe
+.\cpp\SLF.exe
 ```
 
 El programa de consola permite registrar datos y persistir su propio archivo `pita_datos.txt`.
@@ -212,12 +154,12 @@ Estructura/
 │   │
 │   ├── cpp/                            # Versión complementaria de consola en C++17
 │   │   ├── CMakeLists.txt              # Configuración de compilación CMake
-│   │   ├── PITA.cpp                    # Menú interactivo y listas enlazadas en C++
+│   │   ├── SLF.cpp                     # Menú interactivo y listas enlazadas en C++
 │   │   ├── payroll_engine.hpp/.cpp     # Motor de nómina en C++
 │   │   └── payroll_cycle.hpp/.cpp      # Ciclos de liquidación en C++
 │   │
 │   └── python/                         # Aplicación Gráfica Principal (PySide6)
-│       ├── main.py                     # Punto de entrada de la aplicación
+│       ├── SLF.py                      # Punto de entrada de la aplicación
 │       ├── requirements.txt            # Dependencias del sistema (PySide6, reportlab)
 │       │
 │       ├── models/                     # CAPA 1: Estructuras de Datos y Entidades
@@ -273,94 +215,10 @@ Estructura/
 │       │   └── i18n/                   # Glosario y tooltips informativos de acrónimos
 │       │       └── labels.py           # Tooltips para EBRA, IBC, ARL, CST, etc.
 │       │
-│       └── tests/                      # Batería Integral de Pruebas Automatizadas
-│           ├── test_linked_list.py     # Validación matemática de las listas enlazadas
-│           ├── test_compact_tables.py  # Verificación de altura exacta y cero espacios vacíos
-│           ├── test_responsive_layout.py# Verificación de adaptabilidad a 960x600 sin scroll
-│           ├── test_breadcrumbs_and_persistence_ui.py # Trazabilidad de rutas y guardado
-│           ├── test_shortcuts_and_search_bar.py # Atajos de teclado y buscador
-│           ├── test_interaction_and_a11y.py # Accesibilidad de teclado y foco
-│           ├── test_vector_icons_and_no_emojis.py # Cero emojis y vectorización SVG
-│           ├── test_design_system.py   # Tokens de color, tipografía y bordes QSS
-│           ├── test_data_table_enhancements.py # Ordenamiento y alineación contable
-│           ├── test_dashboard_page_enhancements.py # Métricas reales de Dashboard
-│           ├── test_payroll_engine.py  # Reglas legales de liquidación de nómina
-│           ├── test_academic_ebra.py   # Algoritmo de evaluación académica EBRA
-│           └── ... (15 suites adicionales cubriendo dominio, persistencia y vistas)
 ```
-
 ---
 
-## 6. Características Técnicas y Novedades Implementadas
-
-### A. Listas Enlazadas como Estructura Central en Memoria
-- Implementación de `LinkedList` y `Node` en `models/linked_list.py` con operaciones fundamentales: inserción al inicio, inserción al final, búsqueda por predicado, eliminación por valor o índice, recorrido iterador y conversión a colecciones.
-- El gestor `EntityManager` mantiene en listas dinámicas las colecciones de entidades, permitiendo búsquedas de alta eficiencia en memoria antes de volcar a disco.
-
-### B. Tablas Dinámicas y Compactas (`DataTable`)
-- **Ajuste automático al volumen de datos**: La tabla mide la altura de sus filas visibles y se dimensiona con exactitud matemática, eliminando los molestos espacios blancos vacíos inferiores tanto en tablas de 10 filas como en tablas pequeñas (ej. 4 filas en salarios, o 1 fila al filtrar).
-- **Alineación contable profesional**: Alineación a la derecha para montos monetarios (`$ 3,500,000.00`), porcentajes y cantidades numéricas; alineación al centro para códigos, IDs, fechas y badges; alineación a la izquierda para textos y nombres.
-- **Ordenamiento interactivo integral**: Al hacer clic sobre cualquier encabezado de columna, la tabla ordena el **conjunto de datos completo** (no solo la página visible), sincronizando los objetos de dominio asociados.
-
-### C. Diseño Totalmente Responsivo (Resolución Mínima 960×600)
-- **Cero scroll horizontal forzado**: Gracias al componente `AdaptiveStackedWidget`, el área principal adapta su geometría al 100% del ancho visible de la ventana.
-- Los botones de acción principal (como `+ Nueva Facultad`), las barras de búsqueda y los botones de edición/eliminación permanecen siempre visibles dentro de la pantalla, sin recortarse ni requerir desplazamiento horizontal.
-
-### D. Formulario Inteligente con Validación en Tiempo Real (`EntityDialog`)
-- **Indicador de obligatoriedad**: Distinción clara entre campos requeridos (asterisco rojo `*`) y opcionales.
-- **Validación instantánea mientras se digita**: Validación reactiva de correos electrónicos (`usuario@dominio.com`), teléfonos colombianos (10 dígitos), documentos de identidad y validación estricta de salarios no negativos.
-- **Desplazamiento vertical asistido**: Envuelto en `QScrollArea` para garantizar que formularios extensos (como Profesores o Administrativos) sean cómodamente navegables en pantallas reducidas.
-
-### E. Atajos de Teclado Globales (Productividad sin Ratón)
-| Atajo | Acción Ejecutada |
-| :--- | :--- |
-| `Ctrl + S` | **Guardar Datos**: Guarda de forma atómica en disco todos los cambios pendientes en memoria. |
-| `F5` | **Cargar / Recargar Datos**: Recarga el estado desde los archivos JSON en disco (advierte si hay cambios sin guardar). |
-| `Ctrl + N` | **Nuevo Registro**: Abre el diálogo para crear una nueva entidad en la sección activa. |
-| `Ctrl + F` | **Buscar**: Enfoca inmediatamente la barra de búsqueda de la vista activa y selecciona su texto. |
-| `Ctrl + K` | **Búsqueda Global**: Enfoca el buscador institucional del encabezado superior. |
-| `Delete` / `Supr` | **Eliminar**: Dispara la confirmación de eliminación del elemento seleccionado en la tabla activa. |
-| `Enter` / `Espacio` | **Interacción**: Activa tarjetas del dashboard y botones enfocados mediante teclado. |
-
-### F. Prevención de Pérdida Accidental de Datos
-- **Indicador de Cambios sin Guardar**: Si el usuario inserta, edita o elimina información, aparece la insignia visual ámbar `● Cambios sin guardar (Ctrl+S)` en el breadcrumb y el botón del sidebar se ilumina en ámbar.
-- **Alerta ante Recarga**: Si se intenta presionar "Cargar Datos" existiendo modificaciones en memoria, un diálogo previene sobre la pérdida irreversible y solicita confirmación.
-- **Alerta ante Cierre de la Aplicación**: Si el usuario cierra la ventana principal con cambios pendientes, se despliega un diálogo con 3 opciones seguras: *Guardar y Salir*, *Salir sin Guardar* o *Cancelar*.
-
-### G. Iconografía 100% Vectorial SVG (Sin Emojis)
-- Se erradicó el uso de emojis del sistema operativo (`⚠️`, `📋`, `👁`, `💰`, etc.), reemplazándolos por un catálogo vectorial nativo en `gui/components/icons.py` que garantiza una renderización nítida, sobria y uniforme entre Windows, Linux y macOS.
-
----
-
-## 7. Preguntas Frecuentes y Solución de Problemas (Troubleshooting)
-
-### P1: PowerShell muestra un error rojo diciendo que "la ejecución de scripts está deshabilitada en este sistema".
-**Solución:** Windows bloquea por defecto la ejecución de entornos virtuales creados con `Activate.ps1`. Ejecute en la misma ventana de PowerShell:
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
-Luego vuelva a ejecutar `.\.venv\Scripts\Activate.ps1`.
-
----
-
-### P2: Al escribir `python` o `pip` la consola dice que el comando no se reconoce.
-**Solución:** Python no fue añadido a la variable de entorno `PATH` durante su instalación.
-- Puede ejecutar usando el lanzador de Windows: `py -m pip install -r python\requirements.txt` y `py python\main.py`.
-- O bien, reinstale Python asegurándose de marcar la casilla **"Add Python to PATH"** en la primera pantalla del instalador.
-
----
-
-### P3: ¿Cómo verificar rápidamente que todo el proyecto funciona correctamente?
-**Solución:** Ejecute la suite de pruebas automatizadas:
-```powershell
-cd python
-python -m unittest discover -s tests
-```
-Si observa `Ran 302 tests ... OK`, todas las reglas de negocio, modelos y componentes gráficos se encuentran en perfecto estado operativo.
-
----
-
-## 8. Integrantes y Créditos Académicos
+## 6. Integrantes y Créditos Académicos
 
 - **Universidad:** Universidad Popular del Cesar (UPC) — Sede Valledupar.
 - **Programa:** Ingeniería de Sistemas.
